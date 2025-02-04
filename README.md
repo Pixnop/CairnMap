@@ -34,7 +34,7 @@ Supports UI settings with the Mod Config Menu (UI) mod also installed
 
 # WORKS ON SINGLEPLAYER AND MULTIPLAYER
 
-Make sure your UE4SS version is **_<ins>AT LEAST 3.0</ins>** to use on multiplayer
+Make sure your UE4SS version is **<ins>AT LEAST 3.0</ins>** to use on multiplayer
 
 ${\textsf{\color{orange}Possibly due to anti-cheat, some icons can only be shown if nearby to the player}}$
 
