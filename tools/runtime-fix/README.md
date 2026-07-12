@@ -23,7 +23,11 @@ added to the visual tree.
 
 - **Auto-repair**: a 0.8 s watcher detects map opens (the mod recreates its
   widgets each time) and checkbox changes, then re-attaches every icon to
-  `Canvas_ForIcon_Mask`.
+  `Canvas_ForIcon_Mask`. All widget work runs on the game thread
+  (`ExecuteInGameThread`): LoopAsync callbacks are off-thread and racing the
+  engine crashes intermittently. Repairs are debounced until the mod has
+  finished populating its arrays, and every attached icon is detached again
+  the moment the map closes so the game always gets its vanilla canvas back.
 - **Exact projection**, cached after first calibration: seeded by matching the
   8 boss towers (world positions embedded, extracted from the 1.0 pak) to the 8
   `WBP_Map_IconTower_C` pins (farthest-pair, 4 orientation hypotheses, 0 px
