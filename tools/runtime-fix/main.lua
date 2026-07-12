@@ -330,8 +330,12 @@ end
 -- recreates its widgets on every map open, so the widget count is a reliable
 -- change signal.
 buildIndexes()
+local gBusy = false
 LoopAsync(800, function()
-    pcall(function()
+    if gBusy then return false end
+    gBusy = true
+    ExecuteInGameThread(function()
+        local ok, err = pcall(function()
         local canvas = findMap()
         if not canvas then
             gLastSig = ""
@@ -360,9 +364,11 @@ LoopAsync(800, function()
                     if ksl and ksl:IsValid() then
                         ksl:CollectGarbage()
                         ExecuteWithDelay(3000, function()
-                            pcall(function()
+                            ExecuteInGameThread(function()
+                              pcall(function()
                                 local after = #(FindAllOf("CollectableWidget_C") or {})
                                 print(string.format("[MapCollectablesFix] idle GC: %d -> %d widgets", all, after))
+                              end)
                             end)
                         end)
                     end
@@ -385,6 +391,9 @@ LoopAsync(800, function()
             gLastSig = h
             repair("auto")
         end
+        end)
+        gBusy = false
+        if not ok then print("[MapCollectablesFix] watcher error: " .. tostring(err)) end
     end)
     return false
 end)
