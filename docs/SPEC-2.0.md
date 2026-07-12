@@ -1,10 +1,16 @@
 # MapCollectables 2.0 — Specification
 
 Code-first rewrite of Map Collectables Helper for Palworld 1.0+. Replaces the
-original cooked pak entirely. All logic lives in **Lua (UE4SS)**: readable,
-versioned, reviewable code. Blueprint is reduced to **one static UI asset**
-with zero graph logic, built by an **editor Python script** (no manual
-Blueprint editing, ever).
+original cooked pak entirely. All logic lives in a **UE4SS C++ mod**
+(`cpp-mod/`, decided 2026-07-13: user preference; also grants performance by
+construction). The architecture below is language-agnostic — module names map
+to C++ classes. The pure core compiles natively on Linux for unit tests; the
+Windows DLL (MSVC ABI, against Okaetsu/RE-UE4SS @ c2ac246 = the shipped UE4SS
+v3.0.1) is built by GitHub Actions (`.github/workflows/build-cpp-mod.yml`) —
+no local Windows toolchain. Install: `Mods/MapCollectables2/dlls/main.dll` +
+mods.txt entry. Blueprint stays reduced to **one static UI asset** with zero
+graph logic, built by an **editor Python script** (no manual Blueprint
+editing, ever). Lua remnants (the 1.x runtime fix) are reference material.
 
 Everything below encodes what the 2026-07-12/13 live sessions proved on the
 running game. Sections marked ⚠ are hard-won stability rules: do not relax
@@ -16,7 +22,7 @@ them.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ UE4SS Lua mod: Mods/MapCollectables2/scripts/main.lua        │
+│ UE4SS C++ mod: Mods/MapCollectables2/dlls/main.dll           │
 │                                                              │
 │  data.lua        static locations (codegen from pak dumps)   │
 │  detect.lua      live actor scanning (relics, chests, eggs…) │
