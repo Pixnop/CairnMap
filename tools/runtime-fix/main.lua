@@ -274,11 +274,11 @@ local gReg = {}             -- widgets we attached during the last repair
 local CFG_KEYS = {
     SkyOre = "Show sky island ore (cyan)", TreeOre = "Show world tree ore (green)",
     Magma = "Show magma rock (orange)", NightStone = "Show night stone (violet)",
-    DogCoin = "Show dog coins (gold)", Lotus = "Show lotus flowers (pink)",
+    DogCoin = "Show dog coins (gold, cave)", Lotus = "Show lotus flowers (pink, cave)",
 }
 local CFG_PATHS = {
-    "../../Content/Paks/LogicMods/MapCollectablesFix.modconfig.json",
-    "Pal/Content/Paks/LogicMods/MapCollectablesFix.modconfig.json",
+    "../../Content/Paks/LogicMods/MapCollectablesMod.modconfig.json",
+    "Pal/Content/Paks/LogicMods/MapCollectablesMod.modconfig.json",
 }
 local function readExtrasConfig()
     local txt = nil

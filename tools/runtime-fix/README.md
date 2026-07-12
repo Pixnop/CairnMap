@@ -45,10 +45,12 @@ added to the visual tree.
 negligible cost) for content the original mod predates: Sky Island ore (cyan),
 World Tree ore (green), magma rock (orange), NightStone (violet), and the
 underground collectables DogCoin (gold) and Lotus flowers (pink), drawn at
-their surface X/Y to mark the cave to enter. **F9** cycles: all / surface ores
-only / off. Positions come from the offline pak extraction.
+their surface X/Y to mark the cave to enter. Layer toggles live in the Dek Mod Config Menu, inside the original mod's own
+settings section (the fix appends boolean entries to
+`MapCollectablesMod.modconfig.json`; Dek only displays configs paired with a
+pak of the same name). Positions come from the offline pak extraction.
 
-Keys: **F7** force refresh + recalibrate, **F9** cycle extra layers.
+Key: **F7** force refresh + recalibrate.
 
 ## Known limits / notes
 
