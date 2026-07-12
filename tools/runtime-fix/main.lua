@@ -297,21 +297,38 @@ local function ensureExtraCheckboxes()
         print("[MapCollectablesFix] UMG classes not found, checkbox UI skipped")
         return
     end
+    -- style + comportement copiés d'une case existante du mod
+    local template = nil
+    local function findTemplate(w, depth)
+        if template or not w or depth > 12 then return end
+        if safe(function() return w:GetClass():GetFName():ToString() end, "") == "CheckBox" then template = w return end
+        local n = safe(function() return w:GetChildrenCount() end, 0) or 0
+        for i = 0, n - 1 do findTemplate(safe(function() return w:GetChildAt(i) end, nil), depth + 1) end
+    end
+    findTemplate(root, 0)
+    local injected = 0
     for _, layer in ipairs(EXTRAS) do
         pcall(function()
             local row = StaticConstructObject(hbClass, vbox, FName("FixRow_" .. layer.key))
             local cb = StaticConstructObject(cbClass, row)
+            if template and template:IsValid() then
+                pcall(function() cb.WidgetStyle = template.WidgetStyle end)
+            end
+            cb:SetVisibility(0)   -- Visible (interactive)
+            cb:SetIsChecked(gExtraState[layer.key])
             row:AddChildToHorizontalBox(cb)
             local label = StaticConstructObject(txtClass, row)
             label:SetText(FText(EXTRA_LABELS[layer.key] or layer.key))
             pcall(function() label.Font.Size = 11 end)
+            label:SetVisibility(3)  -- HitTestInvisible
             row:AddChildToHorizontalBox(label)
-            cb:SetIsChecked(gExtraState[layer.key])
+            row:SetVisibility(4)    -- SelfHitTestInvisible: les enfants reçoivent les clics
             vbox:AddChildToVerticalBox(row)
             gExtraCbs[layer.key] = cb
+            injected = injected + 1
         end)
     end
-    print("[MapCollectablesFix] extra checkboxes injected")
+    print(string.format("[MapCollectablesFix] extra checkboxes injected (%d, template=%s)", injected, tostring(template ~= nil)))
 end
 
 local function repair(reason)
