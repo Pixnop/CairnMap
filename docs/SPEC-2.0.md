@@ -242,3 +242,76 @@ Notes:
   regenerates from any game patch in minutes (repak → parse → codegen).
 - In-game displayed coords ≈ `((worldY-158000)/459, (worldX+123000)/459)`
   (validated single-point; for display only, not used for projection).
+
+---
+
+## 7. Design patterns & optimization rules
+
+The Lua codebase follows these patterns deliberately; PRs should respect them.
+
+### 7.1 Patterns
+
+- **Module pattern, no globals.** Every file returns a table
+  (`local M = {}; … return M`). Dependencies are explicit `require`-style
+  parameters (UE4SS: `dofile` with an injected registry). One global only:
+  the mod's root table.
+- **Pure core / impure shell (hexagonal-lite).** `project.lua`, filtering,
+  matching, and data transforms are **pure functions** (tables in → tables
+  out, no UE4SS calls). All engine effects (FindAllOf, widgets, io) live in
+  ONE facade: `engine.lua`. Benefits: the core runs under plain `lua` on the
+  dev machine → **unit tests in the repo, run in CI**, no game needed.
+- **Facade for UE4SS.** `engine.lua` is the only file allowed to call UE4SS
+  APIs. It centralizes the ⚠ rules once: pcall around every object access,
+  ExecuteInGameThread wrapping, IsValid checks, full-name identity. Callers
+  can't get these wrong because they can't reach the raw API.
+- **Single source of truth: the LAYERS registry.** One declarative table
+  (key, label, color, source, filters, default) drives: data codegen, the
+  renderer, state persistence, AND the editor Python script that builds the
+  panel rows. Adding a layer = one entry + regenerated data. No parallel
+  lists to keep in sync.
+- **Object pool** for icon widgets (create once per map-body instance,
+  collapse/reuse; never per-open construction). Pool invariant checked in
+  the test list (§5).
+- **Polling with change signatures** instead of events (UE4SS cannot bind
+  delegates): a cheap hash of (map instance, checkbox states, collected
+  count) gates all work. Idempotent repairs: re-running with an unchanged
+  signature touches nothing.
+- **Codegen over runtime parsing.** Static data ships as generated Lua
+  tables (ints, sorted, deduped) — no JSON parsing at runtime, no disk reads
+  in the hot path.
+
+### 7.2 Performance budgets (enforced by design, checked at review)
+
+| operation                          | budget            | mechanism                          |
+|------------------------------------|-------------------|------------------------------------|
+| watcher tick, map closed           | < 0.1 ms          | one FindAllOf + early-out          |
+| watcher tick, map open, no change  | < 1 ms            | signature short-circuit            |
+| full repair (all layers)           | < 100 ms, once    | pool reuse, precomputed positions  |
+| calibration                        | once per map body | cached by canvas full name         |
+| snap/lookup                        | O(1) per point    | spatial hash (10 km buckets), built once |
+| per-tick allocations               | ~0                | reused buffers, no closures in hot loops |
+
+- Projected canvas positions of **static** layers are computed once per
+  calibration and cached per point (they only change with the transform).
+- No string concatenation in hot loops (signature built with table.concat
+  on a reused buffer).
+- Log policy: state *transitions* only (opened, repaired N, closed); never
+  per-tick logging.
+
+### 7.3 Error-handling policy
+
+- pcall boundaries live in `engine.lua` (per engine call) and at the tick
+  root (belt and braces). Core modules never pcall — pure code either works
+  or has a bug a unit test should catch.
+- First failure of a given kind logs once with context; repeats are counted
+  and summarized (no log spam).
+- Any engine-facade failure degrades to "skip this tick", never to a crash
+  and never to partially-applied UI state.
+
+### 7.4 Style
+
+- LuaCheck-clean (`luacheck` config in repo, run in CI with the unit tests).
+- snake_case for functions/locals, PascalCase for layer keys, UPPER_SNAKE
+  for generated data tables.
+- Every ⚠ rule from this spec appears as a comment at the code site that
+  implements it, with a one-line "why".
