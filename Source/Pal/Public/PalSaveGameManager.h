@@ -16,6 +16,7 @@ class IPalGamePlayerDataSaveInterface;
 class UPalGamePlayerDataSaveInterface;
 class IPalGameWorldDataSaveInterface;
 class UPalGameWorldDataSaveInterface;
+class UPalAutoSaveDisabler;
 class UPalLocalWorldSaveGame;
 class UPalWorldOptionSaveGame;
 class UPalWorldSaveGame;
@@ -27,9 +28,11 @@ public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartedWorldAutoSave);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartedPlayerAutoSave);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartedLocalWorldAutoSave);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRestoredWorldFromBackup, const FString&, WorldName);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndedWorldAutoSave, bool, IsSuccess);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndedPlayerAutoSave, bool, IsSuccess);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndedLocalWorldAutoSave, bool, IsSuccess);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeletedWorld, const FString&, WorldName);
     
     UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnStartedWorldAutoSave OnStartedWorldAutoSave;
@@ -49,6 +52,26 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnEndedPlayerAutoSave OnEndedPlayerAutoSave;
     
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnRestoredWorldFromBackup OnRestoredWorldFromBackup;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnDeletedWorld OnDeletedWorld;
+    
+private:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalAutoSaveDisabler* DebugAutoSaveDisabler;
+    
+public:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsFoundWorldSaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsFoundLocalWorldSaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsFoundWorldOptionSaveData;
+    
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     bool bIsLoadedWorldSaveData;
@@ -67,6 +90,9 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UPalWorldOptionSaveGame* LoadedWorldOptionSaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bLastSavedUsingMod;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FTimerHandle AutoSaveWorldDataTimerHandle;
@@ -138,7 +164,19 @@ public:
     void StartLocalWorldDataAutoSave();
     
     UFUNCTION(BlueprintCallable)
+    bool OnFinishedWorldOptionAsyncSaveGamePreInternal(const FString& SlotName, const int32 UserIndex, bool bSuccess, const FString& WorldName, const FString& Timestamp);
+    
+    UFUNCTION(BlueprintCallable)
+    bool OnFinishedWorldAsyncSaveGamePreInternal(const FString& SlotName, const int32 UserIndex, bool bSuccess, const FString& WorldName, const FString& Timestamp);
+    
+    UFUNCTION(BlueprintCallable)
     void OnFinishedWorldAsyncSaveGameInternal(const FString& SlotName, const int32 UserIndex, bool bSuccess, const FString& WorldName, const FString& Timestamp);
+    
+    UFUNCTION(BlueprintCallable)
+    bool OnFinishedGlobalPalStorageAsyncSaveGamePreInternal(const FString& SlotName, const int32 UserIndex, bool bSuccess, const FString& SaveDataName, const FString& Timestamp);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsWorldAutoSaving() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsValidWorldSaveDirectoryName_LocalData(const FString& WorldSaveDirectoryName) const;
@@ -151,6 +189,9 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsValidLocalWorldData(const FString& WorldName) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsLocalWorldAutoSaving() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsLoadedWorldOptionData() const;
@@ -166,6 +207,9 @@ private:
     bool IsExistSocialId(FSocialId ID);
     
 public:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    void IsAutoSaving(bool& OutValue) const;
+    
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsAppliedPlayerData();
     
@@ -186,6 +230,12 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     UPalLocalWorldSaveGame* GetLoadedLocalWorldSaveData() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool ForceLoadPerformanceChecktWorld() const;
+    
+    UFUNCTION(BlueprintCallable)
+    void ClearAutoSaveEvents();
     
 };
 

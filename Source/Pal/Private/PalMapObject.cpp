@@ -1,7 +1,6 @@
 #include "PalMapObject.h"
 #include "Net/UnrealNetwork.h"
 #include "PalMapObjectDamageReactionComponent.h"
-#include "PalMapObjectVisualEffectComponent.h"
 
 APalMapObject::APalMapObject(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
     this->bReplicates = true;
@@ -9,8 +8,9 @@ APalMapObject::APalMapObject(const FObjectInitializer& ObjectInitializer) : Supe
     (*p_RemoteRole->ContainerPtrToValuePtr<TEnumAsByte<ENetRole>>(this)) = ROLE_SimulatedProxy;
     this->ConcreteModelClass = NULL;
     this->DamageReaction = CreateDefaultSubobject<UPalMapObjectDamageReactionComponent>(TEXT("DamageReaction"));
-    this->VisualEffect = CreateDefaultSubobject<UPalMapObjectVisualEffectComponent>(TEXT("VisualEffect"));
+    this->VisualEffect = NULL;
     this->bSpawnableIfOverlapped = false;
+    this->bNotSpawnableIfOverlapMapObject = false;
     this->bLevelSpawnObject = false;
     this->bSpawnSlipAboveIfAnyOverlap = false;
     this->bShakeOnDamaged = false;
@@ -27,7 +27,9 @@ APalMapObject::APalMapObject(const FObjectInitializer& ObjectInitializer) : Supe
     this->IndicatorWidgetClass = NULL;
     this->ChangeMeshFXType = EPalMapObjectChangeMeshFXType::None;
     this->bWorkLocationGroupRaycastStartOffsetOrigin = false;
+    this->bIgnoreBuildInstallConnection = false;
     this->bShouldPlayDestroyFX = false;
+    this->bShouldPlayBuildCancelDestroyFX = false;
 }
 
 void APalMapObject::TryGetConcreteModel(EPalMapObjectGetModelOutPinType& OutputPin, UPalMapObjectConcreteModelBase*& ConcreteModel) {
@@ -37,6 +39,9 @@ void APalMapObject::SetIgnoreSave_ServerInternal(const bool bIgnore) {
 }
 
 void APalMapObject::OnUpdatedEnableTickByModel(UPalMapObjectModel* Model) {
+}
+
+void APalMapObject::OnRep_PoolSpawnState() {
 }
 
 void APalMapObject::OnRep_MapObjectModel() {
@@ -57,11 +62,23 @@ void APalMapObject::OnDamaged(UPalMapObjectModel* TargetModel, const FPalDamageI
 void APalMapObject::OnCloseParameter(UPalHUDDispatchParameterBase* Parameter) {
 }
 
+bool APalMapObject::IsExistsWorkingAnyWorker() const {
+    return false;
+}
+
+bool APalMapObject::IsExistsAssignedAnyWorker() const {
+    return false;
+}
+
 UPalMapObjectModel* APalMapObject::GetModel() const {
     return NULL;
 }
 
 FGuid APalMapObject::GetGroupIdBelongTo() const {
+    return FGuid{};
+}
+
+FGuid APalMapObject::GetBaseCampIdBelongTo() const {
     return FGuid{};
 }
 
@@ -74,6 +91,24 @@ void APalMapObject::CallOrRegisterOnSetConcreteModel(FPalMapObjectConcreteModelD
 void APalMapObject::BroadcastShouldPlayDestroyFX_Implementation() {
 }
 
+void APalMapObject::BroadcastShouldPlayBuildCancelDestroyFX_Implementation() {
+}
+
+void APalMapObject::BroadcastShouldNotPlayDestroyFX_Implementation() {
+}
+
+void APalMapObject::BroadcastShouldNotPlayBuildCancelDestroyFX_Implementation() {
+}
+
+void APalMapObject::BroadcastPlayRespawnFX_Implementation() {
+}
+
+void APalMapObject::BroadcastDestroyPoolableObjectWithDestroyFX_Implementation() {
+}
+
+void APalMapObject::BroadcastDestroyPoolableObject_Implementation() {
+}
+
 void APalMapObject::BP_OnSetConcreteModel_Implementation(UPalMapObjectConcreteModelBase* ConcreteModel) {
 }
 
@@ -82,6 +117,7 @@ void APalMapObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
     
     DOREPLIFETIME(APalMapObject, ModelInstanceId);
     DOREPLIFETIME(APalMapObject, MapObjectModel);
+    DOREPLIFETIME(APalMapObject, PoolSpawnState);
 }
 
 

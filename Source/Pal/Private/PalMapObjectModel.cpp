@@ -2,17 +2,21 @@
 #include "Net/UnrealNetwork.h"
 
 UPalMapObjectModel::UPalMapObjectModel() {
+    this->bSpawnedMapObjectActor = false;
     this->ConcreteModel = NULL;
     this->BuildProcess = NULL;
     this->DamagableType = EPalMapObjectDamagableType::AllRecieve;
     this->Connector = NULL;
     this->Effect = NULL;
+    this->Paint = NULL;
     this->bInDoor = false;
     this->InteractRestrictType = EPalMapObjectInteractRestrictType::Anyone;
     this->SignificanceValue = 0.00f;
+    this->bIsCollectionObject = false;
     this->DeteriorationDamage = 0.00f;
     this->DeteriorationTotalDamage = 0.00f;
     this->bIgnoredSave = false;
+    this->bIgnoredSaveWhenNotDamaged = false;
 }
 
 void UPalMapObjectModel::RequestRepairByPlayer_ToServer_ServerInternal(const FGuid& RequestPlayerUId) {
@@ -33,7 +37,13 @@ void UPalMapObjectModel::OnTriggeringInteract(AActor* Other, EPalInteractiveObje
 void UPalMapObjectModel::OnStartTriggerInteract(AActor* Other, EPalInteractiveObjectIndicatorType IndicatorType) {
 }
 
+void UPalMapObjectModel::OnRep_Paint() {
+}
+
 void UPalMapObjectModel::OnRep_Effect() {
+}
+
+void UPalMapObjectModel::OnRep_CustomName() {
 }
 
 void UPalMapObjectModel::OnRep_ConcreteModel() {
@@ -56,6 +66,18 @@ FPalMapObjectStatusValue UPalMapObjectModel::GetHP() const {
     return FPalMapObjectStatusValue{};
 }
 
+FString UPalMapObjectModel::GetCustomName() const {
+    return TEXT("");
+}
+
+UPalMapObjectConcreteModelBase* UPalMapObjectModel::GetConcreteModel(const bool bIsForce) const {
+    return NULL;
+}
+
+FGuid UPalMapObjectModel::GetBuildPlayerUId_BP() const {
+    return FGuid{};
+}
+
 void UPalMapObjectModel::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     
@@ -65,6 +87,7 @@ void UPalMapObjectModel::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
     DOREPLIFETIME(UPalMapObjectModel, ConcreteModel);
     DOREPLIFETIME(UPalMapObjectModel, BaseCampIdBelongTo);
     DOREPLIFETIME(UPalMapObjectModel, GroupIdBelongTo);
+    DOREPLIFETIME(UPalMapObjectModel, CustomName);
     DOREPLIFETIME(UPalMapObjectModel, BuildObjectId);
     DOREPLIFETIME(UPalMapObjectModel, BuildProcess);
     DOREPLIFETIME(UPalMapObjectModel, DamagableType);
@@ -72,8 +95,10 @@ void UPalMapObjectModel::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
     DOREPLIFETIME(UPalMapObjectModel, InitialTransformCache);
     DOREPLIFETIME(UPalMapObjectModel, Connector);
     DOREPLIFETIME(UPalMapObjectModel, Effect);
+    DOREPLIFETIME(UPalMapObjectModel, Paint);
     DOREPLIFETIME(UPalMapObjectModel, BuildPlayerUId);
     DOREPLIFETIME(UPalMapObjectModel, InteractRestrictType);
+    DOREPLIFETIME(UPalMapObjectModel, bIsCollectionObject);
 }
 
 

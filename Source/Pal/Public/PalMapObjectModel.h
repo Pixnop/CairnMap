@@ -25,6 +25,7 @@ class UPalBuildProcess;
 class UPalMapObjectConcreteModelBase;
 class UPalMapObjectModelConnectorBase;
 class UPalMapObjectModelEffect;
+class UPalMapObjectModelPaint;
 class UPalWorkAssign;
 class UPalWorkBase;
 
@@ -39,7 +40,7 @@ public:
     FPalMapObjectDamageDelegate OnDamageDelegate;
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    FMapObjectModelDelegate OnUpdateHp;
+    FMapObjectModelDelegate OnUpdateHP;
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FMapObjectModelDelegate OnDestroyDelegate;
@@ -59,7 +60,13 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FMapObjectModelDelegate OnRepBuildPlayerUIdDelegate_Client;
     
+    UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FMapObjectModelDelegate OnCustomNameChangedDelegate;
+    
 private:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bSpawnedMapObjectActor;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     FGuid InstanceId;
     
@@ -84,6 +91,9 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     FGuid GroupIdBelongTo;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_CustomName, meta=(AllowPrivateAccess=true))
+    FString CustomName;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     FName BuildObjectId;
     
@@ -104,6 +114,9 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_Effect, meta=(AllowPrivateAccess=true))
     UPalMapObjectModelEffect* Effect;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_Paint, meta=(AllowPrivateAccess=true))
+    UPalMapObjectModelPaint* Paint;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FGuid RepairWorkId;
@@ -127,7 +140,13 @@ private:
     FGameDateTime CreatedAt;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FString CreatedAtStr;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     float SignificanceValue;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsCollectionObject;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     float DeteriorationDamage;
@@ -137,6 +156,9 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     bool bIgnoredSave;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bIgnoredSaveWhenNotDamaged;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FGuid DungeonInstanceIdBelongTo;
@@ -172,7 +194,13 @@ private:
     void OnStartTriggerInteract(AActor* Other, EPalInteractiveObjectIndicatorType IndicatorType);
     
     UFUNCTION(BlueprintCallable)
+    void OnRep_Paint();
+    
+    UFUNCTION(BlueprintCallable)
     void OnRep_Effect();
+    
+    UFUNCTION(BlueprintCallable)
+    void OnRep_CustomName();
     
     UFUNCTION(BlueprintCallable)
     void OnRep_ConcreteModel();
@@ -192,6 +220,15 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalMapObjectStatusValue GetHP() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FString GetCustomName() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalMapObjectConcreteModelBase* GetConcreteModel(const bool bIsForce) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FGuid GetBuildPlayerUId_BP() const;
     
 
     // Fix for true pure virtual functions not being implemented

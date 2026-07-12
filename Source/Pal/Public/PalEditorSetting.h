@@ -68,13 +68,37 @@ public:
     FSoftObjectPath NoteDataTableAssetPath;
     
     UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FSoftObjectPath NPCAppearFlagDataTableAssetPath;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FSoftObjectPath WorldMapAreaDataTableAssetPath;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FSoftObjectPath FishShadowDataTableAssetPath;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FSoftObjectPath FishingSpotLotteryNameDataTableAssetPath;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FSoftObjectPath FishPondLotteryNameDataTableAssetPath;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
     FSoftObjectPath GameProgressPresetTableAssetPath;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FSoftObjectPath ItemPickupDataTableAssetPath;
     
     UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bEditorToolMenu_DisplaySpreadSheetName;
     
     UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bEditorToolMenu_SpreadSheetGrouping;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FName, FSoftObjectPath> DataLayerSettingsAssetPathMap;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FName> StartDebugTeleportPointNames;
     
     UPalEditorSetting();
 

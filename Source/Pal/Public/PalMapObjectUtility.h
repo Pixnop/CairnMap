@@ -10,7 +10,9 @@
 
 class AActor;
 class UMaterialInterface;
+class UObject;
 class UPrimitiveComponent;
+class USkeletalMesh;
 class UStaticMesh;
 
 UCLASS(Blueprintable)
@@ -20,7 +22,10 @@ public:
     UPalMapObjectUtility();
 
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    static bool TryGetItemVisualModelStaticMesh(TSubclassOf<AActor> actorClass, UStaticMesh*& OutStaticMesh, FTransform& OutComponentTransform, FVector& OutCenterOfMass, UMaterialInterface*& OutMaterialInterface);
+    static bool TryGetItemVisualModelStaticMesh(TSubclassOf<AActor> actorClass, UStaticMesh*& OutStaticMesh, FTransform& OutComponentTransform, FVector& OutCenterOfMass, TArray<UMaterialInterface*>& OutMaterialInterface);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    static bool TryGetItemVisualModelSkeletalMesh(TSubclassOf<AActor> actorClass, USkeletalMesh*& OutSkeletalMesh, FTransform& OutComponentTransform, FVector& OutCenterOfMass, UMaterialInterface*& OutMaterialInterface);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     static EPalMapObjectOperationResult ToMapObjectOperationResult(const int32 ResultIntValue);
@@ -36,6 +41,9 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     static void GetItemVisualModelFX(TSubclassOf<AActor> actorClass, TArray<FPalItemVisualModelFXInfo>& OutFXInfos);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static FName ConvertBlueprintItemIdToBuildObjectId(const UObject* WorldContextObject, const FName& StaticItemId);
     
 };
 

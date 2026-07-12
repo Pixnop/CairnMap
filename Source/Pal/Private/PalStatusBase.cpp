@@ -3,9 +3,11 @@
 
 UPalStatusBase::UPalStatusBase() {
     this->bIsEndStatus = false;
-    this->StatusId = EPalStatusID::None;
+    this->statusID = EPalStatusID::None;
     this->Duration = -1.00f;
     this->bIsNerverEnd = false;
+    this->bIsIgnoreRemoveAll = false;
+    this->DurationTimer = 0.00f;
 }
 
 void UPalStatusBase::TickStatus_Implementation(float DeltaTime) {
@@ -30,15 +32,25 @@ bool UPalStatusBase::IsEndStatus_Implementation() const {
     return false;
 }
 
+float UPalStatusBase::GetRemainingTime() const {
+    return 0.0f;
+}
+
 AActor* UPalStatusBase::GetOwner() const {
     return NULL;
+}
+
+float UPalStatusBase::GetDuration() const {
+    return 0.0f;
 }
 
 void UPalStatusBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     
     DOREPLIFETIME(UPalStatusBase, DynamicParameter);
-    DOREPLIFETIME(UPalStatusBase, StatusId);
+    DOREPLIFETIME(UPalStatusBase, statusID);
+    DOREPLIFETIME(UPalStatusBase, InstanceGuid);
+    DOREPLIFETIME(UPalStatusBase, DurationTimer);
 }
 
 

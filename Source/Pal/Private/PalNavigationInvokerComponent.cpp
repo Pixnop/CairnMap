@@ -13,6 +13,13 @@ bool UPalNavigationInvokerComponent::IsDisableInvorker() const {
     return false;
 }
 
+bool UPalNavigationInvokerComponent::GetDisableInvorkerFlag(FName flagName) const {
+    return false;
+}
+
+void UPalNavigationInvokerComponent::DeactivateInvoker() {
+}
+
 void UPalNavigationInvokerComponent::ActivateInvoker() {
 }
 

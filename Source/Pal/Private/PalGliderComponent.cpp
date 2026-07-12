@@ -4,6 +4,7 @@
 UPalGliderComponent::UPalGliderComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
     this->CurrentGlider = NULL;
     this->CurrentGliderClass = NULL;
+    this->CurrentGliderIndividualParameter = NULL;
     this->bIsGliding = false;
 }
 
@@ -20,10 +21,13 @@ void UPalGliderComponent::StartGliding_ToServer_Implementation() {
 void UPalGliderComponent::StartGliding() {
 }
 
+void UPalGliderComponent::SetGliderVisibility(bool bIsShow, const bool bForceSet) {
+}
+
 void UPalGliderComponent::SetCurrentGliderSoftClass_ToServer_Implementation(const TSoftClassPtr<APalGliderObject>& gliderSoftClass) {
 }
 
-void UPalGliderComponent::SetCurrentGliderPalID_ToServer_Implementation(const FName& PalID) {
+void UPalGliderComponent::SetCurrentGliderPalID_ToServer_Implementation(const FName& PalId) {
 }
 
 void UPalGliderComponent::RequestCheckAndUpdateCurrentGlider_ToAll_Implementation() {
@@ -47,6 +51,9 @@ void UPalGliderComponent::OnUpdateIndividualActor(UPalIndividualCharacterHandle*
 void UPalGliderComponent::OnUpdateEquipmentSlot(UPalItemSlot* itemSlot, EPalPlayerEquipItemSlotType slotType) {
 }
 
+void UPalGliderComponent::OnUpdateCharacterRank(const int32 NowRank, const int32 OldRank) {
+}
+
 
 void UPalGliderComponent::OnRevivedIndividual(UPalIndividualCharacterParameter* InParameter) {
 }
@@ -62,13 +69,16 @@ void UPalGliderComponent::OnRep_CurrentGliderPalID() {
 
 
 
+void UPalGliderComponent::OnDeadIndividual(UPalIndividualCharacterParameter* InParameter) {
+}
+
 void UPalGliderComponent::OnDeadGliderPal(FPalDeadInfo DeadInfo) {
 }
 
 void UPalGliderComponent::OnCompleteOwnerInitialize() {
 }
 
-void UPalGliderComponent::OnChangeMovementMode(UPalCharacterMovementComponent* Component, TEnumAsByte<EMovementMode> prevMode, TEnumAsByte<EMovementMode> newMode, EPalCharacterMovementCustomMode PrevCustomMode, EPalCharacterMovementCustomMode NewCustomMode) {
+void UPalGliderComponent::OnChangeMovementMode(UPalCharacterMovementComponent* Component, TEnumAsByte<EMovementMode> PrevMode, TEnumAsByte<EMovementMode> NewMode, EPalCharacterMovementCustomMode PrevCustomMode, EPalCharacterMovementCustomMode NewCustomMode) {
 }
 
 
@@ -80,8 +90,20 @@ bool UPalGliderComponent::IsEquipGlider() const {
     return false;
 }
 
+bool UPalGliderComponent::IsAlwaysVisibleJetpack() const {
+    return false;
+}
+
 bool UPalGliderComponent::HasGliderPal() const {
     return false;
+}
+
+bool UPalGliderComponent::GetCurrentGliderVisibility() const {
+    return false;
+}
+
+APalGliderObject* UPalGliderComponent::GetCurrentGliderObject() const {
+    return NULL;
 }
 
 TArray<FName> UPalGliderComponent::GetAllGliderPalNames() const {

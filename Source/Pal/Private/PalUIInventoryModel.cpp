@@ -2,6 +2,11 @@
 
 UPalUIInventoryModel::UPalUIInventoryModel() {
     this->InventoryContainers = NULL;
+    this->bCanLiftSlot = true;
+}
+
+bool UPalUIInventoryModel::TryUseLiftUpItemToPlayer() {
+    return false;
 }
 
 void UPalUIInventoryModel::TryMoveSlotToInventory(UPalItemSlot* fromSlot, bool tryAutoEquip) {
@@ -26,7 +31,7 @@ void UPalUIInventoryModel::TrashLiftUpItem() {
 void UPalUIInventoryModel::Setup() {
 }
 
-void UPalUIInventoryModel::SelectItemSlot(const FPalItemSlotId SlotID, const EPalItemSlotPressType PressType) {
+void UPalUIInventoryModel::SelectItemSlot(const FPalItemSlotId SlotId, const EPalItemSlotPressType PressType) {
 }
 
 void UPalUIInventoryModel::ResetLiftItem() {

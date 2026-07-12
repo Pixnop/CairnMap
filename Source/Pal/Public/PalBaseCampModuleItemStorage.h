@@ -4,9 +4,10 @@
 #include "PalBaseCampFunctionModuleBase.h"
 #include "PalBaseCampItemContainerInfo.h"
 #include "PalBaseCampItemExistsInfo.h"
-#include "PalContainerId.h"
 #include "PalBaseCampModuleItemStorage.generated.h"
 
+class IPalMapObjectItemContainerAccessInterface;
+class UPalMapObjectItemContainerAccessInterface;
 class UPalBaseCampModuleItemStorage;
 class UPalItemContainer;
 class UPalMapObjectConcreteModelBase;
@@ -22,11 +23,14 @@ public:
     FMulticastReturnSelfAndUpdatedContainerDelegate OnUpdateAnyItemContainerDelegate;
     
 private:
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_ContainerInfos, meta=(AllowPrivateAccess=true))
     TArray<FPalBaseCampItemContainerInfo> ContainerInfos;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_GuildContainerInfo, meta=(AllowPrivateAccess=true))
+    FPalBaseCampItemContainerInfo GuildContainerInfo;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    TMap<FGuid, FPalBaseCampItemExistsInfo> RepairKitItemExistsInfos;
+    TMap<FGuid, FPalBaseCampItemExistsInfo> RepairKitUsableItemExistsInfos;
     
 public:
     UPalBaseCampModuleItemStorage();
@@ -35,17 +39,25 @@ public:
 
 private:
     UFUNCTION(BlueprintCallable)
-    void OnUpdateItemContainer(UPalMapObjectItemContainerModule* ItemContainerModule);
+    void OnUpdateItemContainerModule(UPalMapObjectItemContainerModule* ItemContainerModule);
     
     UFUNCTION(BlueprintCallable)
-    void OnNotAvailableConcreteModel(UPalMapObjectConcreteModelBase* ConcreteModel);
+    void OnUpdateItemContainer(UPalItemContainer* ItemContainer);
     
     UFUNCTION(BlueprintCallable)
-    void OnAvailableConcreteModel(UPalMapObjectConcreteModelBase* ConcreteModel);
+    void OnRep_GuildContainerInfo();
     
-public:
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    void GetContainerIds(TArray<FPalContainerId>& OutContainerIds) const;
+    UFUNCTION(BlueprintCallable)
+    void OnRep_ContainerInfos();
+    
+    UFUNCTION(BlueprintCallable)
+    void OnReadyItemContainerGuildChest(TScriptInterface<IPalMapObjectItemContainerAccessInterface> ItemContainerAccess);
+    
+    UFUNCTION(BlueprintCallable)
+    void OnNotAvailableConcreteModel_ServerInternal(UPalMapObjectConcreteModelBase* ConcreteModel);
+    
+    UFUNCTION(BlueprintCallable)
+    void OnAvailableConcreteModel_ServerInternal(UPalMapObjectConcreteModelBase* ConcreteModel);
     
 };
 

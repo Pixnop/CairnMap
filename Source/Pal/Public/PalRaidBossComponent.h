@@ -26,6 +26,9 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     TArray<FPalInstanceID> RaidBossPalList;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    TArray<FPalInstanceID> RaidBossPalPartList;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TArray<UPalIndividualCharacterHandle*> DeadRaidBossPalList;
     
@@ -50,6 +53,9 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FGuid StartRequestPlayerUID;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    bool InRaidArea;
+    
 public:
     UPalRaidBossComponent(const FObjectInitializer& ObjectInitializer);
 
@@ -61,6 +67,9 @@ protected:
     
     UFUNCTION(BlueprintCallable)
     void OnSpawnBossPal(AActor* Pal);
+    
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+    void OnEndBattle_Server_BP();
     
 private:
     UFUNCTION(BlueprintCallable)
@@ -77,6 +86,17 @@ public:
     bool IsValidPlayerInCamp(APalPlayerCharacter* Player);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsBattleInRaidArea() const;
+    
+protected:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FGuid GetStartRequestPlayerUID() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    APalPlayerCharacter* GetStartRequestPlayerCharacter() const;
+    
+public:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FName GetStartItemName();
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -84,10 +104,13 @@ public:
     
 protected:
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    FGuid GetCampID();
+    FGuid GetCampID() const;
     
     UFUNCTION(BlueprintCallable)
     APalPlayerCharacter* FindInRangePlayers(TArray<APalPlayerCharacter*>& Players, bool OnlyAlive);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool CanPlayBattleFinishUI() const;
     
 private:
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
@@ -95,7 +118,7 @@ private:
     
 protected:
     UFUNCTION(BlueprintCallable)
-    void AddGroupCharacter(UPalIndividualCharacterHandle* PalHandle);
+    void AddGroupCharacter(UPalIndividualCharacterHandle* PalHandle, bool IsBoss);
     
 };
 

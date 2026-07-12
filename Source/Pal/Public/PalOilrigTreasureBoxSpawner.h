@@ -11,6 +11,7 @@
 #include "PalOilrigTreasureBoxSpawner.generated.h"
 
 class AActor;
+class APalMapObject;
 
 UCLASS(Blueprintable)
 class PAL_API APalOilrigTreasureBoxSpawner : public APalLevelObjectActor, public IPalOilrigHandledActorInterface {
@@ -47,10 +48,16 @@ public:
 
 private:
     UFUNCTION(BlueprintCallable)
+    void OnWorldMapObjectSpawnable_ServerInternal();
+    
+    UFUNCTION(BlueprintCallable)
     void OnOpenTreasureBox();
     
     UFUNCTION(BlueprintCallable)
     void OnFinishedSpawningMapObjectModel(FGuid InstanceId, const EPalMapObjectOperationResult Result);
+    
+    UFUNCTION(BlueprintCallable)
+    void OnFinishedSpawningMapObjectActor(APalMapObject* MapObject);
     
 protected:
     UFUNCTION(BlueprintCallable, BlueprintPure)

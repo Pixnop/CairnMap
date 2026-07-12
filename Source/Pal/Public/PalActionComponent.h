@@ -13,6 +13,7 @@ class AActor;
 class APalCharacter;
 class UPalActionBase;
 class UPalActionComponent;
+class UPalAttackFilter;
 
 UCLASS(Blueprintable, ClassGroup=Custom, meta=(BlueprintSpawnableComponent))
 class UPalActionComponent : public UActorComponent {
@@ -24,6 +25,9 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<EPalActionType, TSubclassOf<UPalActionBase>> ActionMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<EPalActionType, TSubclassOf<AActor>> ActionToolOverrideMap;
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FAllActionFinishDelegate OnAllActionFinishDelegate;
@@ -43,6 +47,15 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TArray<UPalActionBase*> TerminateWaitActionList;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 EndedActionMovementModeHistoryMaxNum;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TMap<FGuid, UPalAttackFilter*> UniqueAttackFilterMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TArray<FGuid> NewestAttackFilterId;
     
 public:
     UPalActionComponent(const FObjectInitializer& ObjectInitializer);
@@ -87,12 +100,30 @@ public:
     void OnCompleteCharacter(APalCharacter* InCharacter);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    EPalActionType GetCurrentActionType() const;
+    bool IsReservedActionClass(TSubclassOf<UPalActionBase> actionClass) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsActiveActionType(EPalActionType ActionType, bool bIsCheckQueue) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool HasAction(EPalActionType Type);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    EPalActionType GetCurrentActionType(bool bIsCheckQueue) const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     UPalActionBase* GetCurrentAction() const;
     
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    TSubclassOf<AActor> GetActionTool(EPalActionType ActionType, TSubclassOf<AActor> InDefaultClass) const;
+    
 private:
+    UFUNCTION(BlueprintCallable, Reliable, Server)
+    void CancelQueuedWazaActions_ToServer();
+    
+    UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+    void CancelQueuedWazaActions_ToALL();
+    
     UFUNCTION(BlueprintCallable, Reliable, Server)
     void CancelAllAction_ToServer(int32 ID);
     

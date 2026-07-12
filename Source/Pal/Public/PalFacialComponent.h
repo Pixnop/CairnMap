@@ -1,11 +1,13 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "EPalFacialEyeTarget.h"
 #include "EPalFacialEyeType.h"
 #include "EPalFacialMouthType.h"
 #include "PalFacialComponent.generated.h"
 
 class UAnimMontage;
+class UCurveFloat;
 class UPalFacial_MainModule;
 class USkeletalMeshComponent;
 
@@ -16,6 +18,12 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bIsEnableEyeBlink;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float NPCTalkMouthChangeSpeed;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UCurveFloat* NPCTalkMouthWeightCurve;
+    
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UPalFacial_MainModule* MainModule;
@@ -23,6 +31,12 @@ private:
 public:
     UPalFacialComponent(const FObjectInitializer& ObjectInitializer);
 
+    UFUNCTION(BlueprintCallable)
+    void StopNPCTalkMouth();
+    
+    UFUNCTION(BlueprintCallable)
+    void StartNPCTalkMouth();
+    
     UFUNCTION(BlueprintCallable)
     void SetUpTestMesh(USkeletalMeshComponent* SkeletalMeshComponent);
     
@@ -32,6 +46,11 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetDefaultLayer(EPalFacialEyeType Eye);
     
+private:
+    UFUNCTION(BlueprintCallable)
+    void NPCTalkMouthLoop();
+    
+public:
     UFUNCTION(BlueprintCallable)
     bool ExistFacialNotifyInMontage(UAnimMontage* Montage);
     
@@ -45,7 +64,7 @@ public:
     void ChangeEyeAndMouthMesh(EPalFacialEyeType Eye);
     
     UFUNCTION(BlueprintCallable)
-    void ChangeEye_ForMontageNotify(EPalFacialEyeType Eye);
+    void ChangeEye_ForMontageNotify(EPalFacialEyeType Eye, EPalFacialEyeTarget EyeTarget);
     
     UFUNCTION(BlueprintCallable)
     void ChangeDefaultFacial();

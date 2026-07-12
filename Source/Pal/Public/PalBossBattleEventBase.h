@@ -1,29 +1,44 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
 #include "UObject/NoExportTypes.h"
+#include "GameFramework/Actor.h"
 #include "EPalBossBattleCombatResult.h"
 #include "PalBossBattleEventBase.generated.h"
 
+class APalCharacter;
 class UPalBossBattleSequencer;
 class UPalIndividualCharacterHandle;
 
 UCLASS(Blueprintable)
-class PAL_API UPalBossBattleEventBase : public UObject {
+class PAL_API APalBossBattleEventBase : public AActor {
     GENERATED_BODY()
 public:
 protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<UPalIndividualCharacterHandle*> SpawnCharacterHandles;
     
+    UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_SpawnCharacters, meta=(AllowPrivateAccess=true))
+    TArray<TWeakObjectPtr<APalCharacter>> SpawnCharacters;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UPalBossBattleSequencer* BossBattleSequencerInServer;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bIsCombatStarted;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsClearConditionOverride;
+    
 public:
-    UPalBossBattleEventBase();
+    APalBossBattleEventBase(const FObjectInitializer& ObjectInitializer);
+
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     UFUNCTION(BlueprintCallable)
     void Terminate();
+    
+    UFUNCTION(BlueprintCallable)
+    void SetBossBattleSequencer_ServerInternal(UPalBossBattleSequencer* BossBattleSequencer);
     
 protected:
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
@@ -36,6 +51,10 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void OnSpawnCharacter(UPalIndividualCharacterHandle* SpawnHandle);
     
+private:
+    UFUNCTION()
+    void OnRep_SpawnCharacters(const TArray<TWeakObjectPtr<APalCharacter>>& OldSpawnCharacters);
+    
 protected:
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void OnInitialize();
@@ -47,6 +66,12 @@ protected:
     void OnCombatEnd(EPalBossBattleCombatResult Result);
     
 public:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsNearLocalPlayer() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure)
+    bool IsBossCleared() const;
+    
     UFUNCTION(BlueprintCallable)
     void Initialize();
     
@@ -60,6 +85,9 @@ public:
     
     UFUNCTION(BlueprintCallable)
     void CombatEnd(EPalBossBattleCombatResult Result);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FVector CalcSpawnLocation(FVector Origin, FVector Dir, float Distance) const;
     
 protected:
     UFUNCTION(BlueprintCallable)

@@ -12,8 +12,11 @@
 #include "PalDatabaseCharacterParameter.h"
 #include "PalDeadBodyManager.h"
 #include "PalDeathPenaltyManager.h"
+#include "PalDimensionLockerControlSubsystem.h"
+#include "PalDistributeTickManager.h"
 #include "PalEventNotifySystem.h"
 #include "PalExpDatabase.h"
+#include "PalGameDataBridge.h"
 #include "PalGameSetting.h"
 #include "PalHUDService.h"
 #include "PalItemContainerManager.h"
@@ -31,6 +34,7 @@
 #include "PalShopManager.h"
 #include "PalSkinManager.h"
 #include "PalSupplyManager.h"
+#include "PalTreasureMapWorldSubsystem.h"
 #include "PalTutorialManager.h"
 #include "PalVisualEffectDataBase.h"
 #include "PalWazaDatabase.h"
@@ -40,8 +44,17 @@
 UPalGameInstance::UPalGameInstance() {
     this->bNetworkError = false;
     this->bSaveError = false;
+    this->bSaveServerPassword = false;
+    this->LastConnectedServerPort = 0;
+    this->LoginManager = NULL;
+    this->GameDataBridgeClass = UPalGameDataBridge::StaticClass();
+    this->GameDataBridge = NULL;
     this->GameSettingClass = UPalGameSetting::StaticClass();
     this->GameSetting = NULL;
+    this->OnlineManager = NULL;
+    this->CloudSaveManager = NULL;
+    this->GdkManager = NULL;
+    this->PsnManager = NULL;
     this->MasterDataTablesClass = UPalMasterDataTables::StaticClass();
     this->MasterDataTables = NULL;
     this->MapObjectManagerClass = UPalMapObjectManager::StaticClass();
@@ -58,6 +71,7 @@ UPalGameInstance::UPalGameInstance() {
     this->ItemIDManager = NULL;
     this->WazaDatabaseClass = UPalWazaDatabase::StaticClass();
     this->WazaDatabase = NULL;
+    this->GamepadButtonImageDatabase = NULL;
     this->BattleManagerClass = NULL;
     this->BossBattleManagerClass = NULL;
     this->RaidBossManagerClass = NULL;
@@ -72,6 +86,8 @@ UPalGameInstance::UPalGameInstance() {
     this->DatabaseCharacterParameter = NULL;
     this->AssetStreamableManagerClass = UPalAssetStreamableManager::StaticClass();
     this->AssetStreamableManager = NULL;
+    this->DistributeTickManagerClass = UPalDistributeTickManager::StaticClass();
+    this->DistributeTickManager = NULL;
     this->PassiveSkillManagerClass = UPalPassiveSkillManager::StaticClass();
     this->PassiveSkillManager = NULL;
     this->DataTableRowIdMapperClass = UPalDataTableRowIdMapper::StaticClass();
@@ -106,9 +122,17 @@ UPalGameInstance::UPalGameInstance() {
     this->SkinManagerClass = UPalSkinManager::StaticClass();
     this->SkinManager = NULL;
     this->SupplyManagerClass = UPalSupplyManager::StaticClass();
+    this->RandomizerManagerClass = NULL;
+    this->TreasureMapWorldSubsystemClass = UPalTreasureMapWorldSubsystem::StaticClass();
     this->ShopManagerSubsystemClass = UPalShopManager::StaticClass();
-    this->revisionNum = 59545;
+    this->ObjectPoolClass = NULL;
+    this->FishingSystemClass = NULL;
+    this->revisionNum = 100427;
     this->bUseAsyncMovement = true;
+    this->MemoryWarningThresholdMB = 0;
+    this->bShowEarlyAccessDialogOnGDK = false;
+    this->DimensionLockerControlSubsystemClass = UPalDimensionLockerControlSubsystem::StaticClass();
+    this->bSkipSplashScreen = false;
     this->DisplaySafeAreaDebugger = NULL;
     this->TitleBGMPlayerClass = UPalPersistentSoundPlayer::StaticClass();
     this->TitleBGMPlayer = NULL;
@@ -126,6 +150,9 @@ void UPalGameInstance::SetNewWorldName(const FString& WorldName) {
 void UPalGameInstance::SetIsNewGame() {
 }
 
+void UPalGameInstance::SetAlreadyShowModDetectionDialog() {
+}
+
 bool UPalGameInstance::SelectWorldSaveDirectoryName(const FString& WorldSaveDirectoryName) {
     return false;
 }
@@ -135,7 +162,16 @@ bool UPalGameInstance::SelectWorld(const FString& WorldName) {
 }
 
 
+void UPalGameInstance::OnRestartWithoutModsDialogConfirmed(bool bResult) {
+}
+
 void UPalGameInstance::OnInitializeCompleteSystem() {
+}
+
+void UPalGameInstance::OnCompleteShowMultiplayRestrictionMessageDialog(bool bSuccess) {
+}
+
+void UPalGameInstance::OnCompleteMuyltiplayRestrictedDialog(bool bResult) {
 }
 
 void UPalGameInstance::OnCompletedJoinSession(bool IsSuccess, JoinSessionResultType Type) {
@@ -144,12 +180,23 @@ void UPalGameInstance::OnCompletedJoinSession(bool IsSuccess, JoinSessionResultT
 void UPalGameInstance::OnCompletedFindSessions(bool bIsSuccess, const TArray<FBlueprintSessionResult>& Results, const FString& ErrorStr) {
 }
 
+void UPalGameInstance::OnClosedModCautionWithExternalMods(bool bResult) {
+}
+
 
 bool UPalGameInstance::IsPlayFromTitle() {
     return false;
 }
 
 bool UPalGameInstance::IsNewGame() const {
+    return false;
+}
+
+bool UPalGameInstance::IsLoggedin() {
+    return false;
+}
+
+bool UPalGameInstance::IsAlreadyShowModDetectionDialog() const {
     return false;
 }
 
@@ -162,6 +209,26 @@ FString UPalGameInstance::GetSelectedWorldSaveDirectoryName() const {
 
 FString UPalGameInstance::GetSelectedWorldName() const {
     return TEXT("");
+}
+
+UPalPsnManager* UPalGameInstance::GetPsnManager() const {
+    return NULL;
+}
+
+UPalOnlineManager* UPalGameInstance::GetOnlineManager() const {
+    return NULL;
+}
+
+UPalGdkManager* UPalGameInstance::GetGdkManager() const {
+    return NULL;
+}
+
+UPalGameDataBridge* UPalGameInstance::GetGameDataBridge() const {
+    return NULL;
+}
+
+UPalCloudSaveManager* UPalGameInstance::GetCloudSaveManager() const {
+    return NULL;
 }
 
 void UPalGameInstance::CompleteInitCharacterMakeData() {

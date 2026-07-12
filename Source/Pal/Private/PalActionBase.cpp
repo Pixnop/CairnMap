@@ -8,10 +8,16 @@ UPalActionBase::UPalActionBase() {
     this->bIsChangeWalkableFloorAngle = true;
     this->ActionWalkableFloorAngle = 45.00f;
     this->bIsDisableNavWalk = false;
+    this->bSuppressMovementComponentTick = false;
+    this->bIsEnableAutoBlink = false;
     this->bIsReflectForClient = false;
 }
 
 void UPalActionBase::TickAction_Implementation(float DeltaTime) {
+}
+
+bool UPalActionBase::ShouldStopMovementOnAdjustTransform_Implementation() const {
+    return false;
 }
 
 void UPalActionBase::SetAnimRateScale(FName flagName, float AnimRateScale) {
@@ -21,6 +27,9 @@ void UPalActionBase::SendNotify(FName NotifyName) {
 }
 
 void UPalActionBase::OnUpdatePassiveSkill(EPalPassiveSkillEffectType EffectType, float Value) {
+}
+
+void UPalActionBase::OnQueueAction_Implementation() {
 }
 
 void UPalActionBase::OnEndPassiveSkill(EPalPassiveSkillEffectType EffectType) {
@@ -38,6 +47,10 @@ void UPalActionBase::OnBreakAction_Implementation() {
 void UPalActionBase::OnBeginAction_Implementation() {
 }
 
+bool UPalActionBase::IsReflectedForClient() {
+    return false;
+}
+
 bool UPalActionBase::IsInServer() const {
     return false;
 }
@@ -50,7 +63,19 @@ bool UPalActionBase::IsEndAction_Implementation() {
     return false;
 }
 
-FVector UPalActionBase::GetTargetLocation() const {
+UPalMapObjectModel* UPalActionBase::GetTargetMapObjectModel() const {
+    return NULL;
+}
+
+FGuid UPalActionBase::GetTargetMapObjectInstanceId() const {
+    return FGuid{};
+}
+
+APalMapObject* UPalActionBase::GetTargetMapObject() const {
+    return NULL;
+}
+
+FVector UPalActionBase::GetTargetLocation(bool bUseAttackerOverride) const {
     return FVector{};
 }
 
@@ -62,8 +87,16 @@ FRandomStream UPalActionBase::GetRandomStream() const {
     return FRandomStream{};
 }
 
+TArray<AActor*> UPalActionBase::GetOtherActionTargets() const {
+    return TArray<AActor*>();
+}
+
 int32 UPalActionBase::GetGeneralPurposeIndex() const {
     return 0;
+}
+
+FActionDynamicParameter UPalActionBase::GetDynamicParameter() const {
+    return FActionDynamicParameter{};
 }
 
 FPalNetArchive UPalActionBase::GetBlackboard() const {
@@ -82,6 +115,10 @@ UPalIndividualCharacterParameter* UPalActionBase::GetActionIndividualCharacterPa
     return NULL;
 }
 
+FGuid UPalActionBase::GetActionID() const {
+    return FGuid{};
+}
+
 APalCharacter* UPalActionBase::GetActionCharacter() const {
     return NULL;
 }
@@ -91,6 +128,10 @@ bool UPalActionBase::CanStepCancel_Implementation() {
 }
 
 bool UPalActionBase::CanNextActionCancel_Implementation() {
+    return false;
+}
+
+bool UPalActionBase::CanInterruptByMovementModeAction_Implementation() {
     return false;
 }
 

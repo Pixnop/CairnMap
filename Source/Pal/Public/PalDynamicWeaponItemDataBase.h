@@ -19,8 +19,11 @@ protected:
     float OldDurability;
     
 private:
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_RemainingBullets, meta=(AllowPrivateAccess=true))
     int32 RemainingBullets;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsEmptyBulletInventory;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     TArray<FName> PassiveSkillList;
@@ -28,24 +31,41 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_ForceUpdateBulletsCounter, meta=(AllowPrivateAccess=true))
     uint8 ForceUpdateBulletsCounter;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 MaxMagazineSize;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    FName InMagazineBulletItemId;
+    
 public:
     UPalDynamicWeaponItemDataBase();
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     UFUNCTION(BlueprintCallable)
-    int32 UseBullets(int32 useNum);
+    int32 UseBullets(int32 UseNum);
     
     UFUNCTION(BlueprintCallable)
     bool UseBullet();
     
     UFUNCTION(BlueprintCallable)
-    void SetDurability(float NewDurability);
+    void SetReloadStartRemainingBullets_Local(int32 bulletsNum);
     
+private:
+    UFUNCTION(BlueprintCallable)
+    void SetDurabilityInternal(float NewDurability);
+    
+public:
     UFUNCTION(BlueprintCallable)
     void SetBulletsNum(int32 bulletsNum);
     
+    UFUNCTION(BlueprintCallable)
+    void ResetReloadStartRemainingBullets_Local();
+    
 protected:
+    UFUNCTION(BlueprintCallable)
+    void OnRep_RemainingBullets();
+    
     UFUNCTION(BlueprintCallable)
     void OnRep_ForceUpdateBulletsCounter();
     
@@ -54,16 +74,28 @@ protected:
     
 public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsSetReloadStartRemainingBullets_Local() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsEmptyMagazine() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsEmptyBulletInventory() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     int32 GetRemainingBulletsNum() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    int32 GetReloadStartRemainingBullets_Local() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     TArray<FName> GetPassiveSkillList() const;
     
     UFUNCTION(BlueprintCallable)
     float GetMaxDurability() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FName GetInMagazineBulletId() const;
     
     UFUNCTION(BlueprintCallable)
     float GetDurability() const;

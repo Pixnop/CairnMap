@@ -1,9 +1,9 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "EPalWazaID.h"
+#include "PalCharacterStatusRank.h"
 #include "PalDataTableRowName_PalMonsterData.h"
 #include "PalDataTableRowName_PassiveSkillData.h"
-#include "PalDebugCharacterStatusRank.h"
 #include "PalDebugOtomoPalInfo.generated.h"
 
 USTRUCT(BlueprintType)
@@ -20,13 +20,22 @@ public:
     int32 Rank;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 TalentLevel;
+    
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<EPalWazaID> WazaList;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<FPalDataTableRowName_PassiveSkillData> PassiveSkill;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    TArray<FPalDebugCharacterStatusRank> StatusRank;
+    TArray<FPalCharacterStatusRank> StatusRank;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 FriendshipRank;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsAwakening;
     
     PAL_API FPalDebugOtomoPalInfo();
 };

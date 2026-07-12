@@ -1,6 +1,8 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Engine/EngineTypes.h"
+#include "EPalCharacterMovementCustomMode.h"
 #include "EPalFootType.h"
 #include "EPalGeneralAnimSequenceType.h"
 #include "EPalGeneralBlendSpaceType.h"
@@ -44,6 +46,15 @@ public:
     bool bIsNearGround;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsJetpackGliding;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    float JetpackGliderPitchDelta;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    float JetpackGliderYawDelta;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TMap<EPalGeneralAnimSequenceType, UAnimSequence*> GeneralAnimSequenceMap;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
@@ -69,6 +80,18 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     bool bTransportingObject;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TEnumAsByte<EMovementMode> MovementMode;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    EPalCharacterMovementCustomMode CustomMovementMode;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bForceSprintForNPC;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bUseUpperBodyOnlyWhileRidingFlag;
     
     PAL_API FGeneralAnimationParameter();
 };

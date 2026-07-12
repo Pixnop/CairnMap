@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "PalContainerId.h"
+#include "PalInstanceID.h"
 #include "PalItemId.h"
 #include "PalItemPermission.h"
 #include "PalItemSlotId.h"
@@ -62,7 +63,7 @@ protected:
     
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_DynamicItemData, meta=(AllowPrivateAccess=true))
-    UPalDynamicItemDataBase* DynamicItemData;
+    TWeakObjectPtr<UPalDynamicItemDataBase> DynamicItemData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FPalItemId LastItemId_Client;
@@ -73,10 +74,13 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    bool TryGetStaticItemData(UPalStaticItemDataBase*& OutStaticItemData);
+    bool TryGetStaticItemData(UPalStaticItemDataBase*& OutStaticItemData) const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool TryGetDynamicItemData(UPalDynamicItemDataBase*& OutDynamicItemData);
+    
+    UFUNCTION(BlueprintCallable)
+    void RequestUseToCharacter(const FPalInstanceID& TargetCharacterID, int32 UseNum);
     
     UFUNCTION(BlueprintCallable)
     void OnUpdateSlotContentDurability(float OldDurability, float NewDurability);
@@ -114,6 +118,9 @@ public:
     FPalItemPermission GetPermission() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    int32 GetMaxStack() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalItemId GetItemId() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -121,6 +128,9 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     float GetCorruptionProgressRate() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool CanUseItemToCharacter(const FPalInstanceID& TargetCharacterID);
     
 };
 

@@ -3,6 +3,7 @@
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
 #include "PalCharacterStoredParameterId.h"
+#include "PalCharacterStoredParameterInfo.h"
 #include "PalIndividualCharacterSaveParameter.h"
 #include "PalMapObjectConcreteModelBase.h"
 #include "PalMapObjectPickableCharacterModelBase.generated.h"
@@ -16,13 +17,16 @@ private:
     FPalCharacterStoredParameterId StoredParameterId;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
-    FPalIndividualCharacterSaveParameter ForRead_CharacterSaveParameter;
+    FPalCharacterStoredParameterInfo ForRead_StoredParameter;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     FGuid LocationId;
     
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     FDateTime CreatedAtRealTime;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    FGuid PickupablePlayerUid;
     
 public:
     UPalMapObjectPickableCharacterModelBase();
@@ -43,7 +47,14 @@ protected:
     
 public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    FDateTime GetCreatedAtRealTime() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalIndividualCharacterSaveParameter GetCharacterSaveParameter() const;
+    
+protected:
+    UFUNCTION(BlueprintCallable)
+    void CorrectInvalidCreatedAtRealTimeForOldSave_ServerInternal();
     
 };
 

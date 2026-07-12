@@ -2,16 +2,19 @@
 #include "CoreMinimal.h"
 #include "PalMapObjectConcreteModelBase.h"
 #include "PalNetArchive.h"
+#include "PalWorkProgressWorkSpeedInterface.h"
 #include "PalWorkProgressWorkableCheckInterface.h"
 #include "PalMapObjectProductItemModel.generated.h"
 
 class UPalItemContainer;
+class UPalMapObjectConcreteModelExtraFunctionBase;
 class UPalMapObjectEnergyModule;
 class UPalMapObjectProductItemModel;
+class UPalUIMapObjectProductItemStatusIndicatorModel;
 class UPalWorkBase;
 
 UCLASS(Blueprintable)
-class UPalMapObjectProductItemModel : public UPalMapObjectConcreteModelBase, public IPalWorkProgressWorkableCheckInterface {
+class UPalMapObjectProductItemModel : public UPalMapObjectConcreteModelBase, public IPalWorkProgressWorkableCheckInterface, public IPalWorkProgressWorkSpeedInterface {
     GENERATED_BODY()
 public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSimpleDelegate, UPalMapObjectProductItemModel*, Model);
@@ -19,15 +22,22 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FSimpleDelegate OnFinishProductOneLoopDelegate;
     
+protected:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    UPalMapObjectConcreteModelExtraFunctionBase* ExtraFunction;
+    
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     bool bIsWorkable;
     
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_CurrentProductItemId, meta=(AllowPrivateAccess=true))
     FName ProductItemId;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     float WorkSpeedAdditionalRate;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TWeakObjectPtr<UPalUIMapObjectProductItemStatusIndicatorModel> StatusUIModel;
     
 public:
     UPalMapObjectProductItemModel();
@@ -47,6 +57,11 @@ private:
     UFUNCTION(BlueprintCallable)
     void OnUpdateContainerContent(UPalItemContainer* Container);
     
+protected:
+    UFUNCTION(BlueprintCallable)
+    void OnRep_CurrentProductItemId();
+    
+private:
     UFUNCTION(BlueprintCallable)
     void OnFinishWorkInServer(UPalWorkBase* Work);
     

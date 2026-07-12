@@ -1,7 +1,20 @@
 #include "PalStaticCharacterParameterComponent.h"
+#include "Templates/SubclassOf.h"
 
 UPalStaticCharacterParameterComponent::UPalStaticCharacterParameterComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
+    this->MeshCapsuleHalfHeight = 0.00f;
+    this->MeshCapsuleRadius = 0.00f;
+    this->ApproachArrivalRadius = 0.00f;
     this->CallApproachWalkSpeedMultiplier = 1.00f;
+    this->AwakeningMontageType = EPalActionType::Menace;
+    this->SleepOnSideAnimMontage = NULL;
+    this->bFadeSleepOnSide = true;
+    this->bIsWazaAdjustPitchDisable = false;
+    this->OverrideCommonWazaID = EPalWazaID::None;
+    this->bIsMimicablePal = false;
+    this->bEnableRideAimWazaMode = false;
+    this->MimicEncountType = EPalMimicEncountType::None;
+    this->UniqueWazaChoiceRate = 0.80f;
     this->CaptureSuccessRate = 1.00f;
     this->IsPal = false;
     this->SkillEffectScale = 1.00f;
@@ -15,8 +28,10 @@ UPalStaticCharacterParameterComponent::UPalStaticCharacterParameterComponent(con
     this->MovementType = EPalMonsterMovementType::GroundOnly;
     this->Weight_KG = 10.00f;
     this->Mass_Scale = 100;
+    this->bIsSeparatedRagdoll = false;
     this->IsGroundCrossRange = 50.00f;
     this->IsUncapturable = false;
+    this->IsDisableSpawnInStage = false;
     this->IsBackWalkForwardAnime = false;
     this->IsRightLeft_WakeupFromRagdoll = false;
     this->PettingSize = EPalPettingSizeType::Small;
@@ -26,22 +41,32 @@ UPalStaticCharacterParameterComponent::UPalStaticCharacterParameterComponent(con
     this->PettingCameraCenterDistance_Override = -1.00f;
     this->PettingCameraHeight_Override = -1.00f;
     this->PettingCameraArmLength_Override = -1.00f;
+    this->FishingCutsceneCameraTargetDistanceOffset = -1.00f;
+    this->FishingCaughtJumpHeightOffset = -1.00f;
+    this->FishingSize = EPalSizeType::None;
+    this->FishingPlayerMotionType = EPalFishingPlayerMotionType::None;
+    this->HasFishingRod = false;
     this->Size = EPalSizeType::S;
     this->Ragdoll_GravityRate = 3.00f;
     this->IsLookatIKAble = true;
     this->SmallDamageAnimationApplyRate = 0.20f;
     this->SmallDamageAnimationPlayRate = 2.00f;
+    this->AISideStepCoolTime = 0.00f;
     this->IsForcedTurnWhenDamageReaction = false;
     this->DisableNPCDamageRolling = false;
     this->DefenseBuildObjectAssignDistance = 0.00f;
     this->DefenseBuildObjectAssignHeight = 0.00f;
     this->IsHideDefenseLauncherFooting = false;
+    this->InWaterFacialEyeType = EPalFacialEyeType::None;
+    this->InWaterFacialMouthType = EPalFacialMouthType::None;
     this->PalSoundSlotCache = NULL;
     this->PalFootStepEffectAssetCache = NULL;
     this->MissWazaAction = NULL;
     this->IsBoss_Database = false;
     this->IsTowerBoss_Database = false;
     this->IsRaidBoss_Database = false;
+    this->IsPredatorBoss_Database = false;
+    this->IsLegend_Database = false;
     this->SpawnedCharacterType = EPalSpawnedCharacterType::Common;
     this->IsRaidBoss_BP = false;
 }
@@ -52,7 +77,11 @@ void UPalStaticCharacterParameterComponent::SetSpawnedCharacterType(EPalSpawnedC
 void UPalStaticCharacterParameterComponent::LoadWazaActionClass(EPalWazaID WazaID) {
 }
 
-bool UPalStaticCharacterParameterComponent::IsTowerBossPal() {
+bool UPalStaticCharacterParameterComponent::IsWorldTreeAuraPal() const {
+    return false;
+}
+
+bool UPalStaticCharacterParameterComponent::IsTowerBossPal() const {
     return false;
 }
 
@@ -60,11 +89,27 @@ bool UPalStaticCharacterParameterComponent::IsSwimPal() {
     return false;
 }
 
-bool UPalStaticCharacterParameterComponent::IsRarePal() {
+bool UPalStaticCharacterParameterComponent::IsSeparatedRagdoll() const {
     return false;
 }
 
-bool UPalStaticCharacterParameterComponent::IsRaidBossPal() {
+bool UPalStaticCharacterParameterComponent::IsRarePal() const {
+    return false;
+}
+
+bool UPalStaticCharacterParameterComponent::IsRaidBossPal() const {
+    return false;
+}
+
+bool UPalStaticCharacterParameterComponent::IsPredatorBossPal() {
+    return false;
+}
+
+bool UPalStaticCharacterParameterComponent::IsLegendPal() const {
+    return false;
+}
+
+bool UPalStaticCharacterParameterComponent::IsIgnoreEffectType(EPalAdditionalEffectType Effect) const {
     return false;
 }
 
@@ -88,7 +133,11 @@ bool UPalStaticCharacterParameterComponent::IgnoreBlowAway() {
     return false;
 }
 
-EPalSpawnedCharacterType UPalStaticCharacterParameterComponent::GetSpawnedCharacterType() {
+bool UPalStaticCharacterParameterComponent::GetWazaClassByNameConvert(FName InKeyName, TSubclassOf<UPalActionBase>& OutActionClass) const {
+    return false;
+}
+
+EPalSpawnedCharacterType UPalStaticCharacterParameterComponent::GetSpawnedCharacterType() const {
     return EPalSpawnedCharacterType::Common;
 }
 

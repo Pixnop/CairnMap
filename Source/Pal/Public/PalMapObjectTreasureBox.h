@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "EPalActionType.h"
+#include "EPalMapObjectTreasureSpecialType.h"
 #include "PalMapObject.h"
 #include "PalMapObjectTreasureBox.generated.h"
 
@@ -26,6 +27,15 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     EPalActionType InteractPlayerActionType;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool IsLockRiding;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalMapObjectTreasureSpecialType TreasureSpecialType;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalActionType OpeningPlayerActionType;
+    
 public:
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnOpenDelegate OnOpenDelegate;
@@ -34,9 +44,15 @@ public:
 
 protected:
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+    void TriggerUnlockElemental();
+    
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void TriggerOpen();
     
 private:
+    UFUNCTION(BlueprintCallable)
+    void OnUnlockElementalInServer(UPalMapObjectConcreteModelBase* ConcreteModel);
+    
     UFUNCTION(BlueprintCallable)
     void OnReceiveOpenInServer(UPalMapObjectConcreteModelBase* ConcreteModel);
     
@@ -45,6 +61,9 @@ protected:
     void NotifyStartOpenInAnimation();
     
 private:
+    UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+    void BroadcastTriggerUnlockElemental();
+    
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void BroadcastTriggerOpen();
     

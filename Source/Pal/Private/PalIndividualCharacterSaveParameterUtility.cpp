@@ -7,8 +7,16 @@ bool UPalIndividualCharacterSaveParameterUtility::IsValid(const FPalIndividualCh
     return false;
 }
 
+TArray<FPalWorkSuitabilityInfo> UPalIndividualCharacterSaveParameterUtility::GetWorkSuitabilityPassiveAddRankList(const UObject* WorldContextObject, const FPalIndividualCharacterSaveParameter& SaveParameter) {
+    return TArray<FPalWorkSuitabilityInfo>();
+}
+
 FPalWorkSuitabilityPreferenceInfo UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_WorkSuitabilityOptionInfo(const FPalIndividualCharacterSaveParameter& SaveParameter) {
     return FPalWorkSuitabilityPreferenceInfo{};
+}
+
+TMap<EPalWorkSuitability, int32> UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_WorkSuitabilityBonusRank(const FPalIndividualCharacterSaveParameter& SaveParameter) {
+    return TMap<EPalWorkSuitability, int32>();
 }
 
 EPalBaseCampWorkerSickType UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_WorkerSick(const FPalIndividualCharacterSaveParameter& SaveParameter) {
@@ -87,6 +95,10 @@ FString UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_NickN
     return TEXT("");
 }
 
+FFixedPoint64 UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_MaxSP(const FPalIndividualCharacterSaveParameter& SaveParameter) {
+    return FFixedPoint64{};
+}
+
 FFixedPoint64 UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_MaxHP(const FPalIndividualCharacterSaveParameter& SaveParameter) {
     return FFixedPoint64{};
 }
@@ -131,6 +143,14 @@ float UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_FullSto
     return 0.0f;
 }
 
+int32 UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_FriendshipPoint(const FPalIndividualCharacterSaveParameter& SaveParameter) {
+    return 0;
+}
+
+int32 UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_FavoriteIndexl(const FPalIndividualCharacterSaveParameter& SaveParameter) {
+    return 0;
+}
+
 int64 UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_Exp(const FPalIndividualCharacterSaveParameter& SaveParameter) {
     return 0;
 }
@@ -145,6 +165,14 @@ int32 UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_CraftSp
 
 FName UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_CharacterID(const FPalIndividualCharacterSaveParameter& SaveParameter) {
     return NAME_None;
+}
+
+bool UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_bImportedCharacter(const FPalIndividualCharacterSaveParameter& SaveParameter) {
+    return false;
+}
+
+bool UPalIndividualCharacterSaveParameterUtility::GetSaveParameterValue_Awakening(const FPalIndividualCharacterSaveParameter& SaveParameter) {
+    return false;
 }
 
 

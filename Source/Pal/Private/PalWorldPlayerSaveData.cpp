@@ -5,5 +5,7 @@ FPalWorldPlayerSaveData::FPalWorldPlayerSaveData() {
     this->TechnologyPoint = 0;
     this->bossTechnologyPoint = 0;
     this->bIsSelectedInitMapPoint = false;
+    this->PsnAccountId = 0;
+    this->PlayerPlatform = EPalPlayerPlatform::None;
 }
 

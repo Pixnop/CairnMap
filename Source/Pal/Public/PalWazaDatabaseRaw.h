@@ -7,14 +7,19 @@
 #include "EPalSizeType.h"
 #include "EPalWazaCategory.h"
 #include "EPalWazaID.h"
+#include "EPalWazaStrength.h"
 #include "PalSpecialAttackRateInfo.h"
+#include "PalWazaCustomExecuteCondition.h"
+#include "Templates/SubclassOf.h"
 #include "PalWazaDatabaseRaw.generated.h"
+
+class UPalWazaBulletEmiiterOverlapBase;
 
 USTRUCT(BlueprintType)
 struct FPalWazaDatabaseRaw : public FTableRowBase {
     GENERATED_BODY()
 public:
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
     EPalWazaID WazaType;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -30,6 +35,9 @@ public:
     int32 Power;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 DisplayPower;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool IsLeanBack;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -43,6 +51,9 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     int32 MaxRange;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 MaxHeightDiff;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     float CoolTime;
@@ -75,7 +86,19 @@ public:
     bool bIsWeaponDamage;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FPalWazaCustomExecuteCondition> WazaCustomExecuteConditions;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsExplosionDamage;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool DisabledData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalWazaStrength Strength;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalWazaBulletEmiiterOverlapBase> BulletEmiiterOverlapClass;
     
     PAL_API FPalWazaDatabaseRaw();
 };

@@ -4,12 +4,15 @@
 #include "GameDateTime.h"
 #include "PalChatMessage.h"
 #include "PalGameState.h"
+#include "PalOptionGraphicsSettings.h"
 #include "PalGameStateInGame.generated.h"
 
 class APalBotBuilderLocationBase;
 class APalNetworkTransmitter;
+class APalPlayerState;
 class UPalBaseCampReplicator;
 class UPalCharacterManagerReplicator;
+class UPalClientOnlyPlayerInfoReplicator;
 class UPalGameSystemInitManagerComponent;
 class UPalLocationReplicator;
 class UPalOptionReplicator;
@@ -22,6 +25,9 @@ class APalGameStateInGame : public APalGameState {
 public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRecievedServerNoticeDelegate, const FString&, NoticeMessage);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRecievedChatMessageDelegate, const FPalChatMessage&, Message);
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, meta=(AllowPrivateAccess=true))
+    FDateTime RealProgressDateTime_ForRep;
     
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_CharacterManagerReplicator, meta=(AllowPrivateAccess=true))
@@ -38,6 +44,9 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_LocationReplicator, meta=(AllowPrivateAccess=true))
     UPalLocationReplicator* LocationReplicator;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_ClientOnlyPlayerInfo, meta=(AllowPrivateAccess=true))
+    UPalClientOnlyPlayerInfoReplicator* ClientOnlyPlayerInfoReplicator;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     APalNetworkTransmitter* DedicatedServerTransmitter;
@@ -60,7 +69,7 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     int32 MaxPlayerNum;
     
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, meta=(AllowPrivateAccess=true))
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, ReplicatedUsing=OnRep_WorldTime, meta=(AllowPrivateAccess=true))
     FGameDateTime WorldTime;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, meta=(AllowPrivateAccess=true))
@@ -124,6 +133,9 @@ private:
     float WorldOceanPlaneZ;
     
 public:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, meta=(AllowPrivateAccess=true))
+    FString DiscordLobbySecret;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TArray<FPalChatMessage> ChatMessages;
     
@@ -147,6 +159,9 @@ public:
     
 private:
     UFUNCTION(BlueprintCallable)
+    void OnRep_WorldTime();
+    
+    UFUNCTION(BlueprintCallable)
     void OnRep_WorldSaveDirectoryName();
     
     UFUNCTION(BlueprintCallable)
@@ -159,10 +174,16 @@ private:
     void OnRep_LocationReplicator();
     
     UFUNCTION(BlueprintCallable)
+    void OnRep_ClientOnlyPlayerInfo();
+    
+    UFUNCTION(BlueprintCallable)
     void OnRep_CharacterManagerReplicator();
     
     UFUNCTION(BlueprintCallable)
     void OnRep_BaseCampReplicator();
+    
+    UFUNCTION(BlueprintCallable)
+    void OnCompleteSyncAllFromServer_InClient(APalPlayerState* PlayerState);
     
 public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -182,6 +203,9 @@ public:
     
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void BroadcastChatMessage(const FPalChatMessage& ChatMessage);
+    
+    UFUNCTION(BlueprintCallable)
+    void ApplyGrid0LoadingRangeFromGraphicsOption(const FPalOptionGraphicsSettings& PrevSettings, const FPalOptionGraphicsSettings& NewSettings);
     
 };
 

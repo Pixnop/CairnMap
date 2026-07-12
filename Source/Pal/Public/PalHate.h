@@ -4,6 +4,7 @@
 #include "Engine/EngineTypes.h"
 #include "PalDamageResult.h"
 #include "PalDeadInfo.h"
+#include "PalHateInfo.h"
 #include "PalInstanceID.h"
 #include "PalHate.generated.h"
 
@@ -15,7 +16,7 @@ class PAL_API UPalHate : public UObject {
 public:
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    TMap<FPalInstanceID, float> HateMap;
+    TMap<FPalInstanceID, FPalHateInfo> HateMap;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FTimerHandle HateTimerHandle;
@@ -28,7 +29,7 @@ private:
     
 public:
     UFUNCTION(BlueprintCallable)
-    void ForceHateUp_ForActiveAndAttackOtomoPal(const AActor* OtomoPal);
+    void ForceHateUp_ForActiveAndAttackOtomoPal(AActor* OtomoPal);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     AActor* FindMostHateTarget();
@@ -39,7 +40,7 @@ private:
     
 public:
     UFUNCTION(BlueprintCallable)
-    void ChangeHate(const AActor* Attacker, float PlusHateValue);
+    void ChangeHate(AActor* Attacker, float PlusHateValue);
     
 private:
     UFUNCTION(BlueprintCallable)

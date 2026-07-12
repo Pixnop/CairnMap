@@ -9,5 +9,7 @@ enum class EPalAttackType : uint8 {
     Turret,
     SlipDamage,
     Mine,
+    WorkActionAttack,
+    LaserMiningTool,
 };
 

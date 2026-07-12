@@ -1,21 +1,22 @@
 #include "PalPartnerSkillParameterComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Templates/SubclassOf.h"
 
 UPalPartnerSkillParameterComponent::UPalPartnerSkillParameterComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
-    this->SkillName = TEXT("Unknown");
-    this->WazaID = EPalWazaID::None;
     this->bCanThrowPal = true;
     this->bCanChangeWeapon = true;
     this->bIsToggleKey = false;
-    this->bIdlelCostDecreaseEveryFrame = false;
-    this->bIsExecSkillContinuation = false;
     this->bIsRunning = false;
     this->bIsOverheat = false;
     this->bIsExecuting = false;
     this->SkillModule = NULL;
+    this->ResidentSkillModule = NULL;
     this->FunnelCharacterClass = NULL;
     this->FunnelControllerClass = NULL;
     this->FunnelAttackWazaID = EPalWazaID::None;
+    this->FunnelCharacterClass_NoAutoSpawn = NULL;
+    this->FunnelControllerClass_NoAutoSpawn = NULL;
+    this->ResidentModuleClass = NULL;
     this->PassiveSkill = NULL;
 }
 
@@ -26,6 +27,9 @@ void UPalPartnerSkillParameterComponent::Start() {
 }
 
 void UPalPartnerSkillParameterComponent::SetName(FName Name) {
+}
+
+void UPalPartnerSkillParameterComponent::SetDisableResidentSkill(FName flagName, bool isDisable) {
 }
 
 void UPalPartnerSkillParameterComponent::SetDisableGlider_ToAll_Implementation(FName flagName, bool isDisable) {
@@ -44,6 +48,15 @@ void UPalPartnerSkillParameterComponent::Recover() {
 }
 
 void UPalPartnerSkillParameterComponent::OnUpdateInventoryContainer(UPalItemContainer* Container) {
+}
+
+void UPalPartnerSkillParameterComponent::OnUpdateCharacterRank(const int32 NowRank, const int32 OldRank) {
+}
+
+void UPalPartnerSkillParameterComponent::OnTrainerPassiveSkillRemoved(EPalPassiveSkillEffectType EffectType) {
+}
+
+void UPalPartnerSkillParameterComponent::OnTrainerPassiveSkillChanged(EPalPassiveSkillEffectType EffectType, float Value) {
 }
 
 void UPalPartnerSkillParameterComponent::OnRideInactivated() {
@@ -82,6 +95,13 @@ void UPalPartnerSkillParameterComponent::OnActivatedAsPartner() {
 void UPalPartnerSkillParameterComponent::OnActivatedAsOtomoHolder() {
 }
 
+void UPalPartnerSkillParameterComponent::NotifyResidentSkill_ToAll_Implementation(const FName& NotifyName, const FPalResidentSkillNotifyParameter& NotifyParameter) {
+}
+
+bool UPalPartnerSkillParameterComponent::IsToggleRidingActiveSkillNotWeapon() const {
+    return false;
+}
+
 bool UPalPartnerSkillParameterComponent::IsToggleKey() const {
     return false;
 }
@@ -90,7 +110,7 @@ bool UPalPartnerSkillParameterComponent::IsRunning() const {
     return false;
 }
 
-bool UPalPartnerSkillParameterComponent::IsRestrictedByItems(AActor* Trainer) const {
+bool UPalPartnerSkillParameterComponent::IsRestrictedByItems(const AActor* Trainer) const {
     return false;
 }
 
@@ -98,11 +118,27 @@ bool UPalPartnerSkillParameterComponent::IsPlayerTrigger() const {
     return false;
 }
 
+bool UPalPartnerSkillParameterComponent::IsPlayerReviveTrigger() const {
+    return false;
+}
+
+bool UPalPartnerSkillParameterComponent::IsPalReviveTrigger() const {
+    return false;
+}
+
 bool UPalPartnerSkillParameterComponent::IsOverheat() const {
     return false;
 }
 
+bool UPalPartnerSkillParameterComponent::IsExistRidingActiveSkilNotWeapon() const {
+    return false;
+}
+
 bool UPalPartnerSkillParameterComponent::IsExistActiveSkill() const {
+    return false;
+}
+
+bool UPalPartnerSkillParameterComponent::IsDisableResidentSkill() const {
     return false;
 }
 
@@ -137,8 +173,20 @@ TArray<FPalDataTableRowName_ItemData> UPalPartnerSkillParameterComponent::GetRes
     return TArray<FPalDataTableRowName_ItemData>();
 }
 
+float UPalPartnerSkillParameterComponent::GetResidentSkillMainValueByRank() const {
+    return 0.0f;
+}
+
 FFixedPoint UPalPartnerSkillParameterComponent::GetMainDamage() const {
     return FFixedPoint{};
+}
+
+TSubclassOf<APalAIController> UPalPartnerSkillParameterComponent::GetFunnelControllerClassNoAutoSpawn() {
+    return NULL;
+}
+
+TSubclassOf<APalFunnelCharacter> UPalPartnerSkillParameterComponent::GetFunnelCharacterClassNoAutoSpawn() {
+    return NULL;
 }
 
 float UPalPartnerSkillParameterComponent::GetEffectTimeRatio() {
@@ -183,6 +231,10 @@ bool UPalPartnerSkillParameterComponent::CanOpenTreasure(EPalMapObjectTreasureGr
     return false;
 }
 
+bool UPalPartnerSkillParameterComponent::CanExecCoopSkill() {
+    return false;
+}
+
 bool UPalPartnerSkillParameterComponent::CanExec() const {
     return false;
 }
@@ -213,6 +265,12 @@ void UPalPartnerSkillParameterComponent::CallOnCoolDownTimeChanged_ToAll_Impleme
 }
 
 void UPalPartnerSkillParameterComponent::CallOnCoolDownCompleted_ToAll_Implementation() {
+}
+
+void UPalPartnerSkillParameterComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    
+    DOREPLIFETIME(UPalPartnerSkillParameterComponent, ResidentSkillModule);
 }
 
 

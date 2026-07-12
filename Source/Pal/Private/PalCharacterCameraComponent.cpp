@@ -1,9 +1,7 @@
 #include "PalCharacterCameraComponent.h"
+#include "Templates/SubclassOf.h"
 
 UPalCharacterCameraComponent::UPalCharacterCameraComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
-    this->WalkFOV = 90.00f;
-    this->SprintFOV = 100.00f;
-    this->SprintFOVInterpSpeed = 1.00f;
     this->PostProcessInterpTime = 0.10f;
     this->DepthOfFieldFocalDistance_NoAim = 0.00f;
     this->DepthOfFieldDepthBlurAmount_NoAim = 1.00f;
@@ -29,14 +27,26 @@ UPalCharacterCameraComponent::UPalCharacterCameraComponent(const FObjectInitiali
     this->AimFOVInterpTime = 0.01f;
     this->AimFOV = 75.00f;
     this->RotateSpeedRate = 1.00f;
+    this->SafetyNetFoVInterpSpeed = 12.00f;
     this->DynamicSpeedBlurMaterialDynamic = NULL;
     this->DynamicAimBlurMaterialDynamic = NULL;
+    this->CurrentSpringArmModifier = NULL;
+}
+
+void UPalCharacterCameraComponent::StopCameraModifier(TSubclassOf<UPalCameraModifier> ModifierClass) {
+}
+
+void UPalCharacterCameraComponent::StartCameraModifier(TSubclassOf<UPalCameraModifier> ModifierClass, bool bOverride) {
 }
 
 void UPalCharacterCameraComponent::OnStartAim() {
 }
 
 void UPalCharacterCameraComponent::OnEndAim() {
+}
+
+bool UPalCharacterCameraComponent::HasCameraModifier() const {
+    return false;
 }
 
 

@@ -42,8 +42,15 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalItemAndNum tmpLiftedItemAndNum;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bCanLiftSlot;
+    
 public:
     UPalUIInventoryModel();
+
+    UFUNCTION(BlueprintCallable)
+    bool TryUseLiftUpItemToPlayer();
+    
     UFUNCTION(BlueprintCallable)
     void TryMoveSlotToInventory(UPalItemSlot* fromSlot, bool tryAutoEquip);
     
@@ -66,7 +73,7 @@ public:
     void Setup();
     
     UFUNCTION(BlueprintCallable)
-    void SelectItemSlot(const FPalItemSlotId SlotID, const EPalItemSlotPressType PressType);
+    void SelectItemSlot(const FPalItemSlotId SlotId, const EPalItemSlotPressType PressType);
     
     UFUNCTION(BlueprintCallable)
     void ResetLiftItem();

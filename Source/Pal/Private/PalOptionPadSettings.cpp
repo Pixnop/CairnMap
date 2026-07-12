@@ -8,8 +8,10 @@ FPalOptionPadSettings::FPalOptionPadSettings() {
     this->RightStickThreshold = 0.00f;
     this->bIsRightStickReverseYaw = false;
     this->bIsRightStickReversePitch = false;
+    this->bIsLeftStickRevertGliderPitch = false;
     this->bEnableVibration = false;
     this->bEnableAimAssist = false;
     this->bIsToggleInteract = false;
+    this->bIsToggleBuildMode = false;
 }
 

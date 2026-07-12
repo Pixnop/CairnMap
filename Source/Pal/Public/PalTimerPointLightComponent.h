@@ -25,13 +25,22 @@ private:
     FFlagContainer DisableFlag;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FFlagContainer IgnoreCurveFlag;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FFlagContainer EnableWhenDayTimeFlag;
     
 public:
     UPalTimerPointLightComponent(const FObjectInitializer& ObjectInitializer);
 
     UFUNCTION(BlueprintCallable)
+    void SetIgnoreCurveFlag(FName Key, bool Enable);
+    
+    UFUNCTION(BlueprintCallable)
     void SetEnableWhenDayTime(FName Key, bool Enable);
+    
+    UFUNCTION(BlueprintCallable)
+    void SetDisableFlag(FName Key, bool Disable);
     
 private:
     UFUNCTION(BlueprintCallable)

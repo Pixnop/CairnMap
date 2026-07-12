@@ -1,7 +1,9 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "EPalDungeonLevelVersion.h"
 #include "PalBaseCampSaveData.h"
+#include "PalBossBattleInstanceSaveData.h"
 #include "PalBossSpawnerSaveData.h"
 #include "PalCellCoord.h"
 #include "PalCharacterContainerSaveData.h"
@@ -11,17 +13,27 @@
 #include "PalDungeonSaveData.h"
 #include "PalDynamicItemSaveData.h"
 #include "PalEnemyCampSaveData.h"
+#include "PalFishingSpotSaveData.h"
+#include "PalFixedWeaponDestroySaveData.h"
 #include "PalFoliageGridSaveData.h"
 #include "PalGameTimeSaveData.h"
 #include "PalGroupSaveData.h"
+#include "PalGuildExtraSaveData.h"
 #include "PalIndividualCharacterSaveParameterSaveData.h"
 #include "PalInstanceID.h"
+#include "PalInvaderDeclarationSaveData.h"
 #include "PalInvaderSaveData.h"
 #include "PalItemContainerSaveData.h"
+#include "PalLevelObjectLockGimmickSaveData.h"
+#include "PalLevelObjectRecoverPartySaveData.h"
+#include "PalMapObjectDisposeByCollapseSaveData.h"
 #include "PalMapObjectSaveData.h"
 #include "PalMapObjectSpawnerInStageSaveData.h"
 #include "PalMapObjectSpawnerSaveData.h"
+#include "PalNPCAppearFlagSaveData.h"
 #include "PalOilrigSaveData.h"
+#include "PalRaidBossAreaInstanceSaveData.h"
+#include "PalRandomizerSaveData.h"
 #include "PalStageInstanceId.h"
 #include "PalSupplySaveData.h"
 #include "PalWorkSaveData.h"
@@ -41,6 +53,9 @@ public:
     TArray<FPalMapObjectSaveData> MapObjectSaveData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalMapObjectDisposeByCollapseSaveData DisposeByCollapseSaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<FPalCellCoord, FPalFoliageGridSaveData> FoliageGridSaveDataMap;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -48,6 +63,12 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<FPalStageInstanceId, FPalMapObjectSpawnerInStageSaveData> MapObjectSpawnerInStageSaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FGuid, FPalLevelObjectRecoverPartySaveData> LevelObjectRecoverPartySaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FGuid, FPalLevelObjectLockGimmickSaveData> LockGimmickSaveData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<FPalWorkSaveData> WorkSaveData;
@@ -68,6 +89,9 @@ public:
     TMap<FGuid, FPalGroupSaveData> GroupSaveDataMap;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FGuid, FPalGuildExtraSaveData> GuildExtraSaveDataMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalCharacterParameterStorageSaveData CharacterParameterStorageSaveData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -80,22 +104,49 @@ public:
     FPalEnemyCampSaveData EnemyCampSaveData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalNPCAppearFlagSaveData NPCAppearFlagSaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<FPalDungeonPointMarkerSaveData> DungeonPointMarkerSaveData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<FPalDungeonSaveData> DungeonSaveData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalDungeonLevelVersion DungeonLevelVersion;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FGuid, FPalRaidBossAreaInstanceSaveData> RaidBossAreaInstanceSaveDataMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<int32, FPalBossBattleInstanceSaveData> BossBattleInstanceSaveDataMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<FGuid, FPalInvaderSaveData> InvaderSaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalInvaderDeclarationSaveData InvaderDeclarationSaveData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOilrigSaveData OilrigSaveData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalFixedWeaponDestroySaveData FixedWeaponDestroySaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalSupplySaveData SupplySaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalRandomizerSaveData RandomizerSaveData;
     
     UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
     uint32 WorldMetaSaveVersionBitMask;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSet<FPalInstanceID> InLockerCharacterInstanceIDArray;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FGuid, FPalFishingSpotSaveData> FishingSpotSaveData;
     
     PAL_API FPalWorldSaveData();
 };

@@ -8,5 +8,7 @@ enum class EPalLimitVolumeFlag : int32 {
     EnemySpawn,
     MapObjectSpawn = 4,
     BaseCampArea = 8,
+    FoliageSpawn_DEPRECATED = 22,
+    WorldTreeBuild = 32,
 };
 

@@ -20,6 +20,7 @@ FPalOptionWorldPresetRow::FPalOptionWorldPresetRow() {
     this->PalStaminaDecreaceRate = 0.00f;
     this->PalAutoHPRegeneRate = 0.00f;
     this->PalAutoHpRegeneRateInSleep = 0.00f;
+    this->BuildObjectHpRate = 0.00f;
     this->BuildObjectDamageRate = 0.00f;
     this->BuildObjectDeteriorationDamageRate = 0.00f;
     this->CollectionDropRate = 0.00f;
@@ -31,11 +32,20 @@ FPalOptionWorldPresetRow::FPalOptionWorldPresetRow() {
     this->DropItemMaxNum_UNKO = 0;
     this->bEnableInvaderEnemy = false;
     this->DropItemMaxNum = 0;
+    this->PhysicsActiveDropItemMaxNum = 0;
     this->bAutoResetGuildNoOnlinePlayers = false;
     this->AutoResetGuildTimeNoOnlinePlayers = 0.00f;
     this->GuildPlayerMaxNum = 0;
     this->PalEggDefaultHatchingTime = 0.00f;
     this->BaseCampWorkerMaxNum = 0;
     this->SupplyDropSpan = 0;
+    this->bHardcore = false;
+    this->bPalLost = false;
+    this->bAllowGlobalPalboxExport = false;
+    this->bAllowGlobalPalboxImport = false;
+    this->AutoTransferMasterCheckIntervalSeconds = 0.00f;
+    this->AutoTransferMasterThresholdDays = 0;
+    this->GuildRejoinCooldownMinutes = 0;
+    this->MaxGuildsPerFrame = 0;
 }
 

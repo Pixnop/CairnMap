@@ -6,6 +6,9 @@ UPalNetworkItemComponent::UPalNetworkItemComponent(const FObjectInitializer& Obj
 void UPalNetworkItemComponent::RequestSwap_ToServer_Implementation(const FGuid& RequestID, const FPalItemSlotId& SlotA, const FPalItemSlotId& SlotB) {
 }
 
+void UPalNetworkItemComponent::RequestReturnBullet_ToServer_Implementation(const FName& BulletItemId, int32 ReturnNum) {
+}
+
 void UPalNetworkItemComponent::RequestMoveToContainer_ToServer_Implementation(const FGuid& RequestID, const FPalContainerId& ToContainerId, const TArray<FPalItemSlotIdAndNum>& Froms) {
 }
 
@@ -16,6 +19,27 @@ void UPalNetworkItemComponent::RequestDrop_ToServer_Implementation(const TArray<
 }
 
 void UPalNetworkItemComponent::RequestDispose_ToServer_Implementation(const FGuid& RequestID, const FPalItemSlotIdAndNum& SlotInfo) {
+}
+
+void UPalNetworkItemComponent::RequestChangeFilter_ToServer_Implementation(const FPalContainerId& ContainerId, const FName FilterName, const bool bIsOn) {
+}
+
+void UPalNetworkItemComponent::RequestChangeAllFilterUncheck_ToServer_Implementation(const FPalContainerId& ContainerId) {
+}
+
+void UPalNetworkItemComponent::RequestChangeAllFilterCheck_ToServer_Implementation(const FPalContainerId& ContainerId) {
+}
+
+void UPalNetworkItemComponent::NotifyCommonItemRewardUIData_ToClient_Implementation(const FPalUICommonItemRewardData& RewardData) {
+}
+
+void UPalNetworkItemComponent::NotifyCommonItemRewardUIData_Delayed_ToClient_Implementation(const FPalUICommonItemRewardData& RewardData, float DelaySeconds) {
+}
+
+void UPalNetworkItemComponent::NotifyChestQuickStackResult_ToClient_Implementation(const TArray<FPalStaticItemIdAndNum>& StackItems) {
+}
+
+void UPalNetworkItemComponent::NotifyChestQuickStackFailed_ToClient_Implementation() {
 }
 
 

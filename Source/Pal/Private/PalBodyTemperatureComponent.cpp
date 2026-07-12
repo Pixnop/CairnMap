@@ -3,6 +3,10 @@
 
 UPalBodyTemperatureComponent::UPalBodyTemperatureComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
     this->SelfKeyName = TEXT("BodyTemperatureComponent");
+    this->bEnabled = true;
+}
+
+void UPalBodyTemperatureComponent::SetEnable(bool bEnable) {
 }
 
 void UPalBodyTemperatureComponent::RemoveHeatSource(FName UniqueName) {
@@ -17,6 +21,9 @@ void UPalBodyTemperatureComponent::OnUpdateEquipment(UPalItemSlot* itemSlot, EPa
 void UPalBodyTemperatureComponent::OnRep_TemperatureInfo() {
 }
 
+void UPalBodyTemperatureComponent::OnRep_Enabled() {
+}
+
 void UPalBodyTemperatureComponent::OnInitializedPlayer(APalCharacter* Character) {
 }
 
@@ -24,6 +31,9 @@ void UPalBodyTemperatureComponent::OnEndPassiveSkill(EPalPassiveSkillEffectType 
 }
 
 void UPalBodyTemperatureComponent::OnChangeHour() {
+}
+
+void UPalBodyTemperatureComponent::GetTemperatureInfo(FPalTemperatureInfo& OutInfo) const {
 }
 
 void UPalBodyTemperatureComponent::CallOnChangeTemperature_Implementation(int32 Next) {
@@ -48,6 +58,7 @@ void UPalBodyTemperatureComponent::GetLifetimeReplicatedProps(TArray<FLifetimePr
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     
     DOREPLIFETIME(UPalBodyTemperatureComponent, TemperatureInfo);
+    DOREPLIFETIME(UPalBodyTemperatureComponent, bEnabled);
 }
 
 

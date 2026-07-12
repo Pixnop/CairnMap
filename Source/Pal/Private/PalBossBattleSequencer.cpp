@@ -11,6 +11,11 @@ UPalBossBattleSequencer::UPalBossBattleSequencer() {
     this->PlayingBGMId = 0;
     this->bIsClientOnly = false;
     this->BossBattleEvent = NULL;
+    this->EndingCutsceneActor = NULL;
+    this->AutoSaveDisabler = NULL;
+    this->bIsKingWhaleCapturePhaseActive = false;
+    this->bHasKingWhaleCaptureCountdownStarted = false;
+    this->CurrentSequenceType = EPalBossBattleSequenceType::None;
 }
 
 
@@ -23,10 +28,13 @@ void UPalBossBattleSequencer::SetPlayerMoveDisable(APalPlayerCharacter* Player, 
 void UPalBossBattleSequencer::SetMutekiAllPlayer(bool bIsMuteki) {
 }
 
+void UPalBossBattleSequencer::SetEndingCutsceneActor(APalCutsceneActor* InActor) {
+}
+
 void UPalBossBattleSequencer::SetBossCharacter(APalCharacter* BossActor) {
 }
 
-void UPalBossBattleSequencer::SetBossBattlEvent(UPalBossBattleEventBase* NewBossBattleEvent) {
+void UPalBossBattleSequencer::SetBossBattlEvent(APalBossBattleEventBase* NewBossBattleEvent) {
 }
 
 void UPalBossBattleSequencer::SetAllPlayerMoveDisable(bool Disable) {
@@ -39,6 +47,12 @@ void UPalBossBattleSequencer::RemoveDyingStatus() {
 }
 
 void UPalBossBattleSequencer::PlayBGM(UAkAudioEvent* BGMAudioEvent) {
+}
+
+void UPalBossBattleSequencer::OnReadyEnd(bool Success) {
+}
+
+void UPalBossBattleSequencer::OnPreEntryEnd(bool Success) {
 }
 
 void UPalBossBattleSequencer::OnPlayerRespawn(APalPlayerCharacter* Player) {
@@ -65,10 +79,19 @@ void UPalBossBattleSequencer::OnCombatFinish(EPalBossBattleCombatResult InCombat
 void UPalBossBattleSequencer::OnCombatEnd(bool Success) {
 }
 
+void UPalBossBattleSequencer::NotifyKingWhaleCapturableDownStarted_ServerInternal() {
+}
+
 void UPalBossBattleSequencer::NoticeClientCombatResult() {
 }
 
-void UPalBossBattleSequencer::LoadAndCreateBossBattleEvent(TSoftClassPtr<UPalBossBattleEventBase> BossBattleEventClass) {
+void UPalBossBattleSequencer::LoadAndCreateBossBattleEvent(TSoftClassPtr<APalBossBattleEventBase> BossBattleEventClass) {
+}
+
+void UPalBossBattleSequencer::KillPlayerTimeup_AfterRevivePartnerSkill(APalPlayerCharacter* Player) {
+}
+
+void UPalBossBattleSequencer::KillPlayerTimeup(APalPlayerCharacter* Player) {
 }
 
 void UPalBossBattleSequencer::KillAllPlayer() {
@@ -102,6 +125,14 @@ TArray<APalPlayerCharacter*> UPalBossBattleSequencer::GetInRoomPlayers() {
     return TArray<APalPlayerCharacter*>();
 }
 
+APalCutsceneActor* UPalBossBattleSequencer::GetEndingCutsceneActor() const {
+    return NULL;
+}
+
+EPalBossBattleSequenceType UPalBossBattleSequencer::GetCurrentSequenceType() const {
+    return EPalBossBattleSequenceType::None;
+}
+
 EPalBossType UPalBossBattleSequencer::GetBossType() {
     return EPalBossType::None;
 }
@@ -114,7 +145,7 @@ UPalBossBattleInstanceModel* UPalBossBattleSequencer::GetBossBattleInstanceModel
     return NULL;
 }
 
-UPalBossBattleEventBase* UPalBossBattleSequencer::GetBossBattleEvent() const {
+APalBossBattleEventBase* UPalBossBattleSequencer::GetBossBattleEvent() const {
     return NULL;
 }
 
@@ -129,6 +160,10 @@ void UPalBossBattleSequencer::ForceRespawnPlayer() {
 }
 
 APalPlayerCharacter* UPalBossBattleSequencer::FindFirstCombatTargetForBossAI() {
+    return NULL;
+}
+
+UPalCutsceneSkipHandler* UPalBossBattleSequencer::CreateAndSetupSkipHandler() {
     return NULL;
 }
 

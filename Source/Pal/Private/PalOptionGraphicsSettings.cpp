@@ -23,8 +23,14 @@ FPalOptionGraphicsSettings::FPalOptionGraphicsSettings() {
     this->Brightness = 0.00f;
     this->bEnableAutoContrast = false;
     this->TextureQuality = 0;
-    this->DLSSMode = UDLSSMode::Off;
+    this->DLSSMode = EPalOptionUpscalingLevel::Off;
+    this->DLSSFrameGenerationMode = EPalDLSSGMode::Off;
+    this->DLSSGeneratedFrames = 0;
+    this->ReflexMode = EPalReflexMode::Off;
     this->MaxFPS = 0.00f;
     this->ScreenPercentage = 0;
+    this->bArachnophobiaMode = false;
+    this->bShowFriendPalAura = false;
+    this->bUseVerticalFOV = false;
 }
 

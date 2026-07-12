@@ -10,11 +10,33 @@ UPalGameSetting::UPalGameSetting() {
     this->ReturnOtomoPalCoolTime = 3.00f;
     this->OtomoSlotNum = 5;
     this->OtomoWazaCoolDownSpeedRate = 2.00f;
+    this->OtomoBattleMoveSpeedRate = 1.50f;
+    this->OtomoBattleMoveSpeedMax = 1200.00f;
     this->BerserkerOtomoSerchRadius_FromPlayer = 1500.00f;
+    this->OtomoWarpFarDistance = 3000.00f;
+    this->OtomoReturnFarDistance = 3000.00f;
+    this->OtomoWorkTargetCameraAngleRange = 120.00f;
+    this->OtomoStandbyTrainerIdleSeconds = 1.00f;
+    this->OtomoStandbyTrainerMoveSpeedThreshold = 10.00f;
+    this->OtomoStandbyRange = 1200.00f;
+    this->OtomoStandbyTurnToTrainerSeconds = 1.00f;
+    this->OtomoStandbyTurnToTrainerLerpSpeed = 2.00f;
+    this->OtomoAutoAssignMaxDistance = 2000.00f;
+    this->OtomoAutoAssignCooldownSeconds = 1.00f;
+    this->CommonAttackSkipTimeoutSeconds = 5.00f;
+    this->WazaReselectTimeoutSeconds = 5.00f;
     this->PlayerHPRateFromRespawn = 1.00f;
     this->PlayerStomachRateFromRespawn = 1.00f;
     this->RarePal_AppearanceProbability = 1.00f;
-    this->RarePal_LevelMultiply = 1.50f;
+    this->PredatorPal_AppearanceProbability = 0.50f;
+    this->RarePal_LevelAdd = 5;
+    this->RarePal_CaptureLevelDecrease = 5;
+    this->RarePalCaptureBonusExpRate = 0.00f;
+    this->RarePalDefeatBonusExpRate = 0.00f;
+    this->RelicObtainBonusExpTableAdvance = 1;
+    this->NoteObtainBonusExpTableAdvance = 1;
+    this->RuinClearBonusExpTableAdvance = 1;
+    this->FastTravelUnlockBonusExpTableAdvance = 1;
     this->BossOrRarePal_TalentMin = 50;
     this->CharacterRankUpRequiredNumDefault = 4;
     this->NaturalUpdateSaveParameterInterval = 1.00f;
@@ -25,9 +47,16 @@ UPalGameSetting::UPalGameSetting() {
     this->PalBoxSlotNumInPage = 30;
     this->PalBoxTimePeriodRecoverySick = 60;
     this->PlayerBattleJudge_EnemyDistance = 5000.00f;
+    this->TemperatureDamageLogIntervalSec = 20.00f;
     this->LiftupCharacterThrownVelocityScalar = 100.00f;
     this->LiftupCharacterClearCollisionDelayTime = 1.00f;
+    this->LiftupCharacterThrowFloorClearanceMargin = 200.00f;
+    this->LiftupCharacterThrowFloorClearanceMax = 300.00f;
     this->NickNameMaxLength = 24;
+    this->MapObjectCustomNameMaxLength = 24;
+    this->TotalPalSpeciesCount = 0;
+    this->RollingBurnDurationRate = 0.50f;
+    this->RollingMuddyDurationRate = 0.50f;
     this->IntervalForPalAttackFromBall = 0.50f;
     this->CanShootRiderByFullRide = true;
     this->HitWazaAttackForMapObject = true;
@@ -35,6 +64,7 @@ UPalGameSetting::UPalGameSetting() {
     this->KnockBack_Power = 2000.00f;
     this->StunTime = 3.00f;
     this->StepCooldownTime = 1.00f;
+    this->AirDashCooldownTime = 0.10f;
     this->Stun_GunDamageRate = 2.00f;
     this->IsEnableAutoReload = true;
     this->DeadShootImpulseRate = 5000.00f;
@@ -50,6 +80,7 @@ UPalGameSetting::UPalGameSetting() {
     this->FinalDamageRate_MapObject_Waza = 1.00f;
     this->FinalDamageRate_MapObject_Weapon = 1.00f;
     this->FinalDamageRate_MapObject_Mine = 1.00f;
+    this->FinalDamageRate_MapObject_WorkActionAttack = 1.00f;
     this->FoliageDefault_Defense = 1.00f;
     this->WazaAttackerLevelDamage_Power = 0.70f;
     this->DamageRandomRate_Min = 0.90f;
@@ -58,6 +89,16 @@ UPalGameSetting::UPalGameSetting() {
     this->LevelStatusAccumulateCorrect = 0.90f;
     this->DamageElementMatchRate = 1.50f;
     this->MineAttack_DefensePower = 1.00f;
+    this->PlayerVsPlayer_WeaponPower = 1.00f;
+    this->PlayerVsPlayer_DefensePower = 1.00f;
+    this->PlayerVsPlayer_DamageRate = 1.00f;
+    this->PlayerVsPlayer_NoWeapon_BuildingDamageRate = 1.00f;
+    this->PlayerVsPlayer_NoWeapon_PlayerToGuildPalDamageRate = 1.00f;
+    this->CoolTimeIgnoreLeanBackWildBoss_ByStunAndBlow = 10.00f;
+    this->VsFlyingDamageRateForPvP = 2.00f;
+    this->PlayerToGuildPalDamageRateForPvP = 0.50f;
+    this->PalToPlayerDamageRate = 1.00f;
+    this->PalToPalDamageRate = 1.00f;
     this->StatusCalculate_LevelMultiply_HP = 1.00f;
     this->StatusCalculate_TribePlus_HP = 10;
     this->StatusCalculate_ConstPlus_HP = 100;
@@ -70,10 +111,19 @@ UPalGameSetting::UPalGameSetting() {
     this->StatusCalculate_Talent_PerAdd = 0.00f;
     this->BreakedWeaponDamageRate = 0.20f;
     this->BreakedArmorDefenseRate = 0.20f;
-    this->ArmorDurabilityDamageDivide = 16.00f;
+    this->EquipmentDurabilityBaseDecreaseValue = 1.00f;
+    this->PalEnhancement_AttackRate = 1.10f;
+    this->PalEnhancement_AttackRate2 = 1.20f;
+    this->PalEnhancement_AttackRate3 = 1.30f;
+    this->PalEnhancement_DefenseRate = 1.10f;
+    this->PalEnhancement_DefenseRate2 = 1.20f;
+    this->PalEnhancement_DefenseRate3 = 1.30f;
+    this->AwakeningStatusMultiply = 1.50f;
     this->ClimbingStamina_Move = 10.00f;
     this->ClimbingStamina_Jump = 10.00f;
     this->RideWazaStaminaRate = 0.50f;
+    this->RideStartAkEvent = NULL;
+    this->RideEndAkEvent = NULL;
     this->bIsEnableJumpPreliminary = false;
     this->JumpInterval = 0.25f;
     this->FlyMaxHeight = 1000000.00f;
@@ -92,9 +142,12 @@ UPalGameSetting::UPalGameSetting() {
     this->Swimming_SP_Idle = 0.50f;
     this->Swimming_SP_Swim = 2.00f;
     this->Swimming_SP_DashSwim = 10.00f;
+    this->Swimming_PlayerGrapplingInWaterRate = 0.80f;
     this->FluidFriction = 1.80f;
     this->OverWeightSpeedZero_AddPercent = 50.00f;
     this->OverWeightMinSpeed = 50.00f;
+    this->OverWeightHardThresholdRate = 1.25f;
+    this->OverWeightSoftMaxJumpReductionRate = 0.15f;
     this->WalkableFloorAngleForDefault = 89.00f;
     this->WalkableFloorAngleForRide = 45.00f;
     this->IsEnableSpeedCollision = false;
@@ -113,6 +166,8 @@ UPalGameSetting::UPalGameSetting() {
     this->StomachDecreace_WorkingRate = 2.00f;
     this->HungerStart_StomachValue = 30;
     this->FullStomachPalStartEatFood = 50;
+    this->HungerParameterRate_Hunger = 20;
+    this->HungerParameterRate_Starvation = 50;
     this->FullStomachCost_ByWazaUse_Base = 1.00f;
     this->StomachDecreaceRate_GroundRide_Sprint = 2.00f;
     this->StomachDecreaceRate_WaterRide = 3.00f;
@@ -135,13 +190,14 @@ UPalGameSetting::UPalGameSetting() {
     this->ElementStatus_ResistanceInitialValue = 100;
     this->ElementStatus_AutoDecreasePerSecond = 0.50f;
     this->ElementStatus_ResetResistanceSecond = 600;
-    this->BuildExp = 20;
-    this->CraftExp = 20;
+    this->CraftEXP = 20;
     this->PickupItemOnLevelExp = 1;
     this->MapObjectDestroyProceedExp = 5;
     this->MapObjectDistributeExpRange = 1000.00f;
     this->OtomoExp_HigherPlayerLevel = 10;
     this->CaptureExpBonusMaxCount = 10;
+    this->CaptureBonusExpTableAdvanceCountPerTowerBossFirstDefeat = 0;
+    this->CaptureBonusExpTableAdvanceCountPerNormalBossFirstDefeat = 0;
     this->WorldHUDDisplayRangeDefault = 1000.00f;
     this->WorldHUDDetailDisplayRange = 500.00f;
     this->FarmCropGrowupSpeedBySec = 1.00f;
@@ -157,7 +213,7 @@ UPalGameSetting::UPalGameSetting() {
     this->SellItemRate = 0.20f;
     this->PalPriceConstantValueA = 1000.00f;
     this->PalPriceConstantValueB = 2.00f;
-    this->SellPalRate = 0.75f;
+    this->ImportedPalSellPrice = 1;
     this->SearchRangeOnThrowedCharacterLanded = 100.00f;
     this->WorkCompleteReactionRangeFromPlayer = 300.00f;
     this->WorkerCollectResourceStackMaxNum = 10;
@@ -181,10 +237,15 @@ UPalGameSetting::UPalGameSetting() {
     this->SaveDataName_PlayerDirectory = TEXT("Players");
     this->SaveDataName_LocalData = TEXT("LocalData");
     this->SaveDataName_WorldOption = TEXT("WorldOption");
+    this->SaveDataName_GlobalPalStorage = TEXT("GlobalPalStorage");
+    this->SaveDataName_DimensionPalStorageSuffix = TEXT("dps");
+    this->SaveData_BackupIntrerval = 5;
     this->PalWorldTime_GameStartHour = 8;
     this->PalWorldMinutes_RealOneMinute = 20;
     this->NightStartHour = 21;
     this->NightEndHour = 5;
+    this->DarkPalSleepStartHour = 8;
+    this->DarkPalSleepEndHour = 13;
     this->PlayerMorningHour = 5;
     this->PlayerSleepStartHour = 19;
     this->NightSkipWaitSecond = 3;
@@ -192,8 +253,10 @@ UPalGameSetting::UPalGameSetting() {
     this->BuildSimulationVerticalAdjustRate = 3.00f;
     this->BuildSimulationVerticalMinLength = 80.00f;
     this->BuildSimulationFoundationFloatingAllowance = 10.00f;
+    this->WaterBuildingFoundationMinHeightAboveWaterSurface = 60.00f;
     this->BuildSimulationRoofHeightOffset = 100.00f;
     this->BuildSimulationStairHeightOffset = 100.00f;
+    this->BuildSimulationFoundationHeightOffset = 60.00f;
     this->BuildSimulationLeanAngleMax = 30.00f;
     this->BuildingProgressInterpolationSpeed = 1.00f;
     this->PlayerRecord_BuildingObjectMaxNum = 10;
@@ -201,16 +264,22 @@ UPalGameSetting::UPalGameSetting() {
     this->SnapBuildObjectTraceDistance = 2000.00f;
     this->SnapBuildObjectInstallReticleDistance = 1000.00f;
     this->SnapBuildObjectAttachDistance = 100.00f;
+    this->SnapBuildObjectHeightDistance = 250.00f;
+    this->SnapBuildObjectMinBoxExtentZ = 50.00f;
     this->InBuildProcessObjectExpireRealHours = 24.00f;
+    this->BuilderModeInstallableRange = 1000.00f;
+    this->PaintBuildModeInstallableRange = 1000.00f;
     this->BuildObj_HatchedPalCharacterLevel = 1;
     this->BuildObj_DamageScarecrowStartRecoveryTime = 3.00f;
     this->BaseCampAreaRange = 5000.00f;
-    this->BaseCampPalFindWorkRange = 400.00f;
     this->PalArriveToWorkLocationRange = 5.00f;
     this->PalArriveToWorkLocationRangeZ = 100.00f;
     this->BaseCampNeighborMinimumDistance = 100.00f;
+    this->BaseCampNeighborMinimumDistance_PVP = 100.00f;
+    this->BaseCampTreasureMapPointAddRange = 200.00f;
     this->PalRotateSpeedToWork = 10.00f;
-    this->BaseCampFoliageWorkableRange = 200.00f;
+    this->BaseCampFoliageBoundsRadius = 200.00f;
+    this->BaseCampFoliageWorkableRange = 100.00f;
     this->BaseCampHungerApproachToPlayer = 200.00f;
     this->BaseCampHungerUnreachableObjectTimeoutRealSeconds = 10.00f;
     this->HungerHUDDisplayRange = 1000.00f;
@@ -225,14 +294,21 @@ UPalGameSetting::UPalGameSetting() {
     this->BaseCampWorkerStartSleepHpPercentage = 30.00f;
     this->BaseCampWorkerSleepInPlaceRecoverSanityRate = 0.00f;
     this->BaseCampWorkerDistancePickableItem = 100.00f;
-    this->BaseCampBuildingItemContainerPriority.AddDefaulted(1);
+    this->BaseCampBuildingItemContainerTypes.AddDefaulted(2);
     this->FoliageRespawnFailedExtraRangeOfBaseCamp = 100.00f;
     this->BaseCampPalCombatRange_AddCampRange = 5000.00f;
+    this->BaseCampPalCombatRange_AddCampRange_PVP = 5000.00f;
+    this->BaseCampExtraWorkAreaRange = 100.00f;
+    this->BaseCampPalSleepMinMinutesThrown = 60.00f;
     this->BaseCampTimeFinishBattleModeAfterEmptyEnemy = 5.00f;
+    this->BaseCampWorkerSimpleMoveThreshold = EPalCharacterImportanceType::FarInSight;
     this->BaseCampWorkerMoveModeChangeThreshold = EPalCharacterImportanceType::Farthest;
     this->BaseCampWorkerDirectorTickForAssignWorkByCount = 3;
     this->BaseCampWorkerTimeDetectContinuousStuck = 10.00f;
     this->BaseCampWorkerMaxTimeReturnBack = 10.00f;
+    this->BaseCampWorkerWanderingSpeedMax = 200.00f;
+    this->BaseCampDetectRaidInvasionVolumeHeight = 10000.00f;
+    this->BaseCampPVPUnderRaidTime = 30.00f;
     this->BaseCampWorkerLookToTargetWork = 10.00f;
     this->ReviveWorkAdditionalRange = 100.00f;
     this->WorkAroundRangeDefault = 1000.00f;
@@ -245,7 +321,10 @@ UPalGameSetting::UPalGameSetting() {
     this->BaseCampStopProvideEnergyInterval = 10.00f;
     this->BaseCampWorkCollectionRestoreStashSeconds = 120.00f;
     this->BaseCampWorkerDirectorBattleRestoreStashSeconds = 120.00f;
+    this->WorkTransportingItemNumRateInShouldTeleportWorker = 3.00f;
+    this->WorkActionAttackDamageRate = 1.00f;
     this->WorkSuitabilityMaxRank = 5;
+    this->TransportItemAbsorbRangeByWorkSuitabilityRank.AddDefaulted(11);
     this->DropItemWaitInsertMaxNumPerTick = 100;
     this->MergeDropItemRange = 500.00f;
     this->GamePad_NotAimCameraRotateSpeed_DegreePerSecond = 120.00f;
@@ -255,19 +334,33 @@ UPalGameSetting::UPalGameSetting() {
     this->YawCameraMaxSpeedRate = 2.00f;
     this->TimeForCameraMaxSpeed = 0.50f;
     this->AimInterpInterval = 0.00f;
+    this->MinFOV = 70.00f;
+    this->MaxFOV = 90.00f;
+    this->SprintFOVInterpSpeed = 1.00f;
+    this->bUseNewCameraOnRolling = false;
     this->InvaderSelfDeleteAddTime = 1;
     this->VisitorSelfDeleteTime = 30;
     this->InvadeProbability = 0.50f;
     this->InvadeOccurablePlayerLevel = 5;
+    this->InvadeOccurableBaseCampLevel = 8;
     this->InvadeJudgmentInterval_Minutes = 10;
     this->InvadeCollTime_Max_Minutes = 120;
     this->InvadeCollTime_Min_Minutes = 30;
     this->InvadeReturnTime_Minutes = 10;
     this->InvadeStartPoint_BaseCampRadius_Min_cm = 10000;
     this->InvadeStartPoint_BaseCampRadius_Max_cm = 50000;
+    this->InvaderPathWaterContinuousDistanceThreshold = 3000.00f;
+    this->InvaderPathWaterTotalDistanceThreshold = 5000.00f;
     this->VisitorNPCProbability = 0.50f;
     this->VisitorNPCReturnTime_Minutes = 20;
+    this->InvaderDeclarationIntarvalMinutes = 120.00f;
+    this->InvadeGradeOffset = 0;
+    this->RecruitBadPalProbability = 0.05f;
+    this->RecruitCarreerTextNum = 2;
+    this->RecruitAppealDefaultTextNum = 2;
+    this->RecruitContractFeeMultiplier = 0.10f;
     this->RidingAimOpacity = 0.40f;
+    this->RidingAimLowAngleOpacity = 0.40f;
     this->hideUITimeWhenNotConflict = 4.00f;
     this->firstCapturedUIDisplayTime = 10.00f;
     this->capturedUIDisplayTime = 5.00f;
@@ -276,12 +369,18 @@ UPalGameSetting::UPalGameSetting() {
     this->playerExpGaugeUIDisplayTime = 5.00f;
     this->otomoExpGaugeUIDisplayTime = 5.00f;
     this->npcGaugeDisplayDistance = 6000.00f;
+    this->npcGaugeDisplayDistance_PVP = 6000.00f;
+    this->OtherOtomoGaugeDisplayDistance_PVP = 6000.00f;
     this->npcGaugeDisplayRange_CameraSight = 12000.00f;
-    this->GuildMemberGaugeDisplayDIstance = 20000.00f;
+    this->npcGaugeDisplayRange_CameraSight_PVP = 12000.00f;
+    this->OtherOtomoGaugeDisplayRange_CameraSight_PVP = 12000.00f;
+    this->GuildMemberGaugeDisplayDistance = 20000.00f;
+    this->GuildMemberGaugeDisplayDistance_PVP = 20000.00f;
     this->downPlayerLoupeDisplayDistance = 5000.00f;
     this->downPlayerGaugeDisplayRange_CameraSight = 2000.00f;
     this->lowHealthEffectParcent = 20;
     this->DamageTextDisplayLength = 15000.00f;
+    this->DamageTextDisplayLength_PVP = 15000.00f;
     this->damageTextOffsetInterpolationLength = 1000.00f;
     this->strongEnemyMarkLevel = 10;
     this->otomoInteractUIDisplayDistance = 500.00f;
@@ -295,10 +394,11 @@ UPalGameSetting::UPalGameSetting() {
     this->worldmapUIMaskClearSize = 20.00f;
     this->worldmapUIFTMergeDistance = 3000.00f;
     this->worldmapUIMaxMarker = 30;
+    this->worldmapUIMaxGuildMarker = 50;
+    this->worldmapUIMaxGuildPin = 10;
     this->NPCHPGaugeUpdateSpan = 0.25f;
     this->CaptureFailedUIDisplayTime = 5.00f;
     this->OpenGameOverUITime = 3.00f;
-    this->BlockRespawnTime = 10.00f;
     this->InventoryWeightAlertRate = 0.80f;
     this->InventoryWeightGaugeDIsplayTime = 3.00f;
     this->OtomoLevelUpNoticeUIDisplayTime = 5.00f;
@@ -306,10 +406,12 @@ UPalGameSetting::UPalGameSetting() {
     this->ProgressGaugeInterpolationSpeed = 1.00f;
     this->TeleportFadeInTime = 1.00f;
     this->TeleportFadeOutTime = 1.00f;
-    this->PlayerTeleportTimeoutTime = 30.00f;
+    this->PlayerTeleportTimeoutTime = 60.00f;
     this->PassiveSkillAppendNumWeights.AddDefaulted(5);
+    this->bIsStackablePartnerSkillBySameTribe = false;
     this->bIsEggLauncherExplosion = false;
     this->ThrowPalBattleRadius = 1000.00f;
+    this->DirectOrderTargetSearchRadius = 2500.00f;
     this->ThrowPalWorkRadius = 1000.00f;
     this->RopeHitPowe = 250.00f;
     this->RopePullPower = 100.00f;
@@ -317,18 +419,28 @@ UPalGameSetting::UPalGameSetting() {
     this->RaycastLengthForDetectIndoor = 10000.00f;
     this->MapObjectConnectAnyPlaceRaycastLength = 10.00f;
     this->ShootingTargetRayCastDistance = 10000.00f;
+    this->ShootingTargetRayCastMaxDegree = 30.00f;
     this->CaptureBallBoundCountMax = 2;
     this->IgnoreFirstCaptureFailedHPRate = 0.30f;
+    this->IgnoreFirstCaptureFailedCaptureRate = 0.50f;
     this->CaptureRateAdd_ByLegHold = 0.30f;
+    this->CriticalCaptureBonus = 2;
     this->LongPressInterval = 1.20f;
     this->LongPressInterval_EnemyCampCage = 5.00f;
     this->LongPressInterval_StartRaidBoss = 2.00f;
+    this->LongPressInterval_ChangeBullet = 0.50f;
+    this->RaidBossArea_PhaseTimeLimit_Ready = 300.00f;
+    this->RaidBossArea_PhaseTimeLimit_Result = 10.00f;
     this->LongPressInterval_GetHatchedPal = 4.00f;
-    this->CrouchLockAttenuation = 0.30f;
+    this->LongPressInterval_TreasureMapPoint = 4.00f;
+    this->CrouchLockAttenuation = 1.00f;
     this->IsEnableCharacterWazaScale = true;
     this->IsOverrideDamageAdditiveAnimation = true;
     this->BlinkInterval = 10.00f;
+    this->WorkAnimSpeedPower = 1.00f;
     this->CrimeStateMaintainDurationBaseDefault = 5.00f;
+    this->CrimeMisfireSafeTimeDuration = 1.50f;
+    this->CrimeMisfireSafeCooldownDuration = 10.00f;
     this->technologyPointPerLevel = 3;
     this->bossTechnologyPointPerTowerBoss = 5;
     this->bossTechnologyPointPerNormalBoss = 1;
@@ -341,6 +453,7 @@ UPalGameSetting::UPalGameSetting() {
     this->DecreaseSanity_Starvation = 0.50f;
     this->Spawner_IsCheckLoadedWorldPartition = false;
     this->SpawnerDisableDistanceCM_FromBaseCamp = 10000.00f;
+    this->EnemyCampSpawnerDisableDistanceCM_FromBaseCamp = 5500.00f;
     this->Spawner_DefaultSpawnRadius_S = 15000.00f;
     this->Spawner_DefaultSpawnRadius_M = 20000.00f;
     this->Spawner_DefaultSpawnRadius_L = 30000.00f;
@@ -354,20 +467,26 @@ UPalGameSetting::UPalGameSetting() {
     this->CharacterHairMeshDataTable = NULL;
     this->CharacterEquipmentArmorMeshDataTable = NULL;
     this->CharacterEyeMaterialDataTable = NULL;
+    this->GliderMeshDataTable = NULL;
     this->CharacterMakeColorLimit_SV = 1.00f;
     this->IsAutoEquipMasteredWaza = true;
     this->ActiveUNKO = false;
     this->MaxSpawnableDeathPenaltyChest = 10;
     this->MaxSpawnableDeathDroppedCharacter = 20;
     this->MapObjectShakeTimeOnDamaged = 0.50f;
+    this->MapObjectOutlineByPaintTarget = 1;
     this->MapObjectOutlineByReticleTargetting = 2;
     this->MapObjectOutlineByInteractable = 3;
     this->FoliageExtentsXY = 50.00f;
     this->FoliageChunkSeparateScale = 1;
     this->MapObjectHPDisplayDistance = 1000.00f;
+    this->OilrigCannonHPDisplayDistance = 2000.00f;
     this->MapObjectHPDisplayTime = 3.00f;
+    this->MapObjectMultiplayModifierDisplayDistance = 500.00f;
+    this->MapObjectMultiplayModifierDisplayTime = 3.00f;
     this->MapObjectGateLockTime = 5.00f;
     this->bDirectObtainFromTreasureBox = false;
+    this->NoDropItemDamageRateFromFoliageMaxHp = 1.00f;
     this->MapObjectEffectTriggerAccumulate_Burn = 100.00f;
     this->MapObjectEffect_Burn_DamageHpRate = 0.03f;
     this->MapObjectEffect_Burn_DamageAroundInterval = 1.00f;
@@ -377,6 +496,10 @@ UPalGameSetting::UPalGameSetting() {
     this->PasswordLockFailedMaxNum = 3;
     this->MapObjectItemChestCorruptionRateFromWorkSpeed = 1.00f;
     this->MapObjectItemChestUnlockAutoPrivateTime = 72.00f;
+    this->DetectorMaxRange = 2000.00f;
+    this->TreasureMapPointActivateMaxNum = 10;
+    this->WorldSecurityGlobalPoliceSpawnCap = 50;
+    this->WorldSecurityGlobalPoliceSpawnCapForDS = 50;
     this->StatusPointPerLevel = 1;
     this->AddMaxHPPerStatusPoint = 50.00f;
     this->AddMaxSPPerStatusPoint = 5.00f;
@@ -390,12 +513,21 @@ UPalGameSetting::UPalGameSetting() {
     this->AddWorkSpeedPerWorkSpeedRank = 0.03f;
     this->MaxUseablePoint_SumStatusPointAndExStatusPoint_PerParameter = 50;
     this->Combi_BossPalRate = 0.10f;
+    this->Combi_MutationRate = 0.01f;
+    this->Combi_MutationRankCoefficient = 0.50f;
+    this->Combi_MutationRankDiffPenalty = 0.40f;
+    this->Combi_MutationRandomCoefficient = 0.10f;
+    this->Combi_MutationMinTalent = 90;
+    this->Combi_MutationInitialRank = 3;
+    this->BreedingItemEffectDataAsset = NULL;
     this->DebugInfoFont = NULL;
     this->MaxGuildNameLength = 30;
     this->JoinGuildRequestInteractLongPushTime = 4.00f;
+    this->GuildChestSlotNum = 30;
     this->TutorialMinDisplayTime = 10.00f;
     this->TutorialDisplayTime = 20.00f;
     this->DeadBodyDestroySecond = 600.00f;
+    this->DeadBodyOutOfSightDestroySecond = 60.00f;
     this->EnemyCampRespawnCoolTime = 120.00f;
     this->EnemyCampDespawnDelayTime = 60.00f;
     this->PalBoxReviveTime = 10.00f;
@@ -403,6 +535,9 @@ UPalGameSetting::UPalGameSetting() {
     this->MinSprintThreshold = 2000.00f;
     this->MaxSprintThreshold = 3000.00f;
     this->MinHPGaugeDisplayTime = 3.00f;
+    this->CombatHeliHPGaugeDisplayDistance = 50000.00f;
+    this->KingWhaleHPGaugeDisplayDistance = 50000.00f;
+    this->MaxOtomoLoadoutCount = 30;
     this->ToggleInteractMoveDelay = 0.30f;
     this->Arena_PlayerToPlayerDamageRate = 1.00f;
     this->Arena_PlayerToPalDamageRate = 1.00f;
@@ -412,7 +547,38 @@ UPalGameSetting::UPalGameSetting() {
     this->Arena_PalToPalDamageRate = 1.00f;
     this->Arena_PalToPlayerStatusRate = 1.00f;
     this->Arena_PalToPalStatusRate = 1.00f;
+    this->Arena_RankPoint_WinToPlayer = 0;
+    this->Arena_RankPoint_WinToNPC = 0;
+    this->Arena_RankPoint_Lose = 0;
+    this->HardcoreLostPalDespawnTime = 60;
+    this->PalEatMotionSpeedWhenStarvation = 1.50f;
+    this->TeleportInvincibleTime = 3.00f;
+    this->DoctorMaxSurgiCountInDay = 3;
+    this->IceTypeOtomoCorruptionDecreace = 20;
+    this->MapIconSize = 64;
+    this->DimensionLockerTimeoutSec = 300.00f;
+    this->FriendshipPoint_Min = -15000;
+    this->FriendshipPoint_Max = 250000;
+    this->FriendshipPoint_AutoIncrementRequireSanity = 0;
+    this->FriendshipPoint_AutoIncrementInteravalMinutes = 10;
+    this->FriendshipPoint_AutoIncrementOtomo = 10;
+    this->FriendshipPoint_AutoIncrementActiveOtomo = 50;
+    this->FriendshipPoint_AutoIncrementWorker = 1;
+    this->FriendshipPoint_StomachRate = 1;
+    this->FriendshipPoint_SanityRate = 1;
+    this->FriendshipPoint_Petting = 30;
+    this->FriendshipPoint_Starvation = -100;
+    this->FriendshipPoint_Sick = -100;
+    this->FriendshipPoint_Dead = -100;
+    this->FriendshipPoint_SleepOnSide = 100;
+    this->FriendshipRank_AutoFavorite = 4;
+    this->TrialPlayMinute = 10;
+    this->GlobalMaterialParameterCollection = NULL;
+    this->WildlifeSanctuaryFlyingDetectSeconds = 3.00f;
+    this->WildWarlikePalMaxBattleLevelDiff = 10;
+    this->CutsceneSkipForceStopDelay = 1.00f;
     this->SoundSourceDataTable = NULL;
+    this->ExpeditionStrengthSortFunctionsClass = NULL;
 }
 
 bool UPalGameSetting::TryGetWorkSuitabilityDefineData(const EPalWorkSuitability WorkSuitability, FPalWorkSuitabilityDefineData& outDefineData) {
@@ -424,6 +590,10 @@ bool UPalGameSetting::IsSoundMuteable(FName RowName) {
 }
 
 float UPalGameSetting::GetWeakScale_Implementation(int32 weakCount) {
+    return 0.0f;
+}
+
+float UPalGameSetting::GetTransportItemAbsorbRange(int32 WorkSuitabilityRank) const {
     return 0.0f;
 }
 
@@ -460,6 +630,14 @@ float UPalGameSetting::GetCaptureRateByStatus_ForGameSettingBP(const AActor* Tar
 
 int32 UPalGameSetting::GetCaptureLevelBySphereType(EPalCaptureSphereLevelType SphereType) const {
     return 0;
+}
+
+float UPalGameSetting::GetBaseCampPalCombatRange_AddCampRange() const {
+    return 0.0f;
+}
+
+float UPalGameSetting::GetBaseCampNeighborMinimumDistance() const {
+    return 0.0f;
 }
 
 

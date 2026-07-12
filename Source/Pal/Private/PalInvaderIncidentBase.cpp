@@ -3,10 +3,15 @@
 UPalInvaderIncidentBase::UPalInvaderIncidentBase() {
     this->InvaderType = EPalInvaderType::None;
     this->InvaderDataTable = NULL;
+    this->InvaderRewardTable = NULL;
     this->MonsterAIControllerClass = NULL;
     this->EnemyAIControllerClass = NULL;
+    this->bUseFindPaths = false;
     this->bCanExecute = false;
     this->Squad = NULL;
+    this->bIsArrived = false;
+    this->bIsOrganizationGroup = false;
+    this->PathFinder = NULL;
 }
 
 void UPalInvaderIncidentBase::StartInvader() {
@@ -20,6 +25,9 @@ bool UPalInvaderIncidentBase::SelectInvaders(int32 Grade, EPalBiomeType Biome, T
 void UPalInvaderIncidentBase::RemoveGroupCharacter(UPalIndividualCharacterHandle* RemoveIndividualHandle) {
 }
 
+void UPalInvaderIncidentBase::OnWaveTimeup_Implementation() {
+}
+
 void UPalInvaderIncidentBase::OnStartInvade_Implementation() {
 }
 
@@ -29,8 +37,14 @@ void UPalInvaderIncidentBase::OnInvaderArrived_Implementation() {
 void UPalInvaderIncidentBase::OnEndInvade_Implementation() {
 }
 
+void UPalInvaderIncidentBase::OnCharacterInitializedForShow(APalCharacter* InCharacter) {
+}
+
 bool UPalInvaderIncidentBase::IsGroupCharacter(UPalIndividualCharacterHandle* IndividualHandle) const {
     return false;
+}
+
+void UPalInvaderIncidentBase::HideCharacterUntilInitialized(UPalIndividualCharacterHandle* IndividualHandle) {
 }
 
 int32 UPalInvaderIncidentBase::GetVisitorNPCReturnTimeMinutes() const {
@@ -42,9 +56,6 @@ UPalBaseCampModel* UPalInvaderIncidentBase::GetTargetCampModel() const {
 }
 
 
-int32 UPalInvaderIncidentBase::GetInvadeReturnTimeMinutes() const {
-    return 0;
-}
 
 void UPalInvaderIncidentBase::GetChosenInvaderGroupName(FText& OutText) const {
 }
@@ -61,7 +72,14 @@ int32 UPalInvaderIncidentBase::GetAliveInvaderNum() const {
 }
 
 
+
+void UPalInvaderIncidentBase::AddInvaderOtomo(APalAIController* OtomoAIController) {
+}
+
 void UPalInvaderIncidentBase::AddGroupCharacter(UPalIndividualCharacterHandle* AddIndividualHandle, EPalCharacterLocationType LocationType) {
+}
+
+void UPalInvaderIncidentBase::AddCharacterLocation(const FPalInstanceID& IndividualId, EPalCharacterLocationType LocationType) {
 }
 
 

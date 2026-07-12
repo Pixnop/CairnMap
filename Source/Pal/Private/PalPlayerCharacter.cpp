@@ -20,13 +20,22 @@ APalPlayerCharacter::APalPlayerCharacter(const FObjectInitializer& ObjectInitial
     this->PlayerCameraYaw = 0.00f;
     this->PlayerCameraPitch = 0.00f;
     this->IsAdjustedLocationByLoad = false;
+    this->bIsLogoutPlayer = false;
     this->IdleAnimMontage = NULL;
     this->PlayerBattleSituation = NULL;
     this->IsNearCommonEnemyFlag = false;
     this->bIsSetRespawnTelemetry = false;
+    this->CachedPlayerState = NULL;
     this->GenderChangerClass = NULL;
     this->GenderChanger = NULL;
     this->bSpectatorMode = false;
+}
+
+
+void APalPlayerCharacter::UpdateForceWarningLoupeList(APalCharacter* TargetCharacter, bool IsAdd, bool AlwaysDisplay) {
+}
+
+void APalPlayerCharacter::UpdateForceHPGaugeList(APalCharacter* TargetCharacter, bool IsAdd) {
 }
 
 void APalPlayerCharacter::StopIdleAnimation() {
@@ -41,16 +50,22 @@ void APalPlayerCharacter::SetNearCommonEnemy(bool IsExistNearEnemy) {
 void APalPlayerCharacter::SetDisablePlayerInput(FName flagName, bool Disable) {
 }
 
+void APalPlayerCharacter::SetDisableCollisionBlockCharacter(bool bDisable) {
+}
+
 void APalPlayerCharacter::SetCharacterMakeInfo_ToAll_Implementation(FPalPlayerDataCharacterMakeInfo NextInfo) {
+}
+
+void APalPlayerCharacter::SetCharacterMakeInfo(FPalPlayerDataCharacterMakeInfo& NextInfo, const bool& IgnoreEquip) {
 }
 
 void APalPlayerCharacter::PlayIdleAnimation(UAnimMontage* Montage) {
 }
 
-void APalPlayerCharacter::PlayEatAnimation() {
+void APalPlayerCharacter::PlayEatAnimation_Implementation() {
 }
 
-void APalPlayerCharacter::OnUpdateEssentialItemContainer(UPalItemContainer* Container) {
+void APalPlayerCharacter::OnUpdateLanternEquipSetting(const FPalPlayerDataEquipLanternData& NewLanternSetting) {
 }
 
 void APalPlayerCharacter::OnTriggerInteract(AActor* OtherActor, EPalInteractiveObjectIndicatorType IndicatorType) {
@@ -85,6 +100,9 @@ void APalPlayerCharacter::OnEndIdle() {
 void APalPlayerCharacter::OnDyingDeadEnd_Server(APalPlayerCharacter* PlayerCharacter, const FPalDyingEndInfo& DyingEndInfo) {
 }
 
+void APalPlayerCharacter::OnDyingDeadEnd_All(APalPlayerCharacter* PlayerCharacter, const FPalDyingEndInfo& DyingEndInfo) {
+}
+
 void APalPlayerCharacter::OnDownBattleEnemyRank_Implementation(EPalPlayerBattleFinishType FinishType) {
 }
 
@@ -105,7 +123,7 @@ void APalPlayerCharacter::OnChangeShooterState(bool IsAim, bool IsShoot) {
 void APalPlayerCharacter::OnChangeNearEnemy_ToAll_Implementation(bool IsExist) {
 }
 
-void APalPlayerCharacter::OnChangeMovementMode(UPalCharacterMovementComponent* Component, TEnumAsByte<EMovementMode> prevMode, TEnumAsByte<EMovementMode> newMode, EPalCharacterMovementCustomMode PrevCustomMode, EPalCharacterMovementCustomMode NewCustomMode) {
+void APalPlayerCharacter::OnChangeMovementMode(UPalCharacterMovementComponent* Component, TEnumAsByte<EMovementMode> PrevMode, TEnumAsByte<EMovementMode> NewMode, EPalCharacterMovementCustomMode PrevCustomMode, EPalCharacterMovementCustomMode NewCustomMode) {
 }
 
 void APalPlayerCharacter::OnChangeBattleBGM_Implementation(EPalBattleBGMType Rank) {
@@ -142,6 +160,12 @@ void APalPlayerCharacter::GetLastInsideRegionNameID(FName& OutNameID) const {
 }
 
 
+void APalPlayerCharacter::GetForceWarningLoupeList(TArray<APalCharacter*>& List) const {
+}
+
+void APalPlayerCharacter::GetForceHPGaugeList(TArray<APalCharacter*>& List) const {
+}
+
 FPalPlayerDataCharacterMakeInfo APalPlayerCharacter::GetCharacterMakeInfo() const {
     return FPalPlayerDataCharacterMakeInfo{};
 }
@@ -150,13 +174,14 @@ FRotator APalPlayerCharacter::GetCameraRotator() const {
     return FRotator{};
 }
 
-
-
-void APalPlayerCharacter::ChangeToMale() {
+APalPlayerState* APalPlayerCharacter::GetCachedPlayerState() const {
+    return NULL;
 }
 
-void APalPlayerCharacter::ChangeToFemale() {
+void APalPlayerCharacter::Editor_ChangeToMale() {
 }
+
+
 
 void APalPlayerCharacter::CallReviveDelegate_Implementation() {
 }
@@ -176,8 +201,11 @@ void APalPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     DOREPLIFETIME(APalPlayerCharacter, PlayerCameraYaw);
     DOREPLIFETIME(APalPlayerCharacter, PlayerCameraPitch);
     DOREPLIFETIME(APalPlayerCharacter, IsAdjustedLocationByLoad);
+    DOREPLIFETIME(APalPlayerCharacter, bIsLogoutPlayer);
+    DOREPLIFETIME(APalPlayerCharacter, PlayerBattleSituation);
     DOREPLIFETIME(APalPlayerCharacter, bSpectatorMode);
     DOREPLIFETIME(APalPlayerCharacter, CharacterMakeInfo);
+    DOREPLIFETIME(APalPlayerCharacter, ReceivedHateIDs);
 }
 
 

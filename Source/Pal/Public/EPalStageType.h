@@ -8,5 +8,7 @@ enum class EPalStageType : uint8 {
     Dungeon,
     BossBattle,
     Arena,
+    Room,
+    RaidBoss,
 };
 

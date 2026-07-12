@@ -2,6 +2,7 @@
 
 UPalBattleManager::UPalBattleManager() {
     this->DebugSpawnerClass = NULL;
+    this->DebugUniqueNPCSpawnerClass = NULL;
 }
 
 bool UPalBattleManager::TargetIsPlayerOrPlayersOtomoPal(AActor* TargetCharacter) {
@@ -40,6 +41,12 @@ bool UPalBattleManager::GetConflictEnemies(AActor* Player, TArray<AActor*>& OutE
 }
 
 void UPalBattleManager::GetAllPlayerAndOtomo_ForEnemySelf(TArray<AActor*> TargetPlayers, TArray<AActor*>& OutCharacters) {
+}
+
+void UPalBattleManager::EventOnRevivePlayer(APalPlayerCharacter* Player) {
+}
+
+void UPalBattleManager::EventOnPlayerDeadCompletely(APalPlayerCharacter* Player, const FPalDyingEndInfo& DyingEndInfo) {
 }
 
 void UPalBattleManager::EnemyNearPlayerListUpdate(AActor* Enemy, float Distance) {

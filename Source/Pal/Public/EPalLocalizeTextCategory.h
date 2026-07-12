@@ -30,5 +30,10 @@ enum class EPalLocalizeTextCategory : uint8 {
     TutorialMessage,
     HelpGuide,
     MapRespawnPoint,
+    CharacterTeamMission,
+    LabResearch,
+    FishPondTargetType,
+    PartnerSkillAppendText,
+    Max,
 };
 

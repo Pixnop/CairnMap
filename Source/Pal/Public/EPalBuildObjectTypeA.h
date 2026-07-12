@@ -15,5 +15,7 @@ enum class EPalBuildObjectTypeA : uint8 {
     Other,
     Furniture,
     Dismantle,
+    Blueprint,
+    Favorite,
 };
 

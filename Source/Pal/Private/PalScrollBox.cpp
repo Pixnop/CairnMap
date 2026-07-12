@@ -3,7 +3,7 @@
 
 UPalScrollBox::UPalScrollBox() {
     this->bIsVariable = false;
-    this->Clipping = EWidgetClipping::ClipToBounds;
+    this->Clipping = this->GetClipping();
     this->Style = NULL;
     this->BarStyle = NULL;
     this->Orientation = Orient_Vertical;
@@ -18,6 +18,8 @@ UPalScrollBox::UPalScrollBox() {
     this->ScrollWhenFocusChanges = EPalScrollWhenFocusChanges::NoScroll;
     this->bAllowRightClickDragScrolling = true;
     this->WheelScrollMultiplier = 1.00f;
+    this->bEnableRightStickScroll = false;
+    this->RightStickScrollSpeed = 0.00f;
 }
 
 void UPalScrollBox::SetWheelScrollMultiplier(float NewWheelScrollMultiplier) {

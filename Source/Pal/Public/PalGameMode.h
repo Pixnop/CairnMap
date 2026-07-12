@@ -20,9 +20,6 @@ public:
     UFUNCTION(BlueprintCallable)
     void RestartGame();
     
-    UFUNCTION(BlueprintCallable)
-    void RespawnPlayer(int32 PlayerIndex);
-    
 private:
     UFUNCTION(BlueprintCallable)
     void OnUpdateSession(const FString& ResponseBody, bool bResponseOK, int32 ResponseCode);
@@ -40,11 +37,17 @@ private:
     
 public:
     UFUNCTION(BlueprintCallable)
+    void OnCompleteAuth(const FString& ResponseBody, bool bResponseOK, int32 ResponseCode);
+    
+    UFUNCTION(BlueprintCallable)
     void InitDedicatedServer();
     
 protected:
     UFUNCTION(BlueprintCallable)
     APlayerStart* FindPlayerStartWithTag(const FName& Tag);
+    
+    UFUNCTION(BlueprintCallable)
+    APlayerStart* FindPlayerStartDebugInitialStart();
     
 private:
     UFUNCTION(BlueprintCallable)

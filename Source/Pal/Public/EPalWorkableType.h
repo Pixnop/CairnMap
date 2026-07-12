@@ -20,5 +20,10 @@ enum class EPalWorkableType : uint8 {
     RemoveMapObjectEffect,
     MonsterFarm,
     DeforestFoliage,
+    LabResearch,
+    Booth,
+    FishPond,
+    Progress_MultiType,
+    OnlyJoinInvisible,
 };
 

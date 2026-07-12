@@ -9,6 +9,16 @@ UPalOptionSubsystem::UPalOptionSubsystem() {
     this->PalPlayerCharacterClass = NULL;
 }
 
+bool UPalOptionSubsystem::VerifyWorldSettingThresholds(const FPalOptionWorldSettings& CheckWorldSettings) const {
+    return false;
+}
+
+void UPalOptionSubsystem::SetVoiceChatSettings(const FPalOptionVoiceChatSettings& InVoiceChatSettings) {
+}
+
+void UPalOptionSubsystem::SetupForSteamDeck() {
+}
+
 void UPalOptionSubsystem::SetUISettings(const FPalOptionUISettings& InUISettings) {
 }
 
@@ -18,10 +28,16 @@ void UPalOptionSubsystem::SetPadSettings(const FPalOptionPadSettings& InPadSetti
 void UPalOptionSubsystem::SetOptionWorldSettings(const FPalOptionWorldSettings& InOptionWorldSettings) {
 }
 
+void UPalOptionSubsystem::SetOnlineUserSettings(const FPalOptionOnlineUserSettings& InOnlineUserSettings) {
+}
+
 void UPalOptionSubsystem::SetKeyConfigSettings(const FPalKeyConfigSettings& InKeyConfigSettings) {
 }
 
 void UPalOptionSubsystem::SetKeyboardSettings(const FPalOptionKeyboardSettings& InKeyboardSettings) {
+}
+
+void UPalOptionSubsystem::SetHasShownFirstLaunchUI(bool bHasShown) {
 }
 
 void UPalOptionSubsystem::SetGraphicsSettings(const FPalOptionGraphicsSettings& InGraphicsSettings) {
@@ -33,13 +49,34 @@ void UPalOptionSubsystem::SetCommonSettings(const FPalOptionCommonSettings& InCo
 void UPalOptionSubsystem::SetAudioSettings(const FPalOptionAudioSettings& InAudioSettings) {
 }
 
-void UPalOptionSubsystem::SaveLocalSettings() {
+void UPalOptionSubsystem::RequestTemporaryVolumetricFogForLocalEffect(UObject* Requester) {
+}
+
+void UPalOptionSubsystem::RequestSaveLocalSettings() {
+}
+
+void UPalOptionSubsystem::RequestSaveLocalSaveData() {
+}
+
+void UPalOptionSubsystem::ReleaseTemporaryVolumetricFogForLocalEffect(UObject* Requester) {
 }
 
 void UPalOptionSubsystem::RefreshBanList() {
 }
 
 void UPalOptionSubsystem::OnCompletedGetBanlist(const FString& ResponseBody, bool bResponseOK, int32 ResponseCode) {
+}
+
+bool UPalOptionSubsystem::IsCrossPlayAllowConnectPlatform() const {
+    return false;
+}
+
+FPalOptionWorldSettinThresholds UPalOptionSubsystem::GetWorldSettingThresholds() const {
+    return FPalOptionWorldSettinThresholds{};
+}
+
+FPalOptionVoiceChatSettings UPalOptionSubsystem::GetVoiceChatSettings() const {
+    return FPalOptionVoiceChatSettings{};
 }
 
 FPalOptionUISettings UPalOptionSubsystem::GetUISettings() const {
@@ -65,12 +102,20 @@ FPalOptionLocalStaticSettings UPalOptionSubsystem::GetOptionLocalStaticSettings(
     return FPalOptionLocalStaticSettings{};
 }
 
+FPalOptionOnlineUserSettings UPalOptionSubsystem::GetOnlineUserSettings() const {
+    return FPalOptionOnlineUserSettings{};
+}
+
 FPalKeyConfigSettings UPalOptionSubsystem::GetKeyConfigSettings() const {
     return FPalKeyConfigSettings{};
 }
 
 FPalOptionKeyboardSettings UPalOptionSubsystem::GetKeyboardSettings() const {
     return FPalOptionKeyboardSettings{};
+}
+
+bool UPalOptionSubsystem::GetHasShownFirstLaunchUI() const {
+    return false;
 }
 
 FPalOptionGraphicsSettings UPalOptionSubsystem::GetGraphicsSettings() const {

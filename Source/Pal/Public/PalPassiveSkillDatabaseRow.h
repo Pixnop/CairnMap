@@ -2,6 +2,8 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "EPalElementType.h"
+#include "EPalPassiveAddTriggerType.h"
+#include "EPalPassiveCategory.h"
 #include "EPalPassiveSkillEffectTargetType.h"
 #include "EPalPassiveSkillEffectType.h"
 #include "PalPassiveSkillDatabaseRow.generated.h"
@@ -50,6 +52,15 @@ public:
     EPalPassiveSkillEffectTargetType TargetType3;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalPassiveSkillEffectType EffectType4;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float EffectValue4;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalPassiveSkillEffectTargetType TargetType4;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool InvokeActiveOtomo;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -71,10 +82,22 @@ public:
     bool InvokeInBaseCamp;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalPassiveAddTriggerType AddInvokeTriggerType_1;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalPassiveAddTriggerType AddInvokeTriggerType_2;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool AddPal;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool AddRarePal;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool AddWorldTreePal;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool AddMutationPal;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool AddShotWeapon;
@@ -89,10 +112,19 @@ public:
     bool AddAccessory;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    FName OverrideNameTextId;
+    bool IsStackablePartnerSkillBySameTribe;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FName OverrideNameTextID;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FName OverrideSummaryTextId;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalPassiveCategory Category;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FString SortKeyJP;
     
     PAL_API FPalPassiveSkillDatabaseRow();
 };

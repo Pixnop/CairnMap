@@ -5,15 +5,17 @@ UPalItemSlot::UPalItemSlot() {
     this->SlotIndex = -1;
     this->StackCount = 0;
     this->CorruptionProgressValue = 0.00f;
-    this->DynamicItemData = NULL;
 }
 
-bool UPalItemSlot::TryGetStaticItemData(UPalStaticItemDataBase*& OutStaticItemData) {
+bool UPalItemSlot::TryGetStaticItemData(UPalStaticItemDataBase*& OutStaticItemData) const {
     return false;
 }
 
 bool UPalItemSlot::TryGetDynamicItemData(UPalDynamicItemDataBase*& OutDynamicItemData) {
     return false;
+}
+
+void UPalItemSlot::RequestUseToCharacter(const FPalInstanceID& TargetCharacterID, int32 UseNum) {
 }
 
 void UPalItemSlot::OnUpdateSlotContentDurability(float OldDurability, float NewDurability) {
@@ -54,6 +56,10 @@ FPalItemPermission UPalItemSlot::GetPermission() const {
     return FPalItemPermission{};
 }
 
+int32 UPalItemSlot::GetMaxStack() const {
+    return 0;
+}
+
 FPalItemId UPalItemSlot::GetItemId() const {
     return FPalItemId{};
 }
@@ -64,6 +70,10 @@ FText UPalItemSlot::GetCorruptionRemainTimeText() const {
 
 float UPalItemSlot::GetCorruptionProgressRate() const {
     return 0.0f;
+}
+
+bool UPalItemSlot::CanUseItemToCharacter(const FPalInstanceID& TargetCharacterID) {
+    return false;
 }
 
 void UPalItemSlot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {

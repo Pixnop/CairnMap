@@ -5,10 +5,11 @@
 #include "PalAIActionWorkerChildBase.h"
 #include "PalBaseCampWorkerWalkAroundDynamicInfo.h"
 #include "PalBaseCampWorkerWalkAroundSettings.h"
+#include "PalLaunchRecoveryActionInterface.h"
 #include "PalAIActionWorkerWait.generated.h"
 
 UCLASS(Blueprintable, EditInlineNew)
-class UPalAIActionWorkerWait : public UPalAIActionWorkerChildBase {
+class UPalAIActionWorkerWait : public UPalAIActionWorkerChildBase, public IPalLaunchRecoveryActionInterface {
     GENERATED_BODY()
 public:
 private:
@@ -25,12 +26,6 @@ protected:
     UFUNCTION(BlueprintCallable)
     void TickForWalkAround(float DeltaTime);
     
-    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-    void ReturnToDefaultPosition();
-    
-    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-    void OnTickForWait(float DeltaTime);
-    
     UFUNCTION(BlueprintCallable)
     TEnumAsByte<EPathFollowingRequestResult::Type> MoveToLocationInBaseCamp(const FVector& ToLocation, float DeltaTime);
     
@@ -40,5 +35,7 @@ protected:
     UFUNCTION(BlueprintCallable)
     bool CalcWalkAroundDestination(const float Radius, FVector& OutDestination);
     
+
+    // Fix for true pure virtual functions not being implemented
 };
 

@@ -15,8 +15,14 @@
 				"UMG",
 				"NiagaraAnimNotifies",
 				"CommonUI",
-				"CommonGame"
+				"CommonGame",
+				"Flow"
 			]
+		},
+		{
+			"Name": "PalModLoader",
+			"Type": "Runtime",
+			"LoadingPhase": "PostConfigInit"
 		}
 	],
 	"Plugins": [
@@ -248,6 +254,6 @@
 		"Windows",
 		"XB1",
 		"XSX",
-		"HoloLens"
+		"WinGDK"
 	]
 }

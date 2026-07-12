@@ -1,9 +1,12 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "EPalLogType.h"
 #include "EPalWorkType.h"
 #include "PalBaseCampWorkerMovementLogDisplayData.h"
+#include "PalGuildLabCompleteLogDisplayData.h"
+#include "PalInstanceID.h"
 #include "PalItemAndNum.h"
 #include "PalItemId.h"
 #include "PalKillLogDisplayData.h"
@@ -11,11 +14,13 @@
 #include "PalLogInfo_DropPal.h"
 #include "PalLogInfo_Skill.h"
 #include "PalMealLogDisplayData.h"
+#include "PalStartRaidAnyBaseCampLogDisplayData.h"
 #include "PalStaticItemIdAndNum.h"
 #include "PalLogUtility.generated.h"
 
 class UObject;
 class UPalIndividualCharacterHandle;
+class UPalIndividualCharacterParameter;
 
 UCLASS(Blueprintable)
 class PAL_API UPalLogUtility : public UBlueprintFunctionLibrary {
@@ -37,6 +42,12 @@ public:
     
     UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
     static void SetTextureToAdditionalDataFromCharacterID(const UObject* WorldContextObject, UPARAM(Ref) FPalLogAdditionalData& targetData, const FName CharacterID);
+    
+    UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
+    static void RemoveRaidAnyBaseCampLog(const UObject* WorldContextObject, const FGuid& logId);
+    
+    UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
+    static FText CreateSphereRecoveryLogText(const UObject* WorldContextObject, const FPalInstanceID& IndividualId, const FPalStaticItemIdAndNum& ItemAndNum);
     
     UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
     static void CreateLogText(const UObject* WorldContextObject, EPalLogType LogType, FText& OutText);
@@ -69,8 +80,10 @@ public:
     static void AddWorkerCompleteBuildLog(const UObject* WorldContextObject, const UPalIndividualCharacterHandle* workerHandle, const FName& buildedMapObjectName);
     
     UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
-    static void AddSkillLog(const UObject* WorldContextObject, EPalLogType logType, const FPalLogInfo_Skill& Info);
+    static FGuid AddStartRaidAnyBaseCampLog(const UObject* WorldContextObject, const FPalStartRaidAnyBaseCampLogDisplayData& DisplayData);
     
+    UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
+    static void AddSkillLog(const UObject* WorldContextObject, EPalLogType logType, const FPalLogInfo_Skill& Info);
     UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
     static void AddMealLog(const UObject* WorldContextObject, const FPalMealLogDisplayData& DisplayData);
     
@@ -79,6 +92,12 @@ public:
     
     UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
     static void AddItemGetLog(const UObject* WorldContextObject, const FPalStaticItemIdAndNum& ItemIDAndNum);
+    
+    UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
+    static void AddGuildLabCompleteLog(const UObject* WorldContextObject, const FPalGuildLabCompleteLogDisplayData& DisplayData);
+    
+    UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
+    static void AddFriendshipRankupLog(const UObject* WorldContextObject, UPalIndividualCharacterParameter* IndividualParameter, int32 NewRank, bool bFirstRankup);
     
     UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
     static void AddDropPalLog(const UObject* WorldContextObject, const FPalLogInfo_DropPal& LogInfo);

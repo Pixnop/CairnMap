@@ -13,10 +13,13 @@
 
 class AActor;
 class APalMapObject;
+class IPalMapObjectItemContainerAccessInterface;
+class UPalMapObjectItemContainerAccessInterface;
 class UPalBaseCampModel;
 class UPalMapObjectCharacterContainerModule;
 class UPalMapObjectConcreteModelBase;
 class UPalMapObjectEnergyModule;
+class UPalMapObjectGuildSecurityModule;
 class UPalMapObjectItemContainerModule;
 class UPalMapObjectPasswordLockModule;
 class UPalMapObjectSwitchModule;
@@ -53,13 +56,19 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UPalMapObjectWorkeeModule* WorkeeModuleCache;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalMapObjectGuildSecurityModule* GuildSecurityModuleCache;
+    
 public:
     UPalMapObjectConcreteModelBase();
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    FName TryGetMapObjectId();
+    FName TryGetMapObjectId() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FText TryGetItemContainerOverrideName() const;
     
 protected:
     UFUNCTION(BlueprintCallable)
@@ -91,13 +100,25 @@ public:
     UPalMapObjectPasswordLockModule* GetPasswordLockModule() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    FGuid GetModelInstanceId() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     void GetMapObjectLocation(FVector& outVector);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     UPalMapObjectItemContainerModule* GetItemContainerModule() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    TScriptInterface<IPalMapObjectItemContainerAccessInterface> GetItemContainerAccess();
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    TScriptInterface<IPalMapObjectItemContainerAccessInterface> GetItemChestContainerAccess();
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FGuid GetInstanceId() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalMapObjectGuildSecurityModule* GetGuildSecurityModule() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     UPalMapObjectEnergyModule* GetEnergyModule() const;

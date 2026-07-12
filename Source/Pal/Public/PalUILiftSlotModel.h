@@ -10,6 +10,7 @@
 class UPalIndividualCharacterHandle;
 class UPalIndividualCharacterSlot;
 class UPalItemSlot;
+class UPalUILiftSlotModelBehaviourBase;
 class UTexture2D;
 
 UCLASS(Blueprintable)
@@ -47,14 +48,18 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UPalIndividualCharacterSlot* CharacterSlot;
     
+private:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalUILiftSlotModelBehaviourBase* Behaviour;
+    
 public:
     UPalUILiftSlotModel();
 
     UFUNCTION(BlueprintCallable)
-    void SelectItemSlot(const FPalItemSlotId SlotID, const EPalItemSlotPressType Type);
+    void SelectItemSlot(const FPalItemSlotId SlotId, const EPalItemSlotPressType Type);
     
     UFUNCTION(BlueprintCallable)
-    void SelectCharacterSlot(const FPalCharacterSlotId SlotID, const EPalItemSlotPressType Type);
+    void SelectCharacterSlot(const FPalCharacterSlotId SlotId, const EPalItemSlotPressType Type);
     
     UFUNCTION(BlueprintCallable)
     void ResetLiftItem();

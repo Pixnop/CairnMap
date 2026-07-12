@@ -1,7 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "UObject/NoExportTypes.h"
 #include "EPalWorldHUDWidgetBlueprintType.h"
 #include "Templates/SubclassOf.h"
 #include "PalWorldHUDParameter.generated.h"
@@ -34,7 +33,7 @@ protected:
     FVector DisplayOffset;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    FVector2D DisplayOffsetScreenPos;
+    FVector DisplayOffsetScreenPos;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     float DisplayRange;

@@ -5,7 +5,12 @@
 #include "PalRaidBossSpawnInfo.h"
 #include "PalRaidBossSuccessAnyOneItemInfo.h"
 #include "PalRaidBossSuccessItemInfo.h"
+#include "PalRaidBossSummonMeteorInfo.h"
+#include "Templates/SubclassOf.h"
 #include "PalRaidBossDataRow.generated.h"
+
+class AActor;
+class APalRaidBossSummonGeneratorBase;
 
 USTRUCT(BlueprintType)
 struct FPalRaidBossDataRow : public FTableRowBase {
@@ -13,6 +18,12 @@ struct FPalRaidBossDataRow : public FTableRowBase {
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<FPalRaidBossSpawnInfo> InfoList;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FPalRaidBossSummonMeteorInfo> SummonMeteor_Num;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<APalRaidBossSummonGeneratorBase> SummonGeneratorClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<FPalDataTableRowName_PalMonsterData, float> EggPalIDAndWeight;
@@ -25,6 +36,9 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FString AchievementId;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<AActor> OverrideRaidBossBattleActorClass;
     
     PAL_API FPalRaidBossDataRow();
 };

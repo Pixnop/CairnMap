@@ -2,12 +2,23 @@
 #include "Templates/SubclassOf.h"
 
 UPalHUDService::UPalHUDService() {
+    this->FadeWidget = NULL;
 }
 
-void UPalHUDService::StartFadeOut(EPalFadeWidgetLayerType LayerType) {
+void UPalHUDService::StartFadeOut(EPalFadeWidgetLayerType LayerType, UPalHUDDispatchParameter_FadeWidget* FadeParameter) {
 }
 
-void UPalHUDService::StartFadeIn(EPalFadeWidgetLayerType LayerType, UPalHUDDispatchParameter_FadeWidget* FadeParameter) {
+void UPalHUDService::StartFadeIn(EPalFadeWidgetLayerType LayerType) {
+}
+
+bool UPalHUDService::ShowUseItemUI(UPalItemSlot* TargetSlot, UPalHUDDispatchParameter_UseItem* Parameter) {
+    return false;
+}
+
+void UPalHUDService::ShowElementMatchUI(UWidget* RelativeWidget, const FVector2D& AnchorPosition) {
+}
+
+void UPalHUDService::ShowCommonWarning(const FPalUICommonWarningDisplayData& WarningDisplayData) {
 }
 
 FGuid UPalHUDService::ShowCommonUI(const EPalWidgetBlueprintType WBPType, UPalHUDDispatchParameterBase* Parameter) {
@@ -17,10 +28,22 @@ FGuid UPalHUDService::ShowCommonUI(const EPalWidgetBlueprintType WBPType, UPalHU
 void UPalHUDService::ShowCommonReward(const FPalUICommonRewardDisplayData& RewardDisplayData) {
 }
 
+void UPalHUDService::ShowCommonItemReward(const FPalUICommonItemRewardData& ItemRewardData) {
+}
+
 void UPalHUDService::ShowCommonItemInfo(const FPalUICommonItemInfoDisplayData& DisplayData) {
 }
 
+void UPalHUDService::ShowCommonExpReward(const FPalUICommonExpRewardData& ExpRewardData) {
+}
+
+void UPalHUDService::SetIgnoreMaskBossSpawnerNames(const TArray<FName>& NewNames) {
+}
+
 void UPalHUDService::SetHUDLayerHideFlag(const FGameplayTag& LayerTagName, const FName& HideReasonName, bool IsHide) {
+}
+
+void UPalHUDService::RestoreIgnoreMaskFromLocalRecord() {
 }
 
 void UPalHUDService::RemoveWorldHUDFromWidgetId(const FGuid& ID) {
@@ -39,6 +62,21 @@ FGuid UPalHUDService::Push(TSubclassOf<UPalUserWidgetStackableUI> WidgetClass, U
 void UPalHUDService::PlayAkSound(UAkAudioEvent* AkEvent) {
 }
 
+bool UPalHUDService::IsTopLayerUI(const FGuid& WidgetId) {
+    return false;
+}
+
+bool UPalHUDService::IsAnyOverlayUIActive() {
+    return false;
+}
+
+bool UPalHUDService::IsAnyFadeWidgetActive() const {
+    return false;
+}
+
+void UPalHUDService::InvokeTargetWidgetFunction(const FGuid& WidgetId, const FName FunctionName) {
+}
+
 void UPalHUDService::InvokeFunction_Int32(const FName FunctionName, int32 Value) {
 }
 
@@ -48,7 +86,24 @@ void UPalHUDService::InvokeFunction_FName(const FName FunctionName, FName Value)
 void UPalHUDService::InvokeFunction(const FName FunctionName) {
 }
 
+void UPalHUDService::HideElementMatchUI() {
+}
+
+void UPalHUDService::HideCommonWarning(const FGuid PreserveID) {
+}
+
+void UPalHUDService::HideCommonReward() {
+}
+
 void UPalHUDService::HideCommonItemInfo() {
+}
+
+bool UPalHUDService::HasFadeQueue(EPalFadeWidgetLayerType InLayerType) const {
+    return false;
+}
+
+UPalUserWidgetStackableUI* UPalHUDService::GetWidget(const FGuid& WidgetId) {
+    return NULL;
 }
 
 UPalSoundPlayer* UPalHUDService::GetSoundPlayer() {

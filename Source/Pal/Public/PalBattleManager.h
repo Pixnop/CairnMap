@@ -3,6 +3,7 @@
 #include "UObject/NoExportTypes.h"
 #include "ActorArray.h"
 #include "EPalPlayerBattleFinishType.h"
+#include "PalDyingEndInfo.h"
 #include "PalWorldSubsystem.h"
 #include "Templates/SubclassOf.h"
 #include "PalBattleManager.generated.h"
@@ -10,6 +11,7 @@
 class AActor;
 class APalCharacter;
 class APalNPCSpawnerBase;
+class APalPlayerCharacter;
 
 UCLASS(Blueprintable)
 class PAL_API UPalBattleManager : public UPalWorldSubsystem {
@@ -27,6 +29,9 @@ private:
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<APalNPCSpawnerBase> DebugSpawnerClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<APalNPCSpawnerBase> DebugUniqueNPCSpawnerClass;
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FExclamationMarkDelegate OnFExclamationMarkDelegate;
@@ -74,6 +79,14 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
     void GetAllPlayerAndOtomo_ForEnemySelf(TArray<AActor*> TargetPlayers, TArray<AActor*>& OutCharacters);
     
+private:
+    UFUNCTION(BlueprintCallable)
+    void EventOnRevivePlayer(APalPlayerCharacter* Player);
+    
+    UFUNCTION(BlueprintCallable)
+    void EventOnPlayerDeadCompletely(APalPlayerCharacter* Player, const FPalDyingEndInfo& DyingEndInfo);
+    
+public:
     UFUNCTION(BlueprintCallable)
     void EnemyNearPlayerListUpdate(AActor* Enemy, float Distance);
     

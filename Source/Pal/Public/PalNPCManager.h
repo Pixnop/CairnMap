@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "EPalNPCTalkUIType.h"
+#include "PalDataTableRowName_NPCAppearFlagData.h"
 #include "PalEnemyCampStatus.h"
 #include "PalGameWorldDataSaveInterface.h"
 #include "PalInstanceID.h"
@@ -15,7 +15,7 @@ class APalCharacter;
 class UDataTable;
 class UNavigationQueryFilter;
 class UPalIndividualCharacterHandle;
-class UPalNPCMultiTalkHandle;
+class UPalNPCTalkFlowAssetBase;
 class UPalWildPalDrinkWaterSpotProvider;
 
 UCLASS(Blueprintable)
@@ -40,6 +40,9 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TMap<FName, bool> RespawnDisableFlag;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TArray<FName> NPCAppearFlagName;
+    
 protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<APalAIController> NPCAIControllerBaseClass;
@@ -48,16 +51,7 @@ protected:
     UDataTable* UniqueNPCDataTable;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    UDataTable* NPCOneTalkDataTable;
-    
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    UDataTable* NPCMultiTalkDataTable;
-    
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    TMap<EPalNPCTalkUIType, UDataTable*> TalkDataTableMap;
-    
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    TMap<FName, EPalNPCTalkUIType> NPCNameTalkTypeMap;
+    UDataTable* NPCTalkFlowDataTable;
     
 public:
     UPalNPCManager();
@@ -71,6 +65,9 @@ public:
     UPalIndividualCharacterHandle* SpawnNPCForServer(FPalNPCSpawnInfo SpawnInfo, UPalNPCManager::FNPCSpawnCallback spawnCallback);
     
     UFUNCTION(BlueprintCallable)
+    void SetTrueNPCAppearFlag(FPalDataTableRowName_NPCAppearFlagData flagName);
+    
+    UFUNCTION(BlueprintCallable)
     void SetEnemyCampStatus(FName KeyName, FPalEnemyCampStatus EnemyCampStatus);
     
 private:
@@ -79,31 +76,16 @@ private:
     
 public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    bool IsTransientTalkCount(APalCharacter* Character);
+    bool IsTransientTalkCount(const APalCharacter* Character) const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    bool IsTalkable(APalCharacter* Character);
+    bool IsTalkable(const APalCharacter* Character) const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    EPalNPCTalkUIType GetTalkUIType(APalCharacter* Character);
+    UPalNPCTalkFlowAssetBase* GetNPCTalkFlowAssetById(const FName& TalkId) const;
     
-    UFUNCTION(BlueprintCallable)
-    UDataTable* GetNPCTalkDTFromTalkUIType(EPalNPCTalkUIType TalkUIType);
-    
-    UFUNCTION(BlueprintCallable)
-    UDataTable* GetNPCOneTalkDTFromTalkId(FName TalkId);
-    
-    UFUNCTION(BlueprintCallable)
-    UDataTable* GetNPCOneTalkDTFromCharacter(APalCharacter* Character);
-    
-    UFUNCTION(BlueprintCallable)
-    TSubclassOf<UPalNPCMultiTalkHandle> GetNPCMultiTalkClassFromTalkId(FName TalkId);
-    
-    UFUNCTION(BlueprintCallable)
-    TSubclassOf<UPalNPCMultiTalkHandle> GetNPCMultiTalkClass(APalCharacter* Character);
-    
-    UFUNCTION(BlueprintCallable)
-    UDataTable* GetNPCCharacterTalkDT(FName CharacterID);
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalNPCTalkFlowAssetBase* GetNPCTalkFlowAsset(APalCharacter* Character) const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalEnemyCampStatus GetEnemyCampStatus(FName KeyName) const;
@@ -112,7 +94,13 @@ public:
     UPalWildPalDrinkWaterSpotProvider* GetDrinkWaterSpotProvider();
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    FName GetCharacterIDFromUniqueNPCID(FName UniqueNPCID) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FName GetCharacterIDFromCharacterIDAndUniqueNPCID(FName CharacterID, FName UniqueNPCID);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool GetCanSpawnByNPCAppearFlag(FPalDataTableRowName_NPCAppearFlagData flagName, bool FlagCondition);
     
 private:
     UFUNCTION(BlueprintCallable)

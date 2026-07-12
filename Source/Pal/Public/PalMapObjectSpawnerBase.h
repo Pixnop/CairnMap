@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 #include "EPalMapObjectSpawnerState.h"
 #include "PalLevelObjectActor.h"
 #include "PalStageInstanceId.h"
@@ -18,6 +19,12 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     float LotteryCoolTimeMinutes;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bAdjustMapObjectToFloor;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bDebugBreakPointTryRespawnFor;
+    
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FPalStageInstanceId StageInstanceIdBelongTo;
@@ -28,12 +35,19 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     EPalMapObjectSpawnerState State;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FName OverrideSpawnerLevelDataLayerAppendName;
+    
 public:
     APalMapObjectSpawnerBase(const FObjectInitializer& ObjectInitializer);
 
 private:
     UFUNCTION(BlueprintCallable)
     void OnWorldMapObjectSpawnableInServer();
+    
+protected:
+    UFUNCTION(BlueprintCallable)
+    FTransform GetSpawnTransform(int32 Index) const;
     
 };
 

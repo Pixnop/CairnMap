@@ -4,8 +4,9 @@
 
 UENUM(BlueprintType)
 enum class EPalBaseCampItemContainerType : uint8 {
-    HomeChest,
     Chest,
+    GuildChest,
     Other,
+    ItemBoothStore,
 };
 

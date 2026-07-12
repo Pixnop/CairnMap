@@ -5,6 +5,7 @@
 #include "Components/ActorComponent.h"
 #include "EPalMapObjectConcreteModelModuleType.h"
 #include "EPalMapObjectOperationResult.h"
+#include "PalBuildObjectPaintData.h"
 #include "PalCellCoord.h"
 #include "PalDamageInfo.h"
 #include "PalFoliageInstanceId.h"
@@ -15,7 +16,6 @@
 
 class APalMapObjectSpawnerBase;
 class UPalMapObjectPickableItemModelBase;
-class UPalMapObjectSpawnRequestHandler;
 
 UCLASS(Blueprintable, ClassGroup=Custom, meta=(BlueprintSpawnableComponent))
 class UPalNetworkMapObjectComponent : public UActorComponent {
@@ -25,15 +25,15 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<FGuid, FPalNetworkMapObjectSpawnRequestParameter> MapObjectSpawnRequestParameterMap;
     
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    TMap<FGuid, UPalMapObjectSpawnRequestHandler*> SpawnRequestHandlerMap;
-    
 public:
     UPalNetworkMapObjectComponent(const FObjectInitializer& ObjectInitializer);
 
 private:
     UFUNCTION(BlueprintCallable, Reliable, Server)
     void RequestRepair_ToServer(const FGuid& InstanceId);
+    
+    UFUNCTION(BlueprintCallable, Reliable, Server)
+    void RequestPaint_ToServer(const FGuid& InstanceId, const FPalBuildObjectPaintData& PaintData);
     
     UFUNCTION(BlueprintCallable, Reliable, Server)
     void RequestDismantleObject_ToServer(const FGuid& InstanceId);
@@ -95,7 +95,13 @@ public:
     UFUNCTION(BlueprintCallable)
     void RequestConcreteModel_bool(const FGuid& ConcreteModelInstanceId, const FName FunctionName, bool Value);
     
+    UFUNCTION(BlueprintCallable)
+    void RequestChangeCustomNameByLocalPlayer(const FGuid& InstanceId, const FString& NewCustomName);
+    
 private:
+    UFUNCTION(BlueprintCallable, Reliable, Server)
+    void RequestChangeCustomName_ToServer(const FGuid& InstanceId, const FString& NewCustomName);
+    
     UFUNCTION(BlueprintCallable, Reliable, Server)
     void RequestBuildCancel_ToServer(const FGuid& InstanceId);
     
@@ -209,11 +215,27 @@ private:
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void NotifyConcreteModel_Multicast_bool(const FGuid& ConcreteModelInstanceId, const FName FunctionName, bool Value);
     
+    UFUNCTION(BlueprintCallable, Reliable, Server)
+    void Dev_RequestDismantleMapObject_ToServer(const FGuid& InstanceId);
+    
     UFUNCTION(BlueprintCallable, Client, Reliable)
     void Dev_ReceiveMapObjectsTickIntervalInBackground_ToClient(const TArray<FPalNetworkMapObjectTickIntervalInBackgroundInfo>& TickIntervalInfoArray);
     
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    void Dev_ReceiveDismantleMapObjectResult_ToClient(const FString& ResultMessage);
+    
     UFUNCTION(BlueprintCallable, Reliable, Server)
     void Dev_FetchMapObjectsTickIntervalInBackground_ToServer();
+    
+public:
+    UFUNCTION(BlueprintCallable, Reliable, Server)
+    void BroadcastStartTeamMissionLog_ToServer(const FGuid& ConcreteModelInstanceId);
+    
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    void AddStartTeamMissionLog_ToServer();
+    
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    void AddCompleteTeamMissionLog_ToClient(const FName& MissionId);
     
 };
 

@@ -14,6 +14,9 @@ void UPalVisualEffectBase::TickVisualEffect_Implementation(float DeltaTime) {
 void UPalVisualEffectBase::TerminatingTickVisualEffect_Implementation(float DeltaTime) {
 }
 
+void UPalVisualEffectBase::RefreshVisualEffect_Implementation() {
+}
+
 void UPalVisualEffectBase::OnEndVisualEffect_Implementation() {
 }
 
@@ -38,12 +41,20 @@ AActor* UPalVisualEffectBase::GetOwner() const {
     return NULL;
 }
 
+USkeletalMeshComponent* UPalVisualEffectBase::GetMonsterRideNPCMesh() const {
+    return NULL;
+}
+
 TArray<UMaterialInstanceDynamic*> UPalVisualEffectBase::GetMainMeshMaterials() const {
     return TArray<UMaterialInstanceDynamic*>();
 }
 
 USkeletalMeshComponent* UPalVisualEffectBase::GetMainMesh() const {
     return NULL;
+}
+
+TArray<UMaterialInstanceDynamic*> UPalVisualEffectBase::GetMainAndRideNPCMeshMaterials() const {
+    return TArray<UMaterialInstanceDynamic*>();
 }
 
 TArray<UMaterialInstanceDynamic*> UPalVisualEffectBase::GetMainAndHeadMeshMaterials() const {

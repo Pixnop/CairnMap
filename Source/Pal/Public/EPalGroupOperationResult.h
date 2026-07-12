@@ -26,10 +26,18 @@ enum class EPalGroupOperationResult : uint8 {
     FailedAdminCannotExitGuild,
     FailedDisposeStaticOrganization,
     FailedNotEnoughSpaceStoreBackBaseCampWorkers,
+    FailedGuildItemStorageNotEmpty,
     FailedOverBaseCamp,
     FailedBaseCampNotBelongingToGuild,
     FailedNotFoundBaseCamp,
     FailedBaseCampOperation,
     FailedNotImplement,
+    Failed_PermissionDenied,
+    FailedPermissionDenied_NoPermission,
+    FailedPermissionDenied_TargetRoleHigher,
+    FailedCannotChangeOwnRole,
+    FailedCannotDemoteMaster,
+    FailedCannotPromoteToGuildMaster,
+    Failed_CannotExitGuildMaster,
 };
 
