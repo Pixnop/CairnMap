@@ -237,16 +237,17 @@ end
 
 -- ------------------------------------------------------------------ state --
 local gCalib = nil          -- cached transform
-local gCalibCanvas = nil    -- canvas it was computed for
+local gCalibKey = nil       -- full name of the canvas it was computed for
 local gLastSig = ""         -- change-detection signature
 
 -- ----------------------------------------------------------------- repair --
 local function repair(reason)
     local canvas = findMap()
     if not canvas then return false end
-    if not gCalib or gCalibCanvas ~= canvas or not safe(function() return gCalibCanvas:IsValid() end, false) then
+    local key = safe(function() return canvas:GetFullName() end, nil)
+    if not gCalib or key == nil or key ~= gCalibKey then
         gCalib = calibrate(canvas)
-        gCalibCanvas = canvas
+        gCalibKey = key
         if not gCalib then return false end
     end
     local cbs = readCheckboxes()
@@ -354,5 +355,5 @@ LoopAsync(800, function()
     return false
 end)
 
-RegisterKeyBind(Key.F7, function() gCalib = nil; repair("manual") end)
+RegisterKeyBind(Key.F7, function() gCalib = nil; gCalibKey = nil; repair("manual") end)
 print("[MapCollectablesFix] loaded: auto-repair active (F7 = force refresh)")
