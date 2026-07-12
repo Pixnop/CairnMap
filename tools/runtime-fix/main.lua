@@ -313,6 +313,24 @@ local function repair(reason)
         end
     end
     print(string.format("[MapCollectablesFix] %d icons placed (%s)", total, reason))
+    -- housekeeping: the original mod recreates all its widgets on every map
+    -- open and never destroys the old ones. Once orphans pile up well beyond
+    -- the live set, ask UE to garbage-collect (cost hidden by the map opening).
+    pcall(function()
+        local all = #(FindAllOf("CollectableWidget_C") or {})
+        if all > total * 2 + 2000 then
+            local ksl = StaticFindObject("/Script/Engine.Default__KismetSystemLibrary")
+            if ksl and ksl:IsValid() then
+                ksl:CollectGarbage()
+                ExecuteWithDelay(3000, function()
+                    pcall(function()
+                        local after = #(FindAllOf("CollectableWidget_C") or {})
+                        print(string.format("[MapCollectablesFix] GC: %d -> %d widgets", all, after))
+                    end)
+                end)
+            end
+        end
+    end)
     return true
 end
 
