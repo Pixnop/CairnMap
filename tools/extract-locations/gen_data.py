@@ -16,14 +16,14 @@ def write(fname, classes):
     print(f"{fname:32s} {len(pts):5d} positions")
 
 S='BP_PalMapObjectSpawner_'
-# Mises à jour (mêmes fichiers que l'existant)
+# Updated (same files as the existing ones)
 write('CoalLocations.json',[S+'RockCoal'])
 write('CopperLocations.json',[S+'RockCopper'])
 write('QuartzLocations.json',[S+'RockQuartz'])
 write('SulfurLocations.json',[S+'Sulfur'])
 write('HexoliteLocations.json',[S+'Crystal'])
 write('OilLocations.json',['BP_LevelObject_OilField'])
-# Nouveaux (structures 1.0)
+# New (1.0 structures)
 write('SkyIslandOreLocations.json',[S+'SkyIslandOre'])
 write('WorldTreeOreLocations.json',[S+'WorldTreeOre'])
 write('MagmaRockLocations.json',[S+'DamagableRock0022'])

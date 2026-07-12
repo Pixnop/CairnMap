@@ -24,7 +24,7 @@ for root, _, files in os.walk(W):
         except Exception:
             errors += 1; continue
         nparsed += 1
-        # exports cibles
+        # target exports
         targets = {}
         for i, e in enumerate(exps):
             c = e['cls']
@@ -33,7 +33,7 @@ for root, _, files in os.walk(W):
                 targets[i+1] = cname[:-2]
         if not targets: continue
         uexp = None
-        # composants enfants
+        # child components
         children = collections.defaultdict(list)
         for i, e in enumerate(exps):
             if e['outer'] in targets:
@@ -49,7 +49,7 @@ for root, _, files in os.walk(W):
                 if pos: break
             if pos:
                 out[cls].append([round(pos[0],2), round(pos[1],2), round(pos[2],2), os.path.basename(p)])
-print(f"{nparsed} cellules parsées, {errors} erreurs")
+print(f"{nparsed} cells parsed, {errors} errors")
 for cls in sorted(out, key=lambda c: -len(out[c])):
     print(f"{len(out[cls]):6d}  {cls}")
 json.dump(out, open(os.environ['SCRATCH']+'/locations-raw.json','w'))

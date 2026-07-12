@@ -1,102 +1,103 @@
-# Migration Palworld 1.0 (10 juillet 2026)
+# Palworld 1.0 migration (July 10, 2026)
 
-État de la migration du mod vers Palworld 1.0. Vérifications faites contre le
-**vrai jeu 1.0** (buildid Steam 24088745, index du `Pal-Windows.pak` listé avec repak)
-et contre le [PalworldModdingKit](https://github.com/localcc/PalworldModdingKit) 1.0
-(commit du 11 juillet 2026).
+Status of the mod's migration to Palworld 1.0. Everything below was verified against
+the **live 1.0 game** (Steam buildid 24088745, `Pal-Windows.pak` index listed with repak)
+and against the [PalworldModdingKit](https://github.com/localcc/PalworldModdingKit) 1.0
+(July 11, 2026 commit).
 
-## Déjà fait (cette branche)
+## Done (this branch)
 
-- `Source/`, `Config/`, `Plugins/` remplacés par les versions 1.0 du kit
-  (moteur inchangé: UE 5.1, pas de migration d'engine).
-- `Pal.uproject` pris du kit 1.0, en réinjectant les 2 plugins marketplace du mod:
-  `ElectronicNodes` (confort éditeur) et `DcJsonAsset` (requis: import des
-  `Data/*.json` en DataAssets, cf. `NewIconChecklist.txt`).
-- `ObjectHelper.txt` complété avec les rochers 1.0 (0020 à 0022, identifiés
-  en extrayant les blueprints du pak).
+- `Source/`, `Config/`, `Plugins/` replaced with the 1.0 kit versions
+  (engine unchanged: UE 5.1, no engine migration needed).
+- `Pal.uproject` taken from the 1.0 kit, re-adding the mod's 2 marketplace plugins:
+  `ElectronicNodes` (editor convenience) and `DcJsonAsset` (required: imports the
+  `Data/*.json` files as DataAssets, see `NewIconChecklist.txt`).
+- `ObjectHelper.txt` extended with the 1.0 rocks (0020 to 0022, identified by
+  extracting the blueprints from the pak).
 
-## Audit de compatibilité: VERT
+## Compatibility audit: GREEN
 
-- **Classes C++**: 23/23 classes du jeu référencées par le mod existent en 1.0.
-- **Fonctions**: sur les 11 fonctions appelées, une seule renommée:
-  `UPalLocationManager::RemoveLocalCustomLocation(FGuid)` devient
-  `RemoveLocalCustomMarker(FGuid)`. Utilisée uniquement par la feature legacy
-  "Remove old markers" (pre-2.0) dans `CollectablesManager`: re-brancher le nœud
-  ou supprimer la feature. (`AddLocalCustomLocation` → `AddLocalCustomMarker`
-  ne touche que `RelicNoteManagerOld.uasset.bak`, ignorable. `LocationMap` scindé
-  en `LocationMapInServer/InLocal/Combined`: non lu par le mod, sans impact.)
-- **Blueprints de contenu: 22/22 chemins référencés existent encore dans le pak 1.0**,
-  y compris les widgets carte (`WBP_Map_Base`, `WBP_Map_Body`, `WBP_MapFilter_Win`)
-  et leurs ancres internes (`WBP_MapFilter_Content_C`, `BP_PalTextBlock_C`).
-  Aucun re-pointage de chemin nécessaire.
-- **Effigies 1.0**: les nouvelles effigies par Pal (`BP_LevelObject_Relic_FlameBambi`,
-  `_GuardianDog`, `_IceCrocodile`, etc.) héritent de `PalLevelObjectRelic`:
-  la détection existante par classe les attrape automatiquement.
+- **C++ classes**: 23/23 game classes referenced by the mod still exist in 1.0.
+- **Functions**: of the 11 functions the mod calls, only one was renamed:
+  `UPalLocationManager::RemoveLocalCustomLocation(FGuid)` is now
+  `RemoveLocalCustomMarker(FGuid)`. Only used by the legacy "Remove old markers"
+  (pre-2.0) feature in `CollectablesManager`: rewire the node or drop the feature.
+  (`AddLocalCustomLocation` → `AddLocalCustomMarker` only affects
+  `RelicNoteManagerOld.uasset.bak`, ignorable. `LocationMap` was split into
+  `LocationMapInServer/InLocal/Combined`: the mod never reads it, no impact.)
+- **Content blueprints: 22/22 referenced paths still exist in the 1.0 pak**,
+  including the map widgets (`WBP_Map_Base`, `WBP_Map_Body`, `WBP_MapFilter_Win`)
+  and their internal anchors (`WBP_MapFilter_Content_C`, `BP_PalTextBlock_C`).
+  No path re-pointing needed.
+- **1.0 effigies**: the new per-Pal effigies (`BP_LevelObject_Relic_FlameBambi`,
+  `_GuardianDog`, `_IceCrocodile`, etc.) inherit from `PalLevelObjectRelic`:
+  the existing class-based detection picks them up automatically.
 
-## Environnement de test local (cette machine, Proton)
+## Local test environment (this machine, Proton)
 
-Palworld 1.0 installé dans `~/.local/share/Steam/steamapps/common/Palworld` avec
-RE-UE4SS build 1.0 (Okaetsu, format Workshop: `Mods/NativeMods/UE4SS/`),
-`BPModLoaderMod: 1` actif, LogicMods fonctionnels (YetAnotherMinimap, PalAnalyzer
-chargent, cf. `UE4SS.log`). **Dump headers 1.0 dispo localement**:
+Palworld 1.0 installed at `~/.local/share/Steam/steamapps/common/Palworld` with
+RE-UE4SS 1.0 build (Okaetsu, Workshop layout: `Mods/NativeMods/UE4SS/`),
+`BPModLoaderMod: 1` enabled, working LogicMods (YetAnotherMinimap, PalAnalyzer
+load fine, see `UE4SS.log`). **1.0 header dump available locally**:
 `Palworld/Mods/NativeMods/UE4SS/CXXHeaderDump/`.
 
-## Données de positions: régénérées offline, plus besoin de tracking in-game
+## Location data: regenerated offline, no in-game tracking needed
 
-Les `Data/*Locations.json` ont été régénérés en parsant les ~10 000 cellules
-World Partition du pak 1.0 (outillage réutilisable dans `tools/extract-locations/`,
-validé contre les données trackées par miapuffia: distance médiane 0.0 unité).
+The `Data/*Locations.json` files were regenerated by parsing the ~10,000
+World Partition cells of the 1.0 pak (reusable tooling in `tools/extract-locations/`,
+validated against miapuffia's in-game-tracked data: median distance 0.0 units).
 
-- **Mis à jour** (plus complets, positions 1.0 exactes): Coal 1021, Copper 2027,
-  Quartz 675, Sulfur 718, Hexolite 635 (= spawner `Crystal`), Oil 185.
-- **Nouveaux** (à brancher dans les blueprints): SkyIslandOre 226, WorldTreeOre 80,
-  MagmaRock 10, NightStone 271, DogCoin 128, Lotus par stat (HP 182, Attack 213,
-  Stamina 189, Weight 118, Workspeed 176), CaveMushroom 1463, Junk 858 (toutes
-  zones), TreasureChest 1559 (tous spawners de coffres).
+- **Updated** (more complete, exact 1.0 positions): Coal 1021, Copper 2027,
+  Quartz 675, Sulfur 718, Hexolite 635 (= `Crystal` spawner), Oil 185.
+- **New** (to wire into the blueprints): SkyIslandOre 226, WorldTreeOre 80,
+  MagmaRock 10, NightStone 271, DogCoin 128, Lotus per stat (HP 182, Attack 213,
+  Stamina 189, Weight 118, Workspeed 176), CaveMushroom 1463, Junk 858 (all
+  zones), TreasureChest 1559 (all chest spawners).
 
-## Nouvelles structures 1.0 à ajouter au mod (feature work)
+## New 1.0 structures to add to the mod (feature work)
 
-Inventaire tiré de l'index du pak 1.0. Nouvelles zones: Sky Island, World Tree,
+Inventory taken from the 1.0 pak index. New zones: Sky Island, World Tree,
 Yakushima, Sakurajima, Dark Island.
 
-Nouveaux minables (mêmes patterns que l'existant):
-- `BP_MapObject_DamagableRock0020` = minerai Sky Island (+ spawner `_SkyIslandOre`)
-- `BP_MapObject_DamagableRock0021` = minerai World Tree (+ spawner `_WorldTreeOre`)
-- `BP_MapObject_DamagableRock0022` = roche magmatique (+ spawner dédié)
+New minables (same patterns as the existing ones):
+- `BP_MapObject_DamagableRock0020` = Sky Island ore (+ `_SkyIslandOre` spawner)
+- `BP_MapObject_DamagableRock0021` = World Tree ore (+ `_WorldTreeOre` spawner)
+- `BP_MapObject_DamagableRock0022` = magma rock (+ dedicated spawner)
 - `BP_PalMapObjectSpawner_NightStone`, `_Yakushima_Crystal`, `_PalCrystal_Small`
 
-Nouveaux collectables:
+New collectibles:
 - **DogCoin** (`BP_PalMapObjectSpawner_DogCoin`, item `PickupItem_DogCoin`):
-  spawner `PalMapObjectSpawnerSimple`, même classe que l'existant, facile.
-- **Fleurs Lotus** (boosts de stats): famille `BP_PalMapObjectSpawner_Lotus_*`
-  (HP/Attack/Stamina/Weight/Workspeed, par biome et rareté).
-- **Points de carte au trésor**: `BP_LevelObject_TreasureMapPoint`
-  (classe C++ `PalTreasureMapPoint`, header présent dans le kit 1.0).
-- **Champignons de grotte / Yakushima**: `_CaveMushroom`, `_YakushimaMushroom_01/02`.
-- Junk piles et fruits à compétence des nouvelles zones: variantes par biome
+  `PalMapObjectSpawnerSimple` spawner, same class as existing ones, easy.
+- **Lotus flowers** (stat boosts): `BP_PalMapObjectSpawner_Lotus_*` family
+  (HP/Attack/Stamina/Weight/Workspeed, per biome and rarity).
+- **Treasure map points**: `BP_LevelObject_TreasureMapPoint`
+  (C++ class `PalTreasureMapPoint`, header present in the 1.0 kit).
+  Dynamic spawns: no static locations to preload.
+- **Cave / Yakushima mushrooms**: `_CaveMushroom`, `_YakushimaMushroom_01/02`.
+- Junk piles and skill fruits for the new zones: per-biome variants
   (`_Junk_SkyIsland`, `_Junk_WorldTree`, `_SkillFruits_Sakura`, etc.):
-  vérifier si la détection actuelle par classe parente suffit.
-- Nouveaux coffres par zone/grade (`_Treasure_Element_*`, `_Grade_*`,
-  `_Dungeon_Elixir`): probablement déjà couverts par la détection TreasureBox,
-  à confirmer en jeu.
+  check whether the current parent-class detection already covers them.
+- New per-zone/grade chests (`_Treasure_Element_*`, `_Grade_*`,
+  `_Dungeon_Elixir`): probably already covered by the TreasureBox detection,
+  to be confirmed in game.
 
-## Reste à faire (éditeur UE 5.1, Windows ou VM)
+## Remaining work (UE 5.1 editor, Windows or VM)
 
-1. Intégrer Wwise dans `Plugins/` (cf. README du kit), ouvrir le projet.
-2. Corriger le nœud `RemoveLocalCustomLocation` dans `CollectablesManager`
-   (ou supprimer la feature legacy).
-3. Recompiler/repacker en `MapCollectablesMod.pak` (LogicMods): l'état actuel
-   devrait déjà fonctionner en 1.0 sur l'ancienne moitié de carte.
-4. Feature work: nouveaux icônes/checkboxes pour les structures ci-dessus
-   (workflow détaillé dans `NewIconChecklist.txt`).
-5. ~~Re-tracker les ressources en jeu~~ Fait offline: réimporter les JSON en
-   DataAssets via DcJsonAsset (glisser les nouveaux .json dans Data/, cf. workflow
-   `NewIconChecklist.txt`) et brancher `LoadPreloadedData()`.
-6. Test local possible sur cette machine (Proton + RE-UE4SS 1.0 déjà en place).
+1. Integrate Wwise into `Plugins/` (see the kit README), open the project.
+2. Fix the `RemoveLocalCustomLocation` node in `CollectablesManager`
+   (or drop the legacy feature).
+3. Rebuild/repack `MapCollectablesMod.pak` (LogicMods): the current state
+   should already work on 1.0 for the old half of the map.
+4. Feature work: new icons/checkboxes for the structures above
+   (detailed workflow in `NewIconChecklist.txt`).
+5. ~~Re-track resources in game~~ Done offline: re-import the JSONs as
+   DataAssets via DcJsonAsset (drop the new .json files into Data/, see the
+   `NewIconChecklist.txt` workflow) and wire up `LoadPreloadedData()`.
+6. Local testing possible on this machine (Proton + RE-UE4SS 1.0 already set up).
 
-## Références
+## References
 
 - RE-UE4SS 1.0: https://github.com/Okaetsu/RE-UE4SS/releases/tag/experimental-palworld
-- usmap 1.0 pour FModel: https://www.nexusmods.com/palworld/mods/2854
-- Fix non officiel 5.1 (jusqu'à 0.6.9): https://www.nexusmods.com/palworld/mods/2947
-- Docs modding: https://pwmodding.wiki
+- 1.0 usmap for FModel: https://github.com/PalworldModding/UsefulFiles
+- Unofficial 5.1 fix (up to 0.6.9 only): https://www.nexusmods.com/palworld/mods/2947
+- Modding docs: https://pwmodding.wiki
