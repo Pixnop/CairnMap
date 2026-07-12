@@ -298,6 +298,15 @@ The Lua codebase follows these patterns deliberately; PRs should respect them.
 - Log policy: state *transitions* only (opened, repaired N, closed); never
   per-tick logging.
 
+### 7.2.1 Native escalation criterion
+
+Lua is not the bottleneck (engine calls dominate; they cost the same from
+C++). If profiling ever shows a **pure-compute** module exceeding its budget
+by >5x with no algorithmic fix, that module — and only that module — may be
+ported to a UE4SS native C++ mod (CppUserModBase, cross-compiled from Linux
+via clang-cl + xwin). The pure-core/facade split makes this a drop-in swap.
+C# has no viable path for modding a shipped UE game and is out of scope.
+
 ### 7.3 Error-handling policy
 
 - pcall boundaries live in `engine.lua` (per engine call) and at the tick
