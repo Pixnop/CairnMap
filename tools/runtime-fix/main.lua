@@ -239,6 +239,8 @@ end
 local gCalib = nil          -- cached transform
 local gCalibKey = nil       -- full name of the canvas it was computed for
 local gLastSig = ""         -- change-detection signature
+local gLastLive = 0         -- icons placed by the last repair
+local gLastRepairClock = 0  -- os.clock() of the last repair
 
 -- ----------------------------------------------------------------- repair --
 local function repair(reason)
@@ -314,24 +316,8 @@ local function repair(reason)
         end
     end
     print(string.format("[MapCollectablesFix] %d icons placed (%s)", total, reason))
-    -- housekeeping: the original mod recreates all its widgets on every map
-    -- open and never destroys the old ones. Once orphans pile up well beyond
-    -- the live set, ask UE to garbage-collect (cost hidden by the map opening).
-    pcall(function()
-        local all = #(FindAllOf("CollectableWidget_C") or {})
-        if all > total * 2 + 2000 then
-            local ksl = StaticFindObject("/Script/Engine.Default__KismetSystemLibrary")
-            if ksl and ksl:IsValid() then
-                ksl:CollectGarbage()
-                ExecuteWithDelay(3000, function()
-                    pcall(function()
-                        local after = #(FindAllOf("CollectableWidget_C") or {})
-                        print(string.format("[MapCollectablesFix] GC: %d -> %d widgets", all, after))
-                    end)
-                end)
-            end
-        end
-    end)
+    gLastLive = total
+    gLastRepairClock = os.clock()
     return true
 end
 
@@ -343,7 +329,29 @@ buildIndexes()
 LoopAsync(800, function()
     pcall(function()
         local canvas = findMap()
-        if not canvas then gLastSig = "" return end
+        if not canvas then
+            gLastSig = ""
+            -- housekeeping while idle: the original mod recreates all its icon
+            -- widgets on every map open and never frees the old set. Collect
+            -- only with the map closed and no recent repair (Slate at rest).
+            if gLastLive > 0 and os.clock() - gLastRepairClock > 10 then
+                local all = #(FindAllOf("CollectableWidget_C") or {})
+                if all > gLastLive * 2 + 2000 then
+                    gLastRepairClock = os.clock()  -- throttle
+                    local ksl = StaticFindObject("/Script/Engine.Default__KismetSystemLibrary")
+                    if ksl and ksl:IsValid() then
+                        ksl:CollectGarbage()
+                        ExecuteWithDelay(3000, function()
+                            pcall(function()
+                                local after = #(FindAllOf("CollectableWidget_C") or {})
+                                print(string.format("[MapCollectablesFix] idle GC: %d -> %d widgets", all, after))
+                            end)
+                        end)
+                    end
+                end
+            end
+            return
+        end
         local cbs = readCheckboxes()
         local h = tostring(#(FindAllOf("CollectableWidget_C") or {}))
         for k, v in pairs(cbs) do h = h .. k .. tostring(v) end
