@@ -242,6 +242,7 @@ local gLastSig = ""         -- change-detection signature
 local gLastLive = 0         -- icons placed by the last repair
 local gLastRepairClock = 0  -- os.clock() of the last repair
 local gPrevCount = -1       -- widget count on the previous tick (debounce)
+local gReg = {}             -- widgets we attached during the last repair
 
 -- ----------------------------------------------------------------- repair --
 local function repair(reason)
@@ -256,6 +257,7 @@ local function repair(reason)
     local cbs = readCheckboxes()
     local mgr = (FindAllOf("CollectablesManager_C") or {})[1]
     if not mgr then return false end
+    gReg = {}
     local total = 0
     for _, spec in ipairs(ARRAYS) do
         local aname, lf, wf, key, obtf, actf, fresh = spec[1], spec[2], spec[3], spec[4], spec[5], spec[6], spec[7]
@@ -307,6 +309,7 @@ local function repair(reason)
                         ww:SetVisibility(3)
                     end
                     s:SetPosition({X = px, Y = py})
+                    table.insert(gReg, ww)
                     total = total + 1
                 else
                     if safe(function() return ww:GetParent() == canvas end, false) then
@@ -332,6 +335,20 @@ LoopAsync(800, function()
         local canvas = findMap()
         if not canvas then
             gLastSig = ""
+            gPrevCount = -1
+            -- restore the vanilla canvas: the game rebuilds/iterates its pin
+            -- children on every open; leaving thousands of foreign widgets in
+            -- there crashes the second open.
+            if #gReg > 0 then
+                local n = 0
+                for _, ww in ipairs(gReg) do
+                    pcall(function()
+                        if ww and ww:IsValid() then ww:RemoveFromParent(); n = n + 1 end
+                    end)
+                end
+                gReg = {}
+                print(string.format("[MapCollectablesFix] map closed: detached %d icons", n))
+            end
             -- housekeeping while idle: the original mod recreates all its icon
             -- widgets on every map open and never frees the old set. Collect
             -- only with the map closed and no recent repair (Slate at rest).
