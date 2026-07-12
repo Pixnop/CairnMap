@@ -287,14 +287,27 @@ local function repair(reason)
                     local px = apply(gCalib.tX, lx, ly)
                     local py = apply(gCalib.tY, lx, ly)
                     if px ~= px or px < -2000 or px > 6000 or py < -2000 or py > 6000 then return end
-                    local s = canvas:AddChildToCanvas(ww)
+                    -- skip if already attached at the right spot (cheap idempotence)
+                    local s = ww.Slot
+                    local attached = s and s:IsValid() and safe(function() return ww:GetParent() == canvas end, false)
+                    if attached then
+                        local cx, cy = slotxy(ww)
+                        if cx and math.abs(cx - px) < 0.5 and math.abs(cy - py) < 0.5 then
+                            total = total + 1
+                            return
+                        end
+                    else
+                        s = canvas:AddChildToCanvas(ww)
+                        s:SetAlignment({X = 0.5, Y = 0.5})
+                        s:SetAutoSize(true)
+                        ww:SetVisibility(3)
+                    end
                     s:SetPosition({X = px, Y = py})
-                    s:SetAlignment({X = 0.5, Y = 0.5})
-                    s:SetAutoSize(true)
-                    ww:SetVisibility(3)
                     total = total + 1
                 else
-                    ww:RemoveFromParent()
+                    if safe(function() return ww:GetParent() == canvas end, false) then
+                        ww:RemoveFromParent()
+                    end
                 end
             end)
         end
