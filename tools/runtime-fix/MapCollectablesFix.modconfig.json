@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "vers": "1.0",
+    "auth": "Pixnop",
+    "desc": "1.0 companion fix for Map Collectables Helper: extra collectable layers (flat colored dots)."
+  },
+  "1.0 EXTRA LAYERS": {
+    "type": "header"
+  },
+  "Show sky island ore (cyan)": {
+    "type": "boolean",
+    "init": true,
+    "live": true
+  },
+  "Show world tree ore (green)": {
+    "type": "boolean",
+    "init": true,
+    "live": true
+  },
+  "Show magma rock (orange)": {
+    "type": "boolean",
+    "init": true,
+    "live": true
+  },
+  "Show night stone (violet)": {
+    "type": "boolean",
+    "init": true,
+    "live": true
+  },
+  "CAVE LAYERS (drawn at surface)": {
+    "type": "header"
+  },
+  "Show dog coins (gold)": {
+    "type": "boolean",
+    "init": true,
+    "live": true
+  },
+  "Show lotus flowers (pink)": {
+    "type": "boolean",
+    "init": true,
+    "live": true
+  }
+}
