@@ -45,10 +45,11 @@ added to the visual tree.
 negligible cost) for content the original mod predates: Sky Island ore (cyan),
 World Tree ore (green), magma rock (orange), NightStone (violet), and the
 underground collectables DogCoin (gold) and Lotus flowers (pink), drawn at
-their surface X/Y to mark the cave to enter. Layer toggles live in the Dek Mod Config Menu, inside the original mod's own
-settings section (the fix appends boolean entries to
-`MapCollectablesMod.modconfig.json`; Dek only displays configs paired with a
-pak of the same name). Positions come from the offline pak extraction.
+their surface X/Y to mark the cave to enter. Layer toggles are real checkbox rows injected at the bottom of the mod's own
+map panel (label + color dot + checkbox). The checkbox style is copied from an
+existing row: the default UMG style ships with empty brushes (a 0-px,
+unclickable widget). States persist to `state.lua` next to the script.
+Positions come from the offline pak extraction.
 
 Key: **F7** force refresh + recalibrate.
 

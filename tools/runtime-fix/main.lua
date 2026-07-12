@@ -269,32 +269,125 @@ local gPrevCount = -1       -- widget count on the previous tick (debounce)
 local gReg = {}             -- widgets we attached during the last repair
 
 -- ----------------------------------------------------------------- repair --
--- layer toggles come from the Dek Mod Config Menu file (same UI as the
--- original mod's settings). "live" values are re-read on every watcher tick.
-local CFG_KEYS = {
-    SkyOre = "Show sky island ore (cyan)", TreeOre = "Show world tree ore (green)",
-    Magma = "Show magma rock (orange)", NightStone = "Show night stone (violet)",
-    DogCoin = "Show dog coins (gold, cave)", Lotus = "Show lotus flowers (pink, cave)",
+-- Layer toggles are real checkboxes injected into the mod's own map panel
+-- (UIVerticalBox), styled by copying an existing checkbox's WidgetStyle:
+-- the default UMG style has empty brushes in shipped games (0-px, unclickable).
+-- States persist to a small file next to the script.
+local STATE_PATHS = {
+    "../../../Mods/NativeMods/UE4SS/Mods/MapCollectablesFix/state.lua",
+    "Mods/MapCollectablesFix/state.lua",
 }
-local CFG_PATHS = {
-    "../../Content/Paks/LogicMods/MapCollectablesMod.modconfig.json",
-    "Pal/Content/Paks/LogicMods/MapCollectablesMod.modconfig.json",
-}
-local function readExtrasConfig()
-    local txt = nil
-    for _, cp in ipairs(CFG_PATHS) do
-        local f = io.open(cp, "r")
-        if f then txt = f:read("*a"); f:close(); break end
-    end
-    if not txt then return end
-    for key, label in pairs(CFG_KEYS) do
-        local esc = label:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
-        local block = txt:match('"' .. esc .. '"%s*:%s*(%b{})')
-        if block then
-            local live = block:match('"live"%s*:%s*(%a+)')
-            if live then gExtraState[key] = (live == "true") end
+local gExtraCbs = {}
+local function saveExtraState()
+    for _, sp in ipairs(STATE_PATHS) do
+        local f = io.open(sp, "w")
+        if f then
+            f:write("return {")
+            for k, v in pairs(gExtraState) do f:write(string.format("%s=%s,", k, tostring(v))) end
+            f:write("}")
+            f:close()
+            return
         end
     end
+end
+for _, sp in ipairs(STATE_PATHS) do
+    local ok, saved = pcall(dofile, sp)
+    if ok and type(saved) == "table" then
+        for k, v in pairs(saved) do if gExtraState[k] ~= nil then gExtraState[k] = v end end
+        break
+    end
+end
+
+local function ensureExtraCheckboxes()
+    gExtraCbs = {}
+    local uis = FindAllOf("MapCollectablesUI_C") or {}
+    local root = safe(function() return uis[#uis].WidgetTree.RootWidget end, nil)
+    local vbox = root and findDescendant(root, "UIVerticalBox", 0)
+    if not vbox then return end
+    -- déjà présent sur cette instance d'UI ?
+    for i = 0, vbox:GetChildrenCount() - 1 do
+        local c = vbox:GetChildAt(i)
+        local nm = safe(function() return c:GetFName():ToString() end, "")
+        if nm:find("FixRow_") then
+            local key = nm:sub(8)
+            for j = 0, c:GetChildrenCount() - 1 do
+                local w = c:GetChildAt(j)
+                if safe(function() return w:GetClass():GetFName():ToString() end, "") == "CheckBox" then
+                    gExtraCbs[key] = w
+                end
+            end
+        end
+    end
+    if next(gExtraCbs) then return end
+    -- modèles: une case et un texte existants du panneau
+    local cbTemplate, txtTemplate = nil, nil
+    local function findTemplates(w, depth)
+        if (cbTemplate and txtTemplate) or not w or depth > 12 then return end
+        local cls = safe(function() return w:GetClass():GetFName():ToString() end, "")
+        if cls == "CheckBox" and not cbTemplate then cbTemplate = w end
+        if cls:find("TextBlock") and not txtTemplate then txtTemplate = w end
+        local n = safe(function() return w:GetChildrenCount() end, 0) or 0
+        for i = 0, n - 1 do findTemplates(safe(function() return w:GetChildAt(i) end, nil), depth + 1) end
+    end
+    findTemplates(root, 0)
+    local cbClass = StaticFindObject("/Script/UMG.CheckBox")
+    local hbClass = StaticFindObject("/Script/UMG.HorizontalBox")
+    local txtClass = StaticFindObject("/Script/UMG.TextBlock")
+    local imgClass = StaticFindObject("/Script/UMG.Image")
+    if not (cbClass and cbClass:IsValid() and hbClass and hbClass:IsValid() and txtClass and txtClass:IsValid()) then return end
+    local injected = 0
+    for _, layer in ipairs(EXTRAS) do
+        pcall(function()
+            local row = StaticConstructObject(hbClass, vbox, FName("FixRow_" .. layer.key))
+            -- libellé
+            local label = StaticConstructObject(txtClass, row)
+            label:SetText(FText(EXTRA_LABELS[layer.key] or layer.key))
+            if txtTemplate and txtTemplate:IsValid() then
+                pcall(function() label.Font = txtTemplate.Font end)
+                pcall(function() label:SetColorAndOpacity(txtTemplate.ColorAndOpacity) end)
+            end
+            label:SetVisibility(3)
+            local ls = row:AddChildToHorizontalBox(label)
+            pcall(function() ls:SetPadding({Left = 8, Top = 2, Right = 4, Bottom = 2}) end)
+            pcall(function() ls:SetSize({Value = 1.0, SizeRule = 1}) end)  -- Fill
+            -- pastille de couleur
+            if imgClass and imgClass:IsValid() then
+                local dot = StaticConstructObject(imgClass, row)
+                dot:SetColorAndOpacity(layer.color)
+                dot:SetVisibility(3)
+                local ds = row:AddChildToHorizontalBox(dot)
+                pcall(function() ds:SetPadding({Left = 2, Top = 6, Right = 2, Bottom = 6}) end)
+                pcall(function() dot:SetDesiredSizeOverride({X = 12, Y = 12}) end)
+            end
+            -- case à cocher, style copié du panneau
+            local cb = StaticConstructObject(cbClass, row)
+            if cbTemplate and cbTemplate:IsValid() then
+                pcall(function() cb.WidgetStyle = cbTemplate.WidgetStyle end)
+            end
+            cb:SetVisibility(0)
+            cb:SetIsChecked(gExtraState[layer.key])
+            local cs = row:AddChildToHorizontalBox(cb)
+            pcall(function() cs:SetPadding({Left = 4, Top = 2, Right = 8, Bottom = 2}) end)
+            row:SetVisibility(4)
+            vbox:AddChildToVerticalBox(row)
+            gExtraCbs[layer.key] = cb
+            injected = injected + 1
+        end)
+    end
+    print(string.format("[MapCollectablesFix] %d rangée(s) injectées (style copié: %s)", injected, tostring(cbTemplate ~= nil)))
+end
+
+local function readExtrasConfig()
+    ensureExtraCheckboxes()
+    local changed = false
+    for key, cb in pairs(gExtraCbs) do
+        local st = safe(function() return cb:IsChecked() end, nil)
+        if st ~= nil then
+            local v = (st == true or st == 1)
+            if gExtraState[key] ~= v then gExtraState[key] = v; changed = true end
+        end
+    end
+    if changed then saveExtraState() end
 end
 
 local function repair(reason)
