@@ -241,6 +241,7 @@ local gCalibKey = nil       -- full name of the canvas it was computed for
 local gLastSig = ""         -- change-detection signature
 local gLastLive = 0         -- icons placed by the last repair
 local gLastRepairClock = 0  -- os.clock() of the last repair
+local gPrevCount = -1       -- widget count on the previous tick (debounce)
 
 -- ----------------------------------------------------------------- repair --
 local function repair(reason)
@@ -352,8 +353,16 @@ LoopAsync(800, function()
             end
             return
         end
+        -- debounce: while the mod is still populating its arrays (widget count
+        -- moving), do NOT touch them: a Blueprint-side TArray realloc during
+        -- our iteration reads freed memory. Repair only once the count is
+        -- stable across two consecutive ticks.
+        local count = #(FindAllOf("CollectableWidget_C") or {})
+        local stable = (count == gPrevCount)
+        gPrevCount = count
+        if not stable then return end
         local cbs = readCheckboxes()
-        local h = tostring(#(FindAllOf("CollectableWidget_C") or {}))
+        local h = tostring(count)
         for k, v in pairs(cbs) do h = h .. k .. tostring(v) end
         if h ~= gLastSig then
             gLastSig = h
