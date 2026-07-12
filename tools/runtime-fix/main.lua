@@ -1,3 +1,4 @@
+local BOSSES = {{-266563,174506},{-361695,-112009},{81363,90183},{29975,413325},{-321596,209085},{-778216,-36026},{-889805,-435828},{-29428,-115900}}
 local TOWERS = {
 {628792,-610720},{621794,-757914},{405905,-729214},{512112,-510663},{491660,-593705},{600578,-599143},{592964,-625780},{602911,-680562},{621850,-742575},{518900,-671976},{501010,-748555},{483205,-672790},{477460,-724635},{570652,-558440},{524166,-567334},{-108667,79120},{-265220,173530},{-327532,-70410},{-367708,-114951},{-414447,-24603},{-465895,-62138},{-416558,-90012},{-383183,-210791},{29780,406913},{-50301,287392},{35589,321331},{117624,400135},{-119037,138340},{-80506,141465},{-39402,159612},{8000,111770},{102160,48527},{89625,94363},{-777490,-40589},{-758105,-61810},{-818013,59828},{-771310,8647},{-829096,-19263},{-811466,-85874},{-237087,-100490},{-798777,-479575},{-117215,446690},{-63521,-55006},{-86710,-140442},{-25522,-118365},{-25915,-78926},{32787,-81420},{-2189,-148546},{-503990,-214380},{-588140,-253780},{-792350,-251110},{-698515,-322880},{-760286,-354966},{-888080,-433080},{-699510,-389030},{-591120,-484260},{-671901,-172408},{-572462,-287224},{-130060,-53407},{-250506,341110},{168489,221798},{-33882,564292},{-197915,438002},{-335854,335361},{-558410,121112},{-488718,-35725},{-209326,-249228},{14388,476546},{-71915,472172},{-38212,406147},{-105662,400797},{191211,375335},{178737,305772},{125989,274598},{12157,249201},{69604,196989},{107941,-28036},{-38097,53412},{-43927,-173601},{-131354,54482},{-160345,98541},{63442,507395},{-153136,589410},{-451245,363338},{-984034,-371190},{-568699,-603452},{-426910,-436851},{-61819,-246054},{-301682,-5184},{-266958,93229},{-236840,34773},{-311509,76832},{-421434,29308},{-259199,-59353},{-287201,-217569},{-415272,-162409},{-119901,351109},{-156482,317415},{-224958,285919},{-74929,212787},{-578061,-158216},{-509887,-299269},{-506738,-396063},{-603491,-338965},{-651723,-373365},{-644486,-276536},{-725189,-238442},{-714541,-458347},{-771223,-441798},{-810648,-393964},{-865524,-352355},{-923275,-385109},{-886234,-483746},{192506,-227006},{-294830,152240},{-319000,127170},{-137210,-91340},{-88646,-3923},{-170400,-29240},{-450320,112630},{-376750,124630},{-374180,63960},{-265980,268690},{-282110,355570},{-170719,409753},{-221399,330684},{-248770,126206},{-338560,107660},{-215388,8854},{-195236,36718},{6589,0},{-326404,55137},{-349536,-4035},{-283781,59353},{-218637,58528},{-257951,151248},{-167685,167519},{-221230,165130},{-237610,190610},{-151842,213102},{-125476,201720},{-103435,234761},{-115430,289090},{-177770,265010},{-219173,226395},{-317777,212103},{-342035,236885},{-314840,186850},{-358785,267940},{-346618,191707},{-278468,212679},{-302825,241060}
 }
@@ -8,26 +9,45 @@ V10['Quartz'] = {{-579038,117519},{-574983,112060},{-573431,122449},{-571012,129
 V10['Sulfur'] = {{-455647,-149973},{-453579,-60950},{-452482,-134721},{-451192,-126952},{-447473,-110429},{-446935,-143783},{-444696,-53871},{-442442,-46170},{-440762,-38691},{-439987,-112140},{-439976,-152861},{-438895,-145284},{-438047,-104485},{-437371,-137215},{-435766,-129548},{-433868,-80913},{-432241,-154929},{-431525,-72936},{-431457,-32896},{-431169,-106595},{-430999,-187723},{-422518,-67344},{-419910,-151560},{-419620,-91930},{-417822,-84847},{-413295,-60829},{-409898,-86065},{-407036,-29073},{-403858,-95720},{-401721,-5916},{-401134,-161633},{-398604,-30650},{-395653,-55737},{-394247,-7842},{-394021,-203753},{-392253,175},{-390654,-188316},{-387805,-213547},{-381921,-26222},{-381238,-46211},{-380869,-46621},{-379910,-42843},{-379113,-43135},{-373526,-68492},{-372774,-60888},{-369722,-208808},{-368992,-45259},{-368410,-30810},{-367751,32487},{-367095,-37478},{-365546,-29353},{-364721,47884},{-364580,-18230},{-364176,-21505},{-362746,-14026},{-362360,-68840},{-360500,-67650},{-359300,-69160},{-358503,-67838},{-357460,-69180},{-355855,-219388},{-355440,-16300},{-355289,-15628},{-355150,-70290},{-351161,-195953},{-346686,-17230},{-346481,-213026},{-344756,26777},{-342927,-75648},{-341779,75185},{-339715,-100597},{-338689,-215232},{-338578,123991},{-336862,131683},{-334367,-35918},{-334346,139803},{-332910,114228},{-332436,-183834},{-330107,56273},{-329765,-53871},{-327951,63435},{-327158,-78714},{-325172,-29834},{-325063,112390},{-324872,-226142},{-322730,-177041},{-322112,-122278},{-321123,-210392},{-320810,128135},{-320780,-46803},{-320289,-125580},{-319514,-125154},{-318832,-124276},{-316838,-186747},{-315760,-52440},{-315488,-179009},{-312859,-89926},{-312290,-57410},{-311100,-52790},{-309638,-74163},{-306407,-58048},{-305844,-213687},{-304101,132472},{-301761,-75748},{-300035,-67748},{-299870,-66700},{-295805,-85489},{-294690,-64860},{-293244,104862},{-290474,13925},{-289289,-53909},{-288250,-86312},{-286512,29982},{-284028,-185782},{-280671,-210381},{-279705,93402},{-277063,-72678},{-275433,-186956},{-272332,92221},{-272267,-171299},{-271619,-49682},{-271593,-203961},{-270736,-81737},{-267072,-65349},{-265928,81951},{-265897,172757},{-265323,-58741},{-264616,-213707},{-263489,-50394},{-262795,161313},{-262585,-43060},{-261839,-198018},{-261782,32361},{-261598,64707},{-260675,-190249},{-259047,6714},{-257263,121484},{-255325,-166507},{-254879,95812},{-254060,30284},{-253567,-158988},{-252039,-192175},{-251138,-183632},{-249549,-176093},{-246960,-127506},{-246743,61001},{-244565,35798},{-244195,179808},{-242292,-62732},{-241908,271077},{-241735,44247},{-240461,84803},{-234841,74888},{-234584,-187455},{-232630,83088},{-230870,-90281},{-228900,65780},{-227010,143789},{-226523,-147877},{-221888,-125031},{-219536,260377},{-215571,86664},{-212965,29134},{-207567,260431},{-205623,169530},{-204639,100487},{-204261,-6435},{-197978,182993},{-195404,226751},{-191148,180395},{-186849,104761},{-186400,71834},{-185534,38805},{-184778,-146607},{-182360,-140253},{-179701,102340},{-177845,4071},{-177135,78365},{-177010,-146700},{-176358,-149414},{-175135,85896},{-174553,283654},{-172288,-148885},{-170883,68373},{-169081,289682},{-167794,-146940},{-163236,272742},{-155957,97901},{-150175,87645},{-149349,171185},{-146582,312142},{-145468,256327},{-144530,199786},{-138912,205051},{-135474,301192},{-129663,329632},{-121608,210847},{-112043,256758},{-111270,245137},{-110538,222900},{-104873,193959},{-95073,285213},{-95063,273993},{-89132,267746},{-87798,200570},{-83901,286045},{-78380,-166910},{-77150,-165700},{-70920,-151320},{-70570,-67820},{-69990,-68660},{-68090,-142800},{-62770,-9680},{-54820,-179620},{-50690,-183080},{-7600,-69580},{-3451,392},{-1830,-1020},{-1755,-1067},{-1666,30},{-1665,-1394},{-1445,1237},{-1346,1279},{-1346,1279},{-1263,-736},{-1123,-1129},{-861,-1292},{-669,-577},{-648,1508},{-487,20},{-474,1263},{-77,723},{44,15},{85,152},{170,-134450},{228,-1084},{299,1189},{342,1202},{389,481},{413,1073},{480,568},{519,-1362},{658,773},{674,-1296},{674,-958},{823,-1845},{831,-825},{832,1176},{853,-1734},{942,-800},{942,173},{971,976},{1026,-1255},{1041,-755},{1117,2},{1131,1698},{1187,-1486},{1199,1927},{1206,3140},{1223,-1593},{1241,-527},{1251,-433},{1307,1749},{1337,-1153},{1347,1063},{1386,-541},{1439,1176},{1596,-1098},{1820,117},{1913,-1123},{2095,-1587},{2678,-2501},{2850,-139460},{2960,-78840},{4020,-79880},{17850,-151450},{26190,-126390},{28070,-145240},{35690,-124330},{41520,-112510}}
 V10['Hexolite'] = {{-922463,-405974},{-919946,-389766},{-902899,-385959},{-895897,-390517},{-892255,-377359},{-888022,-425492},{-886724,-376281},{-880415,-405321},{-875209,-398551},{-868571,-372650},{-867535,-464680},{-866877,-409367},{-861510,-408186},{-858864,-389283},{-858217,-364663},{-852586,-448428},{-850627,-399390},{-841847,-440648},{-840767,-415954},{-840603,-360854},{-838807,-397054},{-834267,-389526},{-832194,-456763},{-828722,-389100},{-824295,-467785},{-822517,-387038},{-820944,-423857},{-818117,-380824},{-812608,-465193},{-810226,-415588},{-809445,-390936},{-806780,-463635},{-806725,-377513},{-806245,-292437},{-804613,-445427},{-801750,-284922},{-801333,-431574},{-800873,-376694},{-800820,-260098},{-800243,-345973},{-800067,-500291},{-798977,-327270},{-797907,-474120},{-797467,-419181},{-795053,-314630},{-794677,-289076},{-794522,-258638},{-792831,-472996},{-792701,-356608},{-792192,-387635},{-791863,-417482},{-790454,-454485},{-788953,-343862},{-788821,-257296},{-788229,-318694},{-787542,-293983},{-785859,-447512},{-783233,-397690},{-782922,-428492},{-782742,-287306},{-781520,-262378},{-781384,-379115},{-779340,-329727},{-778750,-330257},{-778750,-329647},{-778390,-249015},{-777341,-426513},{-773292,-242264},{-772571,-364632},{-772290,-303694},{-772047,-278479},{-771110,-222867},{-767806,-357390},{-765508,-252785},{-765215,-221725},{-765194,-338905},{-763253,-405691},{-761143,-386528},{-758760,-251850},{-757871,-288460},{-757531,-370359},{-756762,-348509},{-755076,-416620},{-754990,-330425},{-752929,-225477},{-752230,-403337},{-751805,-256496},{-748823,-328865},{-743959,-297017},{-743142,-242034},{-742138,-389331},{-741810,-364764},{-739378,-345710},{-734387,-221807},{-734325,-196790},{-734230,-399197},{-733924,-282935},{-731795,-380918},{-728275,-312330},{-727781,-373714},{-727776,-257185},{-724424,-213296},{-721491,-256123},{-720796,-403014},{-720391,-347964},{-719987,-206033},{-718395,-389662},{-716789,-451292},{-715820,-455735},{-715463,-254206},{-715116,-315516},{-713608,-438332},{-711872,-388472},{-709519,-430722},{-707724,-208998},{-706951,-381388},{-706709,-215893},{-706675,-295298},{-706319,-240044},{-706096,-452116},{-705568,-417675},{-702954,-196197},{-702941,-290322},{-701583,-411263},{-701298,-379746},{-701247,-325510},{-700535,-355129},{-699614,-245092},{-699354,-275338},{-697964,-453673},{-694616,-353983},{-694282,-238186},{-692858,-420927},{-692718,-274635},{-692065,-452120},{-689030,-266948},{-688379,-384018},{-687943,-211545},{-686548,-303227},{-685363,-370839},{-685210,-193118},{-683108,-437568},{-682804,-179849},{-682019,-296384},{-679485,-399805},{-679413,-424916},{-678598,-344831},{-676208,-179141},{-675958,-325982},{-675925,-209613},{-675023,-387392},{-672535,-460346},{-671173,-435210},{-670441,-324833},{-670168,-355218},{-670155,-177058},{-669832,-207757},{-668358,-244733},{-666506,-427753},{-664852,-323608},{-664805,-409358},{-664072,-207052},{-662972,-359979},{-662606,-457952},{-661668,-249563},{-661617,-396757},{-660917,-193595},{-660670,-279193},{-659300,-316325},{-656926,-242673},{-656493,-388780},{-656202,-448429},{-655117,-161989},{-654960,-192984},{-653378,-346011},{-653038,-280697},{-651140,-154940},{-650470,-418978},{-649889,-393939},{-648900,-222300},{-647945,-258334},{-647564,-197678},{-647068,-141904},{-646213,-350642},{-645332,-325869},{-644617,-387161},{-644296,-184483},{-641845,-459949},{-640556,-434590},{-639193,-299594},{-639040,-354672},{-638955,-416561},{-638750,-183670},{-638222,-158676},{-635243,-464625},{-632035,-390124},{-631531,-334601},{-631326,-450962},{-631291,-421075},{-630795,-248565},{-630513,-280084},{-629654,-138003},{-626081,-186972},{-625340,-334026},{-625278,-450430},{-624727,-425596},{-624646,-278636},{-624201,-309015},{-623940,-223142},{-623589,-167615},{-623121,-375804},{-622744,-259611},{-619653,-154904},{-619041,-479247},{-618797,-424567},{-617903,-368767},{-617312,-196790},{-616801,-227136},{-616456,-319737},{-616380,-466746},{-615639,-147463},{-614999,-295124},{-613946,-263836},{-613549,-417233},{-611885,-195608},{-611598,-459854},{-609671,-496323},{-609569,-146306},{-609470,-410288},{-609214,-293879},{-609119,-238683},{-608267,-268818},{-607681,-391271},{-607542,-360756},{-607080,-188787},{-606724,-335474},{-605094,-457825},{-603818,-494628},{-601239,-390279},{-600874,-451163},{-600585,-279366},{-600582,-187530},{-600482,-365524},{-599129,-169127},{-598366,-432482},{-596987,-499703},{-595533,-272614},{-595495,-357918},{-594610,-333250},{-593318,-400643},{-592834,-314849},{-592678,-167080},{-592295,-259353},{-590299,-473152},{-590186,-209976},{-589938,-227997},{-589607,-387474},{-587745,-306887},{-586989,-166501},{-586769,-460877},{-586383,-374179},{-586368,-343502},{-584473,-290358},{-583738,-239088},{-583486,-152987},{-580919,-343108},{-580081,-489433},{-579381,-464681},{-579326,-232099},{-578065,-385174},{-577912,-152280},{-576341,-335345},{-576009,-188595},{-574993,-311111},{-574786,-224635},{-574061,-463881},{-571226,-273261},{-570903,-186473},{-570526,-303809},{-570296,-156372},{-569248,-223913},{-568655,-367386},{-566959,-399153},{-563425,-222498},{-562377,-400373},{-562310,-197653},{-561093,-173271},{-560593,-381426},{-559700,-148268},{-558630,-301151},{-555804,-227112},{-554290,-178194},{-553870,-208553},{-553363,-299890},{-551040,-397241},{-549643,-170203},{-548759,-261839},{-548229,-378918},{-548075,-292526},{-547279,-237299},{-546289,-213264},{-544479,-341059},{-544159,-371364},{-543159,-154778},{-542710,-403783},{-542611,-174904},{-542467,-292174},{-540287,-211846},{-538565,-278379},{-537986,-253755},{-536144,-351632},{-535414,-180037},{-535307,-210189},{-532696,-307834},{-532121,-283342},{-532059,-253081},{-531563,-162589},{-530891,-172385},{-528543,-239539},{-528259,-386332},{-528020,-215473},{-526401,-281795},{-525972,-367689},{-525533,-312774},{-525034,-342985},{-523571,-207860},{-519356,-256354},{-519230,-341510},{-519102,-400835},{-517190,-322807},{-516289,-245306},{-513182,-206896},{-512864,-315727},{-511988,-377348},{-510953,-235840},{-510779,-401190},{-510394,-297371},{-508415,-363867},{-506346,-228738},{-505406,-406740},{-503733,-356740},{-502061,-276963},{-501933,-287754},{-499840,-405282},{-496522,-257758},{-496316,-392826},{-495690,-402826},{-495577,-367964},{-492048,-384443}}
 V10['Oil'] = {{-937755,-441483},{-906761,-385976},{-888747,-505104},{-866367,-420400},{-863428,-453358},{-856863,-365593},{-853403,-573444},{-850547,-405622},{-838958,-568756},{-837240,-389067},{-819076,-422311},{-810814,-377896},{-808313,-294781},{-799026,-449328},{-798948,-277504},{-790190,-379217},{-781463,-333493},{-775121,-397630},{-767046,-330005},{-744121,-245159},{-741641,-411109},{-721468,-378814},{-715523,-328547},{-714906,-449762},{-709061,-422688},{-705282,-377673},{-701250,-232460},{-700440,-560466},{-696181,-277780},{-693176,-311289},{-688450,-385509},{-686629,-447531},{-686468,-556476},{-685997,-365064},{-683886,-180062},{-674225,-265902},{-668158,-457463},{-663710,-405509},{-662410,-206642},{-657923,-249102},{-649093,-409177},{-645499,-452325},{-643539,-434601},{-639088,-341525},{-631968,-303857},{-626830,-273979},{-624862,-445600},{-611686,-365037},{-610351,-331590},{-596147,-328097},{-589897,-185059},{-587709,-470305},{-585702,-328267},{-579947,-166424},{-579598,-263873},{-572080,-394096},{-566971,-309783},{-555604,-170321},{-550657,-268150},{-548984,-205483},{-548077,-405541},{-536073,-372596},{-535606,-348048},{-516037,-335526},{-497846,-398692},{-469870,-145490},{-469690,-128930},{-460070,-168250},{-458810,-144170},{-455270,-119210},{-445080,-171570},{-434600,-184500},{-432110,-14340},{-431350,-12320},{-430240,-161950},{-427320,-192530},{-425730,-204700},{-424630,-68290},{-415830,-195770},{-414960,-206660},{-369150,10250},{-347579,341695},{-347267,344712},{-344854,345440},{-338080,342042},{-337855,338781},{-336632,341099},{-334890,-234810},{-332190,-235860},{-330120,-235030},{-329440,-81270},{-314020,-56310},{-311010,-225100},{-310050,-218750},{-307940,-58660},{-304470,-227600},{-304040,-220360},{-302220,-229190},{-298670,-67500},{-252492,-125035},{-234160,-141340},{-226000,-71220},{-221130,-156840},{-219100,-120580},{-215520,-100090},{-87170,-150590},{-74560,-69020},{-74560,-68430},{-66690,-13340},{-66010,-14660},{-65804,390177},{-54370,451160},{-52564,428097},{-52040,-185670},{-51550,450700},{-49870,-39710},{-46140,-42950},{-45620,-77050},{-41910,-77050},{-39260,473610},{-38949,500423},{-38190,-97270},{-37521,579163},{-35567,581349},{-35527,571092},{-35120,319060},{-34580,-97870},{-34184,572352},{-33612,570168},{-33406,579618},{-22490,428390},{-15550,255400},{-14660,292530},{-12640,292650},{-12160,-91310},{-11810,-90680},{-11530,-111340},{-10620,241100},{-10430,-109800},{-9553,405498},{20,-137500},{540,-138170},{4010,3590},{7180,273500},{7620,297100},{7890,128050},{11190,-81440},{12800,234030},{13200,-81440},{19230,178890},{23920,-143410},{24920,-142580},{27480,264220},{27910,-11680},{33359,266505},{37690,192380},{37780,-21340},{42560,-28490},{57620,-32020},{65110,285860},{66540,287170},{66600,223840},{67030,393890},{69745,201822},{83150,-4090},{93510,305350},{95770,383830},{99710,303040},{100220,315700},{103240,337180},{105890,350520},{113810,346930},{114090,337950},{125710,381770},{132830,47520},{138180,401750},{142910,308810},{155130,290260},{158080,310220},{160720,290250},{164790,59940},{165080,286990},{174593,358701},{194050,331970},{194540,345890}}
+-- ============================================================================
+-- MapCollectablesFix : makes Map Collectables Helper (5.1 pak) work on
+-- Palworld 1.0. Fully automatic: repairs icons whenever the map opens or a
+-- checkbox changes. See tools/runtime-fix/README.md in the mod repo.
+-- Optional keys: F7 = force refresh, F8 = print projection sanity check.
+-- ============================================================================
 
--- v14 : affine + champ de résidus (IDW) + suivi du zoom en continu
 local LOC  = "Location_9_D162C7D4475031B476074ABBA7265E31"
 local WID  = "Widget_14_A68F358A436136004111129C15913339"
 local LOCR = "Location_10_49309A404E52313D0B68F4B2B4E42060"
 local WIDR = "Widget_14_AF7651F342755646658565BC1583EA1A"
 local OBT_R = "IsObtained_5_0986516E4E8D6EABBB95D187A1A42CA8"
 local OBT_N = "IsObtained_6_9065AF9F4FE3D01CD6CA35800DA9A136"
+local ACT_R = "Relic_2_2CB105654A8996C12329A0B5D3BF857A"
+local ACT_N = "Note_3_6173F72944FE177FCEB687BCA9523EB3"
+-- {managerArray, locField, widgetField, checkboxKey, obtainedField, actorField, freshDataKey}
 local ARRAYS = {
-    {"Relics", LOCR, WIDR, "relics", OBT_R, "Relic_2_2CB105654A8996C12329A0B5D3BF857A"},
-    {"Notes", LOC, WID, "notes", OBT_N, "Note_3_6173F72944FE177FCEB687BCA9523EB3"},
-    {"Chests", LOC, WID, "chests"}, {"Dungeons", LOC, WID, "dungeons"},
-    {"Eggs", LOC, WID, "eggs"}, {"FruitTrees", LOC, WID, "fruittrees"},
-    {"Junk", LOC, WID, "junk"}, {"Outposts", LOC, WID, "outposts"},
-    {"NPCCamps", LOC, WID, "npccampfires"},
-    {"Coal", LOC, WID, "coal"}, {"Copper", LOC, WID, "copper"},
-    {"Quartz", LOC, WID, "quartz"}, {"Sulfur", LOC, WID, "sulfur"},
-    {"Hexolite", LOC, WID, "hexolite"}, {"Oil", LOC, WID, "oil"},
+    {"Relics",   LOCR, WIDR, "relics",       OBT_R, ACT_R, nil},
+    {"Notes",    LOC,  WID,  "notes",        OBT_N, ACT_N, nil},
+    {"Chests",   LOC,  WID,  "chests",       nil,   nil,   nil},
+    {"Dungeons", LOC,  WID,  "dungeons",     nil,   nil,   nil},
+    {"Eggs",     LOC,  WID,  "eggs",         nil,   nil,   nil},
+    {"FruitTrees",LOC, WID,  "fruittrees",   nil,   nil,   nil},
+    {"Junk",     LOC,  WID,  "junk",         nil,   nil,   nil},
+    {"Outposts", LOC,  WID,  "outposts",     nil,   nil,   nil},
+    {"NPCCamps", LOC,  WID,  "npccampfires", nil,   nil,   nil},
+    {"Coal",     LOC,  WID,  "coal",         nil,   nil,   "Coal"},
+    {"Copper",   LOC,  WID,  "copper",       nil,   nil,   "Copper"},
+    {"Quartz",   LOC,  WID,  "quartz",       nil,   nil,   "Quartz"},
+    {"Sulfur",   LOC,  WID,  "sulfur",       nil,   nil,   "Sulfur"},
+    {"Hexolite", LOC,  WID,  "hexolite",     nil,   nil,   "Hexolite"},
+    {"Oil",      LOC,  WID,  "oil",          nil,   nil,   "Oil"},
 }
-local function safe(fn, dflt) local ok,v = pcall(fn) return ok and v or dflt end
+local SNAP_RADIUS = 10000     -- stale entries snap to a fresh 1.0 node within this range
+local CELL = 10000            -- spatial index bucket size
+
+local function safe(fn, dflt) local ok, v = pcall(fn) return ok and v or dflt end
+
+-- ---------------------------------------------------------------- widgets --
 local function findDescendant(w, name, depth)
     if not w or depth > 8 then return nil end
     if safe(function() return w:GetFName():ToString() end, "") == name then return w end
@@ -37,11 +57,47 @@ local function findDescendant(w, name, depth)
         if r then return r end
     end
 end
+
 local function slotxy(w)
     local x, y
     pcall(function() local ld = w.Slot.LayoutData; x, y = ld.Offsets.Left, ld.Offsets.Top end)
     return x, y
 end
+
+local function pinsOfClass(canvas, cls)
+    local pins = {}
+    pcall(function()
+        for i = 0, canvas:GetChildrenCount() - 1 do
+            local c = canvas:GetChildAt(i)
+            if safe(function() return c:GetClass():GetFName():ToString() end, "") == cls then
+                local x, y = slotxy(c)
+                if x then table.insert(pins, {x, y}) end
+            end
+        end
+    end)
+    return pins
+end
+
+-- returns the visible map body and its masked icon canvas
+local function findMap()
+    local body, canvas, bestScore = nil, nil, 0
+    for _, b in ipairs(FindAllOf("WBP_Map_Body_C") or {}) do
+        pcall(function()
+            if not b:IsValid() or not b:IsVisible() then return end
+            local r = b.WidgetTree.RootWidget
+            if not r or not r:IsValid() then return end
+            local cv = findDescendant(r, "Canvas_ForIcon_Mask", 0)
+            if not cv then return end
+            local np = #pinsOfClass(cv, "WBP_Map_IconFTTower_C")
+            if np + 1 > bestScore then bestScore = np + 1; body = b; canvas = cv end
+        end)
+    end
+    return body, canvas
+end
+
+-- ------------------------------------------------------------- projection --
+local function apply(t, wx, wy) return t[1]*wx + t[2]*wy + t[3] end
+
 local function fitAffine(pairsM, sidx)
     local n = #pairsM
     if n < 5 then return nil end
@@ -50,9 +106,9 @@ local function fitAffine(pairsM, sidx)
     mx, my, ms = mx/n, my/n, ms/n
     local Cxx, Cxy, Cyy, Cxs, Cys = 0, 0, 0, 0, 0
     for _, m in ipairs(pairsM) do
-        local dx, dy, dsv = m[1]-mx, m[2]-my, m[sidx]-ms
-        Cxx = Cxx + dx*dx; Cxy = Cxy + dx*dy; Cyy = Cyy + dy*dy
-        Cxs = Cxs + dx*dsv; Cys = Cys + dy*dsv
+        local dx, dy, ds = m[1]-mx, m[2]-my, m[sidx]-ms
+        Cxx = Cxx+dx*dx; Cxy = Cxy+dx*dy; Cyy = Cyy+dy*dy
+        Cxs = Cxs+dx*ds; Cys = Cys+dy*ds
     end
     local det = Cxx*Cyy - Cxy*Cxy
     if math.abs(det) < 1e-6 then return nil end
@@ -60,48 +116,15 @@ local function fitAffine(pairsM, sidx)
     local q = (Cys*Cxx - Cxs*Cxy) / det
     return {p, q, ms - p*mx - q*my}
 end
-local function apply(t, wx, wy) return t[1]*wx + t[2]*wy + t[3] end
 
--- état global du recalage
-local gReg = {}          -- { {w=widget, wx=, wy=} }
-local gCanvas, gBody = nil, nil
-local gRefPin, gRefX, gRefY = nil, nil, nil
-local gPairs, gTX, gTY = nil, nil, nil
-
-local function getPins(canvas)
-    local pins = {}
-    pcall(function()
-        for i = 0, canvas:GetChildrenCount() - 1 do
-            local c = canvas:GetChildAt(i)
-            if safe(function() return c:GetClass():GetFName():ToString() end, "") == "WBP_Map_IconFTTower_C" then
-                local x, y = slotxy(c)
-                if x then table.insert(pins, {x, y, c}) end
-            end
-        end
-    end)
-    return pins
-end
-
-local BOSSES = {{-266563,174506},{-361695,-112009},{81363,90183},{29975,413325},{-321596,209085},{-778216,-36026},{-889805,-435828},{-29428,-115900}}
-local function getBossPins(canvas)
-    local pins = {}
-    pcall(function()
-        for i = 0, canvas:GetChildrenCount() - 1 do
-            local c = canvas:GetChildAt(i)
-            if safe(function() return c:GetClass():GetFName():ToString() end, "") == "WBP_Map_IconTower_C" then
-                local x, y = slotxy(c)
-                if x then table.insert(pins, {x, y}) end
-            end
-        end
-    end)
-    return pins
-end
-local function seedFromBosses(canvas)
-    local bp = getBossPins(canvas)
+-- exact seed: match the 8 boss towers to the 8 boss pins (farthest pair,
+-- 4 orientation hypotheses), then refine on the ~150 fast-travel statue pins
+local function calibrate(canvas)
+    local bp = pinsOfClass(canvas, "WBP_Map_IconTower_C")
     if #bp < 4 then return nil end
     local function farthest(set)
         local bi, bj, bd = 1, 2, -1
-        for i = 1, #set do for j = i+1, #set do
+        for i = 1, #set do for j = i + 1, #set do
             local d = (set[i][1]-set[j][1])^2 + (set[i][2]-set[j][2])^2
             if d > bd then bd = d; bi = i; bj = j end
         end end
@@ -109,27 +132,25 @@ local function seedFromBosses(canvas)
     end
     local wA, wB = farthest(BOSSES)
     local pA, pB = farthest(bp)
-    local best, bestErr = nil, 1e18
+    local tX, tY, bestErr = nil, nil, 1e18
     for _, axis in ipairs({true, false}) do
         for _, flip in ipairs({false, true}) do
-            local ok = true
             local qA, qB = pA, pB
             if flip then qA, qB = pB, pA end
             local wuA = axis and wA[2] or wA[1]
             local wuB = axis and wB[2] or wB[1]
             local wvA = axis and wA[1] or wA[2]
             local wvB = axis and wB[1] or wB[2]
-            if math.abs(wuB - wuA) < 1 or math.abs(wvB - wvA) < 1 then ok = false end
-            if ok then
-                local a = (qB[1] - qA[1]) / (wuB - wuA)
-                local b = qA[1] - a * wuA
-                local c = (qB[2] - qA[2]) / (wvB - wvA)
-                local d = qA[2] - c * wvA
-                local tX = axis and {0, a, b} or {a, 0, b}
-                local tY = axis and {c, 0, d} or {0, c, d}
+            if math.abs(wuB - wuA) > 1 and math.abs(wvB - wvA) > 1 then
+                local a = (qB[1]-qA[1]) / (wuB-wuA)
+                local b = qA[1] - a*wuA
+                local c = (qB[2]-qA[2]) / (wvB-wvA)
+                local d = qA[2] - c*wvA
+                local cX = axis and {0, a, b} or {a, 0, b}
+                local cY = axis and {c, 0, d} or {0, c, d}
                 local err = 0
                 for _, t in ipairs(BOSSES) do
-                    local px, py = apply(tX, t[1], t[2]), apply(tY, t[1], t[2])
+                    local px, py = apply(cX, t[1], t[2]), apply(cY, t[1], t[2])
                     local bd = 1e18
                     for _, q in ipairs(bp) do
                         local dd = (q[1]-px)^2 + (q[2]-py)^2
@@ -137,297 +158,192 @@ local function seedFromBosses(canvas)
                     end
                     err = err + math.sqrt(bd)
                 end
-                if err < bestErr then bestErr = err; best = {tX, tY} end
+                if err < bestErr then bestErr = err; tX, tY = cX, cY end
             end
         end
     end
-    if best then
-        print(string.format("[MCDiag] ancrage boss: residu total %.0f px sur 8 tours", bestErr))
-        return best[1], best[2]
-    end
-    return nil
-end
-local function calibrate(canvas, quiet)
-    local pins = getPins(canvas)
-    if #pins < 10 then return false end
-    local tX, tY = seedFromBosses(canvas)
-    if not tX then
-        if not quiet then print("[MCDiag] pins boss introuvables: percentiles") end
-        local function pct(arr, lo, hi)
-            table.sort(arr)
-            local n = #arr
-            return arr[math.max(1, math.floor(n*lo))], arr[math.min(n, math.ceil(n*hi))]
+    if not tX then return nil end
+    -- refine on statue pins (one matched least-squares pass is enough
+    -- given the exact seed)
+    local pins = pinsOfClass(canvas, "WBP_Map_IconFTTower_C")
+    local pairsM = {}
+    for _, t in ipairs(TOWERS) do
+        local px, py = apply(tX, t[1], t[2]), apply(tY, t[1], t[2])
+        local best, bd = nil, 60 * 60
+        for _, p in ipairs(pins) do
+            local d = (p[1]-px)^2 + (p[2]-py)^2
+            if d < bd then bd = d; best = p end
         end
-        local pxs, pys = {}, {}
-        for _, q in ipairs(pins) do table.insert(pxs, q[1]); table.insert(pys, q[2]) end
-        local sxmin, sxmax = pct(pxs, 0.10, 0.90)
-        local symin, symax = pct(pys, 0.10, 0.90)
-        local wxs, wys = {}, {}
-        for _, t in ipairs(TOWERS) do table.insert(wxs, t[1]); table.insert(wys, t[2]) end
-        local wxmin, wxmax = pct(wxs, 0.10, 0.90)
-        local wymin, wymax = pct(wys, 0.10, 0.90)
-        tX = {0, (sxmax-sxmin)/(wymax-wymin), 0}; tX[3] = sxmin - tX[2]*wymin
-        tY = {(symax-symin)/(wxmax-wxmin), 0, 0}; tY[3] = symin - tY[1]*wxmin
+        if best then table.insert(pairsM, {t[1], t[2], best[1], best[2]}) end
     end
-    local bestX, bestY, bestErr, bestPairs = tX, tY, 1e18, nil
-    local radius = 300
-    for iter = 1, 7 do
-        local pairsM = {}
-        for _, t in ipairs(TOWERS) do
-            local px, py = apply(tX, t[1], t[2]), apply(tY, t[1], t[2])
-            local best, bd = nil, radius * radius
-            for _, p in ipairs(pins) do
-                local d = (p[1]-px)^2 + (p[2]-py)^2
-                if d < bd then bd = d; best = p end
-            end
-            if best then table.insert(pairsM, {t[1], t[2], best[1], best[2]}) end
-        end
-        if #pairsM < 15 then break end
+    if #pairsM >= 15 then
         local nX = fitAffine(pairsM, 3)
         local nY = fitAffine(pairsM, 4)
-        if not (nX and nY) then break end
-        tX, tY = nX, nY
-        -- rejet des paires aberrantes: > 2.5x la mediane, puis refit
-        local res = {}
-        for _, m in ipairs(pairsM) do
-            table.insert(res, math.abs(apply(tX,m[1],m[2])-m[3]) + math.abs(apply(tY,m[1],m[2])-m[4]))
-        end
-        local sorted = {table.unpack(res)}
-        table.sort(sorted)
-        local med = sorted[math.max(1, math.floor(#sorted/2))]
-        local trimmed = {}
-        for i, m in ipairs(pairsM) do
-            if res[i] <= 2.5 * med + 10 then table.insert(trimmed, m) end
-        end
-        if #trimmed >= 15 and #trimmed < #pairsM then
-            local tXX = fitAffine(trimmed, 3)
-            local tYY = fitAffine(trimmed, 4)
-            if tXX and tYY then tX, tY = tXX, tYY; pairsM = trimmed end
-        end
-        local err = 0
-        for _, m in ipairs(pairsM) do
-            err = err + math.abs(apply(tX,m[1],m[2])-m[3]) + math.abs(apply(tY,m[1],m[2])-m[4])
-        end
-        err = err / (2 * #pairsM)
-        if not quiet then print(string.format("[MCDiag] ICP iter%d: %d paires, err %.1f px", iter, #pairsM, err)) end
-        if err < bestErr then bestErr = err; bestX = {tX[1],tX[2],tX[3]}; bestY = {tY[1],tY[2],tY[3]}; bestPairs = pairsM end
-        radius = math.max(80, radius * 0.6)
+        if nX and nY then tX, tY = nX, nY end
     end
-    if not bestPairs then return false end
-    -- champ de résidus: pour chaque paire, l'écart entre pin réel et affine
-    for _, m in ipairs(bestPairs) do
-        m[5] = m[3] - apply(bestX, m[1], m[2])   -- résidu X
-        m[6] = m[4] - apply(bestY, m[1], m[2])   -- résidu Y
-    end
-    gTX, gTY, gPairs = bestX, bestY, bestPairs
-    -- pin de référence pour détecter zoom/re-layout
-    local pins2 = getPins(canvas)
-    if #pins2 > 0 then gRefPin = pins2[1][3]; gRefX, gRefY = pins2[1][1], pins2[1][2] end
-    if not quiet then print(string.format("[MCDiag] calibration: err affine %.1f px + correction locale (%d ancres)", bestErr, #bestPairs)) end
-    return true
+    print(string.format("[MapCollectablesFix] calibrated: boss residual %.0f px, %d statue anchors", bestErr, #pairsM))
+    return {tX = tX, tY = tY}
 end
 
--- position corrigée: affine + interpolation des résidus (IDW, 4 ancres min)
-local gOffX, gOffY = 0, 0
-local function project(wx, wy)
-    local px, py = apply(gTX, wx, wy) + gOffX, apply(gTY, wx, wy) + gOffY
-    local sw, sx, sy = 0, 0, 0
-    for _, m in ipairs(gPairs) do
-        local d2 = (m[1]-wx)^2 + (m[2]-wy)^2
-        local w = 1.0 / (d2 + 1e8)   -- ~10km de rayon d'influence
-        sw = sw + w; sx = sx + w*m[5]; sy = sy + w*m[6]
-    end
-    if sw > 0 then px = px + sx/sw; py = py + sy/sw end
-    return px, py
-end
-
-local function reposition()
-    if not (gCanvas and gCanvas:IsValid() and gTX) then return end
-    for _, r in ipairs(gReg) do
-        pcall(function()
-            if r.w and r.w:IsValid() then
-                local px, py = project(r.wx, r.wy)
-                if px == px and px > -2000 and px < 6000 and py > -2000 and py < 6000 then
-                    local s = r.w.Slot
-                    if s and s:IsValid() then s:SetPosition({X = px, Y = py}) end
-                end
-            end
-        end)
+-- ------------------------------------------------------- fresh data index --
+local INDEX = {}   -- freshKey -> {buckets = {["i:j"] = {{x,y},...}}}
+local function buildIndexes()
+    for key, pts in pairs(V10) do
+        local buckets = {}
+        for _, p in ipairs(pts) do
+            local k = math.floor(p[1]/CELL) .. ":" .. math.floor(p[2]/CELL)
+            buckets[k] = buckets[k] or {}
+            table.insert(buckets[k], p)
+        end
+        INDEX[key] = buckets
     end
 end
-
-local function isOn(st) return st == true or st == 1 end
-local function collectCheckboxes(w, out, depth)
-    if not w or depth > 12 then return end
-    local cls = safe(function() return w:GetClass():GetFName():ToString() end, "")
-    if cls:find("CheckBox") then
-        local nm = safe(function() return w:GetFName():ToString() end, "?"):lower()
-        local st = safe(function() return w:IsChecked() end, nil)
-        if st == nil then st = safe(function() return w:GetCheckedState() end, nil) end
-        out[nm] = st
-    end
-    local n = safe(function() return w:GetChildrenCount() end, 0) or 0
-    for i = 0, n - 1 do collectCheckboxes(safe(function() return w:GetChildAt(i) end, nil), out, depth + 1) end
-end
-
-local function repair()
-    print("[MCDiag] ========== v22 ==========")
-    local bodies = FindAllOf("WBP_Map_Body_C") or {}
-    local body, canvas, bestScore = nil, nil, -1
-    for bi, b in ipairs(bodies) do
-        pcall(function()
-            if not b:IsValid() then return end
-            local r = b.WidgetTree.RootWidget
-            if not r or not r:IsValid() then return end
-            local cv = findDescendant(r, "Canvas_ForIcon_Mask", 0)
-            if not cv then return end
-            local vis = safe(function() return b:IsVisible() end, false)
-            local np = #getPins(cv)
-            local score = np + (vis and 100000 or 0)
-            if score > bestScore then bestScore = score; body = b; canvas = cv end
-        end)
-    end
-    if not canvas then print("[MCDiag] canvas introuvable (carte fermée ?)") return end
-    gBody, gCanvas = body, canvas
-    if not calibrate(canvas, false) then print("[MCDiag] calibration impossible") return end
-    -- recalage absolu sur le pin joueur
-    gOffX, gOffY = 0, 0
-    pcall(function()
-        local pcs = FindAllOf("PalPlayerCharacter") or {}
-        local pl = pcs[1] and pcs[1]:K2_GetActorLocation()
-        local root = body.WidgetTree.RootWidget
-        local nomask = findDescendant(root, "Canvas_ForIcon_NoMask", 0)
-        if pl and nomask then
-            for i = 0, nomask:GetChildrenCount() - 1 do
-                local c = nomask:GetChildAt(i)
-                if safe(function() return c:GetClass():GetFName():ToString() end, "") == "WBP_Map_IconPlayer_C" then
-                    local gx, gy = slotxy(c)
-                    if gx then
-                        local ox, oy = apply(gTX, pl.X, pl.Y), apply(gTY, pl.X, pl.Y)
-                        gOffX, gOffY = gx - ox, gy - oy
-                        print(string.format("[MCDiag] recalage joueur: offset=(%.0f,%.0f)", gOffX, gOffY))
-                    end
-                end
+local function snap(key, x, y)
+    local buckets = INDEX[key]
+    if not buckets then return x, y end
+    local bi, bj = math.floor(x/CELL), math.floor(y/CELL)
+    local best, bd = nil, SNAP_RADIUS * SNAP_RADIUS
+    for i = bi-1, bi+1 do
+        for j = bj-1, bj+1 do
+            for _, p in ipairs(buckets[i .. ":" .. j] or {}) do
+                local d = (p[1]-x)^2 + (p[2]-y)^2
+                if d < bd then bd = d; best = p end
             end
         end
-    end)
+    end
+    if best then return best[1], best[2] end
+    return nil  -- node removed in 1.0: hide
+end
 
+-- -------------------------------------------------------------- checkboxes --
+local function readCheckboxes()
+    local out = {}
     local uis = FindAllOf("MapCollectablesUI_C") or {}
-    local cbs = {}
-    collectCheckboxes(safe(function() return uis[#uis].WidgetTree.RootWidget end, nil), cbs, 0)
-    local function typeEnabled(key)
-        local st = cbs["show" .. key .. "checkbox"]
-        if st == nil then return true end
-        return isOn(st)
+    local root = safe(function() return uis[#uis].WidgetTree.RootWidget end, nil)
+    local function walk(w, depth)
+        if not w or depth > 12 then return end
+        if safe(function() return w:GetClass():GetFName():ToString() end, ""):find("CheckBox") then
+            local nm = safe(function() return w:GetFName():ToString() end, "?"):lower()
+            local st = safe(function() return w:IsChecked() end, nil)
+            if st == nil then st = safe(function() return w:GetCheckedState() end, nil) end
+            out[nm] = (st == true or st == 1)
+        end
+        local n = safe(function() return w:GetChildrenCount() end, 0) or 0
+        for i = 0, n - 1 do walk(safe(function() return w:GetChildAt(i) end, nil), depth + 1) end
     end
-    local function includeCollected(key)
-        local st = cbs["includecollected" .. key .. "checkbox"]
-        return st ~= nil and isOn(st)
-    end
+    walk(root, 0)
+    return out
+end
 
-    gReg = {}
+-- ------------------------------------------------------------------ state --
+local gCalib = nil          -- cached transform
+local gCalibCanvas = nil    -- canvas it was computed for
+local gLastSig = ""         -- change-detection signature
+
+-- ----------------------------------------------------------------- repair --
+local function repair(reason)
+    local body, canvas = findMap()
+    if not canvas then return false end
+    if not gCalib or gCalibCanvas ~= canvas or not safe(function() return gCalibCanvas:IsValid() end, false) then
+        gCalib = calibrate(canvas)
+        gCalibCanvas = canvas
+        if not gCalib then return false end
+    end
+    local cbs = readCheckboxes()
     local mgr = (FindAllOf("CollectablesManager_C") or {})[1]
+    if not mgr then return false end
     local total = 0
     for _, spec in ipairs(ARRAYS) do
-        local aname, lf, wf, key, obtf, actf = spec[1], spec[2], spec[3], spec[4], spec[5], spec[6]
-        local enabled = typeEnabled(key)
-        local incColl = obtf and includeCollected(key)
-        local a = safe(function() return mgr[aname] end, nil)
-        local cnt = safe(function() return #a end, 0) or 0
-        local att = 0
+        local aname, lf, wf, key, obtf, actf, fresh = spec[1], spec[2], spec[3], spec[4], spec[5], spec[6], spec[7]
+        local st = cbs["show" .. key .. "checkbox"]
+        local enabled = (st == nil) or st
+        local incColl = obtf and (cbs["includecollected" .. key .. "checkbox"] == true)
+        local arr = safe(function() return mgr[aname] end, nil)
+        local cnt = safe(function() return #arr end, 0) or 0
         for i = 1, cnt do
             pcall(function()
-                local e = a[i]
+                local e = arr[i]
                 local ww = e[wf]
-                if ww and ww:IsValid() then
-                    local show = enabled
-                    if show and obtf then
-                        local obt = safe(function() return e[obtf] end, false) == true
-                        if actf and not obt then
-                            obt = safe(function()
-                                local actor = e[actf]
-                                return actor and actor:IsValid() and actor.bPickedInClient == true
-                            end, false) == true
-                        end
-                        if obt and not incColl then show = false end
+                if not (ww and ww:IsValid()) then return end
+                local show = enabled
+                if show and obtf then
+                    local obt = safe(function() return e[obtf] end, false) == true
+                    if actf and not obt then
+                        obt = safe(function()
+                            local actor = e[actf]
+                            return actor and actor:IsValid() and actor.bPickedInClient == true
+                        end, false) == true
                     end
-                    if show then
-                        local ll = e[lf]
-                        local lx, ly = ll.X, ll.Y
-                        local fresh = V10[aname]
-                        if fresh then
-                            local best, bd = nil, 10000 * 10000
-                            for _, q in ipairs(fresh) do
-                                local d = (q[1]-lx)^2 + (q[2]-ly)^2
-                                if d < bd then bd = d; best = q end
-                            end
-                            if best then lx, ly = best[1], best[2] else return end
-                        end
-                        local px, py = project(lx, ly)
-                        if px ~= px or px < -2000 or px > 6000 or py < -2000 or py > 6000 then return end
-                        local s = canvas:AddChildToCanvas(ww)
-                        s:SetPosition({X = px, Y = py})
-                        s:SetAlignment({X = 0.5, Y = 0.5})
-                        s:SetAutoSize(true)
-                        ww:SetVisibility(3)
-                        table.insert(gReg, {w = ww, wx = lx, wy = ly})
-                        att = att + 1
-                    else
-                        ww:RemoveFromParent()
-                    end
+                    if obt and not incColl then show = false end
+                end
+                local lx, ly
+                if show then
+                    local ll = e[lf]
+                    lx, ly = ll.X, ll.Y
+                    if fresh then lx, ly = snap(fresh, lx, ly) end
+                    if not lx then show = false end
+                end
+                if show then
+                    local px = apply(gCalib.tX, lx, ly)
+                    local py = apply(gCalib.tY, lx, ly)
+                    if px ~= px or px < -2000 or px > 6000 or py < -2000 or py > 6000 then return end
+                    local s = canvas:AddChildToCanvas(ww)
+                    s:SetPosition({X = px, Y = py})
+                    s:SetAlignment({X = 0.5, Y = 0.5})
+                    s:SetAutoSize(true)
+                    ww:SetVisibility(3)
+                    total = total + 1
+                else
+                    ww:RemoveFromParent()
                 end
             end)
         end
-        if cnt > 0 then print(string.format("[MCDiag] %s: %d/%d (case %s)", aname, att, cnt, tostring(enabled))) end
-        total = total + att
     end
-    print(string.format("[MCDiag] TOTAL affichés: %d ", total))
-    print("[MCDiag] ========== FIN v22 ==========")
+    print(string.format("[MapCollectablesFix] %d icons placed (%s)", total, reason))
+    return true
 end
 
+-- ------------------------------------------------------------- automation --
+-- Watches for the map being (re)opened or checkboxes changing. The mod
+-- recreates its widgets on every map open, so the widget count is a reliable
+-- change signal.
+buildIndexes()
+LoopAsync(800, function()
+    pcall(function()
+        local body, canvas = findMap()
+        if not canvas then gLastSig = "" return end
+        local cbs = readCheckboxes()
+        local h = tostring(#(FindAllOf("CollectableWidget_C") or {}))
+        for k, v in pairs(cbs) do h = h .. k .. tostring(v) end
+        if h ~= gLastSig then
+            gLastSig = h
+            repair("auto")
+        end
+    end)
+    return false
+end)
 
-
-local function playerTest()
-    if not (gTX and gBody and gBody:IsValid()) then print("[MCDiag] F7 d'abord") return end
-    local pcs = FindAllOf("PalPlayerCharacter") or {}
-    local pl = pcs[1] and pcs[1]:K2_GetActorLocation()
-    if not pl then print("[MCDiag] joueur introuvable") return end
-    local px, py = project(pl.X, pl.Y)
-    -- pin joueur du jeu
-    local root = safe(function() return gBody.WidgetTree.RootWidget end, nil)
-    local nomask = root and findDescendant(root, "Canvas_ForIcon_NoMask", 0)
-    local gx, gy = nil, nil
-    if nomask then
-        for i = 0, nomask:GetChildrenCount() - 1 do
+RegisterKeyBind(Key.F7, function() gCalib = nil; repair("manual") end)
+RegisterKeyBind(Key.F8, function()
+    pcall(function()
+        if not gCalib then print("[MapCollectablesFix] not calibrated yet") return end
+        local pl = (FindAllOf("PalPlayerCharacter") or {})[1]
+        local loc = pl and pl:K2_GetActorLocation()
+        if not loc then return end
+        local body, canvas = findMap()
+        if not body then return end
+        local nomask = findDescendant(body.WidgetTree.RootWidget, "Canvas_ForIcon_NoMask", 0)
+        for i = 0, (nomask and nomask:GetChildrenCount() or 0) - 1 do
             local c = nomask:GetChildAt(i)
             if safe(function() return c:GetClass():GetFName():ToString() end, "") == "WBP_Map_IconPlayer_C" then
-                gx, gy = slotxy(c)
+                local gx, gy = slotxy(c)
+                local px = apply(gCalib.tX, loc.X, loc.Y)
+                local py = apply(gCalib.tY, loc.X, loc.Y)
+                print(string.format("[MapCollectablesFix] player check: game=(%.0f,%.0f) ours=(%.0f,%.0f) delta=(%.0f,%.0f)",
+                    gx, gy, px, py, px-gx, py-gy))
             end
         end
-    end
-    if gx then
-        print(string.format("[MCDiag] TEST joueur monde=(%.0f,%.0f): jeu=(%.0f,%.0f) nous=(%.0f,%.0f) DELTA=(%.0f,%.0f)",
-            pl.X, pl.Y, gx, gy, px, py, px - gx, py - gy))
-    else
-        print(string.format("[MCDiag] TEST: pin joueur introuvable; nous=(%.0f,%.0f)", px, py))
-    end
-end
-RegisterKeyBind(Key.F8, playerTest)
+    end)
+end)
 
-local function unlockMap()
-    local n = 0
-    for _, pc in ipairs(FindAllOf("PalPlayerController") or {}) do
-        pcall(function()
-            local cm = pc.CheatManager
-            if cm and cm:IsValid() then
-                cm:UnlockAllWorldMap()
-                cm:UnlockHiddenLocationOnWorldMapUI()
-                n = n + 1
-            end
-        end)
-    end
-    print(string.format("[MCDiag] UnlockAllWorldMap appelé (%d controller)", n))
-end
-RegisterKeyBind(Key.F6, unlockMap)
-RegisterKeyBind(Key.F7, repair)
-print("[MCDiag] v17 (stable): F6 = révéler carte, F7 = réparation, F8 = delta joueur")
+print("[MapCollectablesFix] loaded: auto-repair active (F7 force, F8 check)")

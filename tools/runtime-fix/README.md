@@ -1,46 +1,51 @@
-# Runtime fix (UE4SS Lua) — Palworld 1.0
+# MapCollectablesFix — UE4SS runtime fix for Palworld 1.0
 
-Companion Lua mod that makes the 5.1 cooked pak of Map Collectables Helper fully
-work on Palworld 1.0 without rebuilding it in the editor. Root cause of the 1.0
-breakage: the mod's Blueprint looks up the map's icon canvas by child index, and
-1.0 inserted new children into `WBP_Map_Body` (`WBP_SkyIslandCloud`,
-`Image_MapMask`, `Canvas_ForIcon_NoMask`, `Canvas_ForIcon_Priority`), so the mod's
-icon widgets were created but never added to the visual tree.
+Standalone UE4SS Lua mod that makes Map Collectables Helper (the 5.1 cooked pak)
+fully work on Palworld 1.0, **fully automatically**: icons repair themselves
+whenever the map opens or a filter checkbox changes. No keys needed.
+
+Root cause of the 1.0 breakage: the mod's Blueprint looks up the map's icon
+canvas by child index, and 1.0 inserted new children into `WBP_Map_Body`
+(`WBP_SkyIslandCloud`, `Image_MapMask`, `Canvas_ForIcon_NoMask`,
+`Canvas_ForIcon_Priority`), so the mod's icon widgets were created but never
+added to the visual tree.
 
 ## Install
 
-Copy to `Palworld/Mods/NativeMods/UE4SS/Mods/MCDiag/scripts/main.lua` (or any mod
-folder name) and add `MCDiag : 1` to `Mods/mods.txt`. Requires the Map Collectables
-Helper pak in LogicMods and RE-UE4SS experimental-palworld (1.0 build).
+1. Map Collectables Helper pak in `Pal/Content/Paks/LogicMods/` (Workshop item
+   3704720562 or Nexus), with RE-UE4SS experimental-palworld (1.0 build) and
+   `BPModLoaderMod : 1`.
+2. Copy this folder to `<UE4SS>/Mods/MapCollectablesFix/` (so the script is at
+   `Mods/MapCollectablesFix/scripts/main.lua`).
+3. Add `MapCollectablesFix : 1` to `<UE4SS>/Mods/mods.txt`.
 
-## Keys
+## What it does
 
-- **F7** (map open): attaches all collectable icons to `Canvas_ForIcon_Mask`,
-  positioned with the exact world→map transform, filtered by the mod's own
-  checkboxes, with stale pre-1.0 resource entries snapped to fresh 1.0 positions
-  (embedded, surface-only). Press again after reopening the map or toggling boxes.
-- **F8**: prints the delta between the game's player pin and our projection
-  (sanity check, expect ~0 px).
-- **F6**: `UnlockAllWorldMap` cheat (needs CheatManagerEnabler).
+- **Auto-repair**: a 0.8 s watcher detects map opens (the mod recreates its
+  widgets each time) and checkbox changes, then re-attaches every icon to
+  `Canvas_ForIcon_Mask`.
+- **Exact projection**, cached after first calibration: seeded by matching the
+  8 boss towers (world positions embedded, extracted from the 1.0 pak) to the 8
+  `WBP_Map_IconTower_C` pins (farthest-pair, 4 orientation hypotheses, 0 px
+  residual), refined by one matched least-squares pass over the ~150
+  `WBP_Map_IconFTTower_C` statue pins (0.3 px). Axis form:
+  slotX = a·worldY + b, slotY = c·worldX + d.
+- **Fresh 1.0 data**: stale pre-1.0 resource entries snap to embedded
+  surface-only 1.0 node positions via a spatial hash (10 km buckets); nodes
+  removed by the 1.0 update are hidden.
+- **Live collected state**: effigies/notes read `bPickedInClient` from their
+  actor, so collected ones (including from old saves) disappear on refresh,
+  honoring the "include collected" checkboxes.
 
-## World → map-canvas projection (Palworld 1.0)
+Debug keys (optional): **F7** force refresh + recalibrate, **F8** print the
+projection delta against the game's own player pin (expect ~0 px).
 
-The world map is a plain affine mapping; blind point matching is ambiguous, so the
-transform is anchored on exact correspondences at runtime:
+## Known limits / notes
 
-1. The 8 boss towers (world positions embedded, extracted from the 1.0 pak) are
-   matched to the 8 `WBP_Map_IconTower_C` pins via farthest-pair + 4 orientation
-   hypotheses → exact seed (0 px residual).
-2. Refined by ICP + trimmed least squares over ~150 `WBP_Map_IconFTTower_C`
-   fast-travel statue pins (0.3 px residual).
-3. Sanity-anchored on the player pin (offset ~0).
-
-Axis form: slotX = a·worldY + b, slotY = c·worldX + d (plus tiny affine cross
-terms fitted by least squares).
-
-## Notes
-
-- Cave/dungeon interiors sit on an instanced grid (deep Z or offshore): all
-  embedded location data is filtered to surface nodes (z > -15000).
-- Hot-reloading (Ctrl+R) UE4SS Lua while widgets are being torn down can crash
-  the game: prefer restarting after script edits.
+- Cave interiors sit on an instanced grid (deep Z): underground nodes
+  (all Lotus flowers, DogCoins, most cave mushrooms, ~half the ore) are
+  excluded from embedded data; showing them at cave entrances is future work.
+- The pak leaks ~3.6k orphan widgets per map open (pre-existing mod behavior);
+  harmless short-term, fixed properly by the upcoming Blueprint port.
+- Hot-reloading UE4SS Lua (Ctrl+R) while widgets are being torn down can crash
+  the game: restart instead after editing the script.
