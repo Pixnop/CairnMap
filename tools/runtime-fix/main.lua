@@ -319,17 +319,47 @@ local function ensureExtraCheckboxes()
         end
     end
     if next(gExtraCbs) then return end
-    -- modèles: une case et un texte existants du panneau
+    -- modèles: une case du panneau + le TextBlock natif interne d'un BP_PalTextBlock
     local cbTemplate, txtTemplate = nil, nil
     local function findTemplates(w, depth)
-        if (cbTemplate and txtTemplate) or not w or depth > 12 then return end
+        if (cbTemplate and txtTemplate) or not w or depth > 14 then return end
         local cls = safe(function() return w:GetClass():GetFName():ToString() end, "")
         if cls == "CheckBox" and not cbTemplate then cbTemplate = w end
-        if cls:find("TextBlock") and not txtTemplate then txtTemplate = w end
+        if cls == "TextBlock" and not txtTemplate then txtTemplate = w end
         local n = safe(function() return w:GetChildrenCount() end, 0) or 0
         for i = 0, n - 1 do findTemplates(safe(function() return w:GetChildAt(i) end, nil), depth + 1) end
+        -- descendre aussi dans les UserWidgets (BP_PalTextBlock etc.)
+        local inner = safe(function() return w.WidgetTree.RootWidget end, nil)
+        if inner then findTemplates(inner, depth + 1) end
     end
     findTemplates(root, 0)
+    -- copie de style vérifiée: struct entier puis brush par brush si besoin
+    local function copyCheckboxStyle(dst, tpl)
+        local function brushName(cb2, field)
+            return safe(function()
+                local ro = cb2.WidgetStyle[field].ResourceObject
+                return ro and ro:IsValid() and ro:GetFName():ToString() or "nil"
+            end, "?")
+        end
+        pcall(function() dst.WidgetStyle = tpl.WidgetStyle end)
+        if brushName(dst, "UncheckedImage") == brushName(tpl, "UncheckedImage") and brushName(tpl, "UncheckedImage") ~= "nil" then
+            return "struct"
+        end
+        local fields = {"CheckedImage","CheckedHoveredImage","CheckedPressedImage",
+                        "UncheckedImage","UncheckedHoveredImage","UncheckedPressedImage",
+                        "UndeterminedImage","UndeterminedHoveredImage","UndeterminedPressedImage",
+                        "BackgroundImage","BackgroundHoveredImage","BackgroundPressedImage"}
+        local okc = 0
+        for _, f in ipairs(fields) do
+            local done = pcall(function() dst.WidgetStyle[f] = tpl.WidgetStyle[f] end)
+            if done then okc = okc + 1 end
+        end
+        pcall(function() dst.WidgetStyle.CheckBoxType = tpl.WidgetStyle.CheckBoxType end)
+        if brushName(dst, "UncheckedImage") == brushName(tpl, "UncheckedImage") and brushName(tpl, "UncheckedImage") ~= "nil" then
+            return "brushes(" .. okc .. ")"
+        end
+        return "ÉCHEC (tpl=" .. brushName(tpl, "UncheckedImage") .. " dst=" .. brushName(dst, "UncheckedImage") .. ")"
+    end
     local cbClass = StaticFindObject("/Script/UMG.CheckBox")
     local hbClass = StaticFindObject("/Script/UMG.HorizontalBox")
     local txtClass = StaticFindObject("/Script/UMG.TextBlock")
@@ -355,14 +385,17 @@ local function ensureExtraCheckboxes()
                 local dot = StaticConstructObject(imgClass, row)
                 dot:SetColorAndOpacity(layer.color)
                 dot:SetVisibility(3)
+                pcall(function() dot:SetDesiredSizeOverride({X = 12.0, Y = 12.0}) end)
+                pcall(function() dot.Brush.ImageSize = {X = 12.0, Y = 12.0} end)
                 local ds = row:AddChildToHorizontalBox(dot)
                 pcall(function() ds:SetPadding({Left = 2, Top = 6, Right = 2, Bottom = 6}) end)
-                pcall(function() dot:SetDesiredSizeOverride({X = 12, Y = 12}) end)
+                pcall(function() ds:SetVerticalAlignment(2) end)
             end
             -- case à cocher, style copié du panneau
             local cb = StaticConstructObject(cbClass, row)
             if cbTemplate and cbTemplate:IsValid() then
-                pcall(function() cb.WidgetStyle = cbTemplate.WidgetStyle end)
+                local how = copyCheckboxStyle(cb, cbTemplate)
+                print(string.format("[MapCollectablesFix] style %s: %s", layer.key, how))
             end
             cb:SetVisibility(0)
             cb:SetIsChecked(gExtraState[layer.key])
