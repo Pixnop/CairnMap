@@ -41,6 +41,19 @@ RE-UE4SS build 1.0 (Okaetsu, format Workshop: `Mods/NativeMods/UE4SS/`),
 chargent, cf. `UE4SS.log`). **Dump headers 1.0 dispo localement**:
 `Palworld/Mods/NativeMods/UE4SS/CXXHeaderDump/`.
 
+## Données de positions: régénérées offline, plus besoin de tracking in-game
+
+Les `Data/*Locations.json` ont été régénérés en parsant les ~10 000 cellules
+World Partition du pak 1.0 (outillage réutilisable dans `tools/extract-locations/`,
+validé contre les données trackées par miapuffia: distance médiane 0.0 unité).
+
+- **Mis à jour** (plus complets, positions 1.0 exactes): Coal 1021, Copper 2027,
+  Quartz 675, Sulfur 718, Hexolite 635 (= spawner `Crystal`), Oil 185.
+- **Nouveaux** (à brancher dans les blueprints): SkyIslandOre 226, WorldTreeOre 80,
+  MagmaRock 10, NightStone 271, DogCoin 128, Lotus par stat (HP 182, Attack 213,
+  Stamina 189, Weight 118, Workspeed 176), CaveMushroom 1463, Junk 858 (toutes
+  zones), TreasureChest 1559 (tous spawners de coffres).
+
 ## Nouvelles structures 1.0 à ajouter au mod (feature work)
 
 Inventaire tiré de l'index du pak 1.0. Nouvelles zones: Sky Island, World Tree,
@@ -76,8 +89,9 @@ Nouveaux collectables:
    devrait déjà fonctionner en 1.0 sur l'ancienne moitié de carte.
 4. Feature work: nouveaux icônes/checkboxes pour les structures ci-dessus
    (workflow détaillé dans `NewIconChecklist.txt`).
-5. Re-tracker les ressources sur les nouvelles zones avec l'outillage intégré
-   du mod (PrepareTrack/DoTrack + export JSON), régénérer les DataAssets.
+5. ~~Re-tracker les ressources en jeu~~ Fait offline: réimporter les JSON en
+   DataAssets via DcJsonAsset (glisser les nouveaux .json dans Data/, cf. workflow
+   `NewIconChecklist.txt`) et brancher `LoadPreloadedData()`.
 6. Test local possible sur cette machine (Proton + RE-UE4SS 1.0 déjà en place).
 
 ## Références
