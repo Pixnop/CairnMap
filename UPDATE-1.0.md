@@ -81,6 +81,19 @@ New collectibles:
   `_Dungeon_Elixir`): probably already covered by the TreasureBox detection,
   to be confirmed in game.
 
+## Runtime fix: the mod WORKS on 1.0 today (2026-07-12 live session)
+
+`tools/runtime-fix/` contains a UE4SS Lua companion mod that makes the 5.1 pak
+fully functional on 1.0 (verified in game). Root cause found live: the BP's
+canvas lookup misses because 1.0 inserted new children into `WBP_Map_Body`
+(`WBP_SkyIslandCloud`, `Image_MapMask`, `Canvas_ForIcon_NoMask`,
+`Canvas_ForIcon_Priority`); the mod's icons were created but never parented.
+The world→map projection is a plain affine (slotX = a·worldY + b,
+slotY = c·worldX + d), recovered at runtime to 0.3 px by anchoring on the
+8 boss-tower pins then refining on ~150 fast-travel statue pins.
+**The Blueprint fix in the editor is therefore trivial**: fix the child lookup
+(find `Canvas_ForIcon_Mask` by name, not index) — the rest of the mod works.
+
 ## Remaining work (UE 5.1 editor, Windows or VM)
 
 1. Integrate Wwise into `Plugins/` (see the kit README), open the project.
