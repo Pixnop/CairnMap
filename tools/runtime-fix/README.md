@@ -41,7 +41,14 @@ added to the visual tree.
   actor, so collected ones (including from old saves) disappear on refresh,
   honoring the "include collected" checkboxes.
 
-Debug key (optional): **F7** force refresh + recalibrate.
+**New 1.0 layers**: the fix also renders flat tinted dots (one shared texture,
+negligible cost) for content the original mod predates: Sky Island ore (cyan),
+World Tree ore (green), magma rock (orange), NightStone (violet), and the
+underground collectables DogCoin (gold) and Lotus flowers (pink), drawn at
+their surface X/Y to mark the cave to enter. **F9** cycles: all / surface ores
+only / off. Positions come from the offline pak extraction.
+
+Keys: **F7** force refresh + recalibrate, **F9** cycle extra layers.
 
 ## Known limits / notes
 
