@@ -21,8 +21,8 @@ local EXTRAS = {
     {key = "Lotus",      color = {R=1.0,  G=0.45, B=0.80, A=0.85}, underground = true},
 }
 local EXTRA_LABELS = {
-    SkyOre = "Show sky island ore (1.0)", TreeOre = "Show world tree ore (1.0)",
-    Magma = "Show magma rock (1.0)", NightStone = "Show night stone (1.0)",
+    SkyOre = "Show sky island ore", TreeOre = "Show world tree ore",
+    Magma = "Show magma rock", NightStone = "Show night stone",
     DogCoin = "Show dog coins (cave)", Lotus = "Show lotus flowers (cave)",
 }
 local gExtraState = {SkyOre = true, TreeOre = true, Magma = true, NightStone = true, DogCoin = true, Lotus = true}
