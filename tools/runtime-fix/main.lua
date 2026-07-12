@@ -13,7 +13,7 @@ V10['Oil'] = {{-937755,-441483},{-906761,-385976},{-888747,-505104},{-866367,-42
 -- MapCollectablesFix : makes Map Collectables Helper (5.1 pak) work on
 -- Palworld 1.0. Fully automatic: repairs icons whenever the map opens or a
 -- checkbox changes. See tools/runtime-fix/README.md in the mod repo.
--- Optional keys: F7 = force refresh, F8 = print projection sanity check.
+-- Optional key: F7 = force refresh + recalibration.
 -- ============================================================================
 
 local LOC  = "Location_9_D162C7D4475031B476074ABBA7265E31"
@@ -78,9 +78,9 @@ local function pinsOfClass(canvas, cls)
     return pins
 end
 
--- returns the visible map body and its masked icon canvas
+-- returns the visible map's masked icon canvas
 local function findMap()
-    local body, canvas, bestScore = nil, nil, 0
+    local canvas, bestScore = nil, 0
     for _, b in ipairs(FindAllOf("WBP_Map_Body_C") or {}) do
         pcall(function()
             if not b:IsValid() or not b:IsVisible() then return end
@@ -89,10 +89,10 @@ local function findMap()
             local cv = findDescendant(r, "Canvas_ForIcon_Mask", 0)
             if not cv then return end
             local np = #pinsOfClass(cv, "WBP_Map_IconFTTower_C")
-            if np + 1 > bestScore then bestScore = np + 1; body = b; canvas = cv end
+            if np + 1 > bestScore then bestScore = np + 1; canvas = cv end
         end)
     end
-    return body, canvas
+    return canvas
 end
 
 -- ------------------------------------------------------------- projection --
@@ -242,7 +242,7 @@ local gLastSig = ""         -- change-detection signature
 
 -- ----------------------------------------------------------------- repair --
 local function repair(reason)
-    local body, canvas = findMap()
+    local canvas = findMap()
     if not canvas then return false end
     if not gCalib or gCalibCanvas ~= canvas or not safe(function() return gCalibCanvas:IsValid() end, false) then
         gCalib = calibrate(canvas)
@@ -323,7 +323,7 @@ end
 buildIndexes()
 LoopAsync(800, function()
     pcall(function()
-        local body, canvas = findMap()
+        local canvas = findMap()
         if not canvas then gLastSig = "" return end
         local cbs = readCheckboxes()
         local h = tostring(#(FindAllOf("CollectableWidget_C") or {}))
@@ -337,26 +337,4 @@ LoopAsync(800, function()
 end)
 
 RegisterKeyBind(Key.F7, function() gCalib = nil; repair("manual") end)
-RegisterKeyBind(Key.F8, function()
-    pcall(function()
-        if not gCalib then print("[MapCollectablesFix] not calibrated yet") return end
-        local pl = (FindAllOf("PalPlayerCharacter") or {})[1]
-        local loc = pl and pl:K2_GetActorLocation()
-        if not loc then return end
-        local body, canvas = findMap()
-        if not body then return end
-        local nomask = findDescendant(body.WidgetTree.RootWidget, "Canvas_ForIcon_NoMask", 0)
-        for i = 0, (nomask and nomask:GetChildrenCount() or 0) - 1 do
-            local c = nomask:GetChildAt(i)
-            if safe(function() return c:GetClass():GetFName():ToString() end, "") == "WBP_Map_IconPlayer_C" then
-                local gx, gy = slotxy(c)
-                local px = apply(gCalib.tX, loc.X, loc.Y)
-                local py = apply(gCalib.tY, loc.X, loc.Y)
-                print(string.format("[MapCollectablesFix] player check: game=(%.0f,%.0f) ours=(%.0f,%.0f) delta=(%.0f,%.0f)",
-                    gx, gy, px, py, px-gx, py-gy))
-            end
-        end
-    end)
-end)
-
-print("[MapCollectablesFix] loaded: auto-repair active (F7 force, F8 check)")
+print("[MapCollectablesFix] loaded: auto-repair active (F7 = force refresh)")

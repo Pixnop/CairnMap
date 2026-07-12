@@ -37,8 +37,7 @@ added to the visual tree.
   actor, so collected ones (including from old saves) disappear on refresh,
   honoring the "include collected" checkboxes.
 
-Debug keys (optional): **F7** force refresh + recalibrate, **F8** print the
-projection delta against the game's own player pin (expect ~0 px).
+Debug key (optional): **F7** force refresh + recalibrate.
 
 ## Known limits / notes
 
