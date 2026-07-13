@@ -31,6 +31,11 @@ jobs:
           mapfile -t mods < <(git config --file .gitmodules --get-regexp path | awk '{print $2}' | grep -v '^deps/first/Unreal$')
           git submodule update --init --depth 1 "${mods[@]}" || true
 
+      - name: Fetch third-party headers (FetchContent deps)
+        shell: bash
+        run: |
+          git clone --depth 1 --branch 11.2.0 https://github.com/fmtlib/fmt.git third/fmt
+
       - name: Fetch shipped UE4SS.dll
         shell: bash
         run: |
@@ -60,8 +65,9 @@ jobs:
           Get-ChildItem ue4ss-src/deps/third -Directory -ErrorAction SilentlyContinue | ForEach-Object {
             if (Test-Path "$($_.FullName)/include") { $inc += "/I$($_.FullName)/include" }
           }
+          $inc += "/Ithird/fmt/include"
           mkdir out
-          cl /nologo /LD /std:c++latest /EHsc /MD /DNDEBUG `
+          cl /nologo /LD /std:c++latest /EHsc /MD /DNDEBUG /DFMT_HEADER_ONLY=1 `
              $inc cpp-mod/mods/CairnMap/src/dllmain.cpp `
              /Feout/main.dll /link UE4SS.lib
           Get-Item out/main.dll
