@@ -12,6 +12,7 @@ FPalIndividualCharacterSaveParameter::FPalIndividualCharacterSaveParameter() {
     this->Rank_CraftSpeed = 0;
     this->Exp = 0;
     this->IsRarePal = false;
+    this->bIsAwakening = false;
     this->Talent_HP = 0;
     this->Talent_Melee = 0;
     this->Talent_Shot = 0;
@@ -23,6 +24,7 @@ FPalIndividualCharacterSaveParameter::FPalIndividualCharacterSaveParameter() {
     this->IsPlayer = false;
     this->Support = 0;
     this->CraftSpeed = 0;
+    this->bApplyShieldDamage = false;
     this->HungerType = EPalStatusHungerType::Default;
     this->SanityValue = 0.00f;
     this->BaseCampWorkerEventType = EPalBaseCampWorkerEventType::None;
@@ -31,10 +33,24 @@ FPalIndividualCharacterSaveParameter::FPalIndividualCharacterSaveParameter() {
     this->FullStomachDecreaseRate_Tribe = 0.00f;
     this->UnusedStatusPoint = 0;
     this->Tiemr_FoodWithStatusEffect = 0;
+    this->Tiemr_FoodWithFullStomachKeep = 0;
     this->CurrentWorkSuitability = EPalWorkSuitability::None;
     this->bAppliedDeathPenarty = false;
+    this->bEnablePlayerRespawnInHardcore = false;
     this->PalReviveTimer = 0.00f;
     this->VoiceID = 0;
     this->IsFavoritePal = false;
+    this->FavoriteIndex = 0;
+    this->bImportedCharacter = false;
+    this->FriendshipPoint = 0;
+    this->FriendshipOtomoSec = 0;
+    this->FriendshipActiveOtomoSec = 0;
+    this->FriendshipBasecampSec = 0;
+    this->bFavoriteChangedByFriendship = false;
+    this->ArenaRankPoint = 0;
+    this->bDisableSaleInPalLost = false;
+    this->bIsExcludedFromTeamMission = false;
+    this->PartnerSkillCoolDownTimeMax = 0.00f;
+    this->ExpTableMigrationVersion = 0;
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 #include "UObject/Object.h"
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
@@ -10,7 +11,9 @@
 
 class AActor;
 class APalCharacter;
+class APalMapObject;
 class UPalIndividualCharacterParameter;
+class UPalMapObjectModel;
 
 UCLASS(Blueprintable)
 class UPalActionBase : public UObject {
@@ -42,6 +45,12 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bIsDisableNavWalk;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bSuppressMovementComponentTick;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsEnableAutoBlink;
+    
 protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bIsReflectForClient;
@@ -56,6 +65,9 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void TickAction(float DeltaTime);
     
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure)
+    bool ShouldStopMovementOnAdjustTransform() const;
+    
     UFUNCTION(BlueprintCallable)
     void SetAnimRateScale(FName flagName, float AnimRateScale);
     
@@ -66,6 +78,11 @@ private:
     UFUNCTION(BlueprintCallable)
     void OnUpdatePassiveSkill(EPalPassiveSkillEffectType EffectType, float Value);
     
+public:
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void OnQueueAction();
+    
+private:
     UFUNCTION(BlueprintCallable)
     void OnEndPassiveSkill(EPalPassiveSkillEffectType EffectType);
     
@@ -84,6 +101,9 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void OnBeginAction();
     
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsReflectedForClient();
+    
     UFUNCTION(BlueprintCallable)
     bool IsInServer() const;
     
@@ -94,7 +114,16 @@ public:
     bool IsEndAction();
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    FVector GetTargetLocation() const;
+    UPalMapObjectModel* GetTargetMapObjectModel() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FGuid GetTargetMapObjectInstanceId() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    APalMapObject* GetTargetMapObject() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FVector GetTargetLocation(bool bUseAttackerOverride) const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FString GetSimpleName() const;
@@ -103,7 +132,13 @@ public:
     FRandomStream GetRandomStream() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    TArray<AActor*> GetOtherActionTargets() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     int32 GetGeneralPurposeIndex() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FActionDynamicParameter GetDynamicParameter() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalNetArchive GetBlackboard() const;
@@ -118,6 +153,9 @@ public:
     UPalIndividualCharacterParameter* GetActionIndividualCharacterParameter() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    FGuid GetActionID() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     APalCharacter* GetActionCharacter() const;
     
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
@@ -125,6 +163,9 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     bool CanNextActionCancel();
+    
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    bool CanInterruptByMovementModeAction();
     
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure)
     bool CanGainSP();

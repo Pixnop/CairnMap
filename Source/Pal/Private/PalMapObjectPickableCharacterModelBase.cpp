@@ -13,15 +13,24 @@ void UPalMapObjectPickableCharacterModelBase::RequestPickup() {
 void UPalMapObjectPickableCharacterModelBase::OnRemovedStoredCharacter_ServerInternal(const FPalCharacterStoredParameterId& RemovedID) {
 }
 
+FDateTime UPalMapObjectPickableCharacterModelBase::GetCreatedAtRealTime() const {
+    return FDateTime{};
+}
+
 FPalIndividualCharacterSaveParameter UPalMapObjectPickableCharacterModelBase::GetCharacterSaveParameter() const {
     return FPalIndividualCharacterSaveParameter{};
+}
+
+void UPalMapObjectPickableCharacterModelBase::CorrectInvalidCreatedAtRealTimeForOldSave_ServerInternal() {
 }
 
 void UPalMapObjectPickableCharacterModelBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     
-    DOREPLIFETIME(UPalMapObjectPickableCharacterModelBase, ForRead_CharacterSaveParameter);
+    DOREPLIFETIME(UPalMapObjectPickableCharacterModelBase, ForRead_StoredParameter);
     DOREPLIFETIME(UPalMapObjectPickableCharacterModelBase, LocationId);
+    DOREPLIFETIME(UPalMapObjectPickableCharacterModelBase, CreatedAtRealTime);
+    DOREPLIFETIME(UPalMapObjectPickableCharacterModelBase, PickupablePlayerUid);
 }
 
 

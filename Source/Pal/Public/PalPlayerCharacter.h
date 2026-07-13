@@ -8,18 +8,24 @@
 #include "EPalCharacterMovementCustomMode.h"
 #include "EPalInteractiveObjectIndicatorType.h"
 #include "EPalPlayerBattleFinishType.h"
+#include "EPalPlayerEquipLantern.h"
+#include "PalArenaEntryPair.h"
 #include "PalCharacter.h"
 #include "PalDamageResult.h"
 #include "PalDeadInfo.h"
 #include "PalDyingEndInfo.h"
+#include "PalInflictDamageNotifyInterface.h"
+#include "PalInstanceID.h"
 #include "PalInteractiveObjectIndicatorInterface.h"
 #include "PalPlayerDataCharacterMakeInfo.h"
+#include "PalPlayerDataEquipLanternData.h"
 #include "Templates/SubclassOf.h"
 #include "PalPlayerCharacter.generated.h"
 
 class AActor;
 class APalPlayerCharacter;
 class APalPlayerController;
+class APalPlayerState;
 class UAnimMontage;
 class UPalActionBase;
 class UPalArenaSequencer;
@@ -28,7 +34,6 @@ class UPalBuilderComponent;
 class UPalCharacterMovementComponent;
 class UPalInsideBaseCampCheckComponent;
 class UPalInteractComponent;
-class UPalItemContainer;
 class UPalLoadoutSelectorComponent;
 class UPalObjectReplicatorComponent;
 class UPalPlayerBattleSituation;
@@ -37,27 +42,34 @@ class UPalShooterComponent;
 class USkeletalMeshComponent;
 
 UCLASS(Blueprintable)
-class APalPlayerCharacter : public APalCharacter, public IPalInteractiveObjectIndicatorInterface {
+class APalPlayerCharacter : public APalCharacter, public IPalInteractiveObjectIndicatorInterface, public IPalInflictDamageNotifyInterface {
     GENERATED_BODY()
 public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnToggleSleepPlayerBedDelegate, bool, IsSleep);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnToggleGrapplingCancelDelegate, bool, CancelEnable);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSwimBuffAppliedToPlayerOtomo);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerReviveDelegate, APalPlayerCharacter*, Player);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerRespawnDelegate, APalPlayerCharacter*, Player);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerMoveToRespawnLocationDelegate, APalPlayerCharacter*, Player, FVector, Location);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDeathAction);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnNoArenaEntryDelegate);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLiftupCampPalDelegate, APalCharacter*, LiftingPal);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInsufficientPalStaminaDelegate);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInflictDamageDelegate, const FPalDamageResult&, DamageResult);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnForceUpdataWarningLoupeDelegate, APalCharacter*, TargetCharacter, bool, AlwaysDisplay);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnForceUpdataHPGaugeUIDelegate, APalCharacter*, TargetCharacter);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndLiftCampPalDelegate);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDefeatCharacterDelegate, const FPalDeadInfo&, DeadInfo);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCombatStartUIActionDelegate);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCombatRankDownDelegate, EPalPlayerBattleFinishType, FinishType);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterMakeInfoUpdateDelegate, FPalPlayerDataCharacterMakeInfo, MakeInfo);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeRegionAreaDelegate, const FName&, RegionNameID);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangePlayerBattleMode, bool, IsBattle);
-    DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnChangeBossTowerEntrancePlayer, FName, BossType, EPalBossBattleDifficulty, Difficulty, const TArray<APalPlayerCharacter*>&, PlayerList);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnChangeBossTowerEntrancePlayer, FName, BossType, EPalBossBattleDifficulty, Difficulty, const TArray<APalPlayerCharacter*>&, PlayerList, const bool, ShouldMask);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeBattleBGMDelegate, EPalBattleBGMType, Rank);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnArenaSequenceStartDelegate, UPalArenaSequencer*, ArenaSequencer);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnArenaSequenceEndDelegate);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnArenaEntranceInfoUpdateDelegate, FPalArenaEntryPair, EntryPair);
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced, meta=(AllowPrivateAccess=true))
     UPalShooterComponent* ShooterComponent;
@@ -80,6 +92,9 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnPlayerReviveDelegate OnPlayerReviveDelegate;
     
+    UPROPERTY(BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnPlayerReviveDelegate OnEndPlayerReviveActionByPartnerSkillDelegate;
+    
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnPlayerRespawnDelegate OnPlayerRespawnDelegate;
     
@@ -97,9 +112,6 @@ public:
     
     UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnPlayerDeathAction OnPlayerDeathAction;
-    
-    UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    FOnChangeBossTowerEntrancePlayer OnChangeBossTowerEntrancePlayer;
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnChangeBossTowerEntrancePlayer OnChangeBossEntrancePlayer;
@@ -134,6 +146,36 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnArenaSequenceEndDelegate OnArenaSequenceEnd;
     
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnArenaEntranceInfoUpdateDelegate OnArenaEntranceInfoUpdate;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnNoArenaEntryDelegate OnNoArenaEntry;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnForceUpdataHPGaugeUIDelegate OnForceAddHPGaugeUI;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnForceUpdataHPGaugeUIDelegate OnForceRemoveHPGaugeUI;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnForceUpdataWarningLoupeDelegate OnForceAddWarningLoupe;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnForceUpdataWarningLoupeDelegate OnForceRemoveWarningLoupe;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnForceUpdataWarningLoupeDelegate OnWarningLoupeActWarning;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnInflictDamageDelegate OnInflictDamageDelegate;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnDefeatCharacterDelegate OnDefeatCharacterDelegate;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnSwimBuffAppliedToPlayerOtomo OnSwimBuffAppliedToPlayerOtomo;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FName LastInsideRegionNameID;
     
@@ -147,10 +189,13 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     bool IsAdjustedLocationByLoad;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsLogoutPlayer;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UAnimMontage* IdleAnimMontage;
     
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     UPalPlayerBattleSituation* PlayerBattleSituation;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
@@ -158,6 +203,9 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     bool bIsSetRespawnTelemetry;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    APalPlayerState* CachedPlayerState;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalPlayerGenderChanger> GenderChangerClass;
@@ -171,11 +219,23 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_CharacterMakeInfo, meta=(AllowPrivateAccess=true))
     FPalPlayerDataCharacterMakeInfo CharacterMakeInfo;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    TArray<FPalInstanceID> ReceivedHateIDs;
+    
 public:
     APalPlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+    void UpdateLanternSetting(EPalPlayerEquipLantern NewEquipType);
+    
+    UFUNCTION(BlueprintCallable)
+    void UpdateForceWarningLoupeList(APalCharacter* TargetCharacter, bool IsAdd, bool AlwaysDisplay);
+    
+    UFUNCTION(BlueprintCallable)
+    void UpdateForceHPGaugeList(APalCharacter* TargetCharacter, bool IsAdd);
+    
     UFUNCTION(BlueprintCallable)
     void StopIdleAnimation();
     
@@ -188,17 +248,23 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetDisablePlayerInput(FName flagName, bool Disable);
     
+    UFUNCTION(BlueprintCallable)
+    void SetDisableCollisionBlockCharacter(bool bDisable);
+    
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void SetCharacterMakeInfo_ToAll(FPalPlayerDataCharacterMakeInfo NextInfo);
     
     UFUNCTION(BlueprintCallable)
-    void PlayIdleAnimation(UAnimMontage* Montage);
+    void SetCharacterMakeInfo(FPalPlayerDataCharacterMakeInfo& NextInfo, const bool& IgnoreEquip);
     
     UFUNCTION(BlueprintCallable)
+    void PlayIdleAnimation(UAnimMontage* Montage);
+    
+    UFUNCTION(BlueprintCallable, NetMulticast, Unreliable)
     void PlayEatAnimation();
     
     UFUNCTION(BlueprintCallable)
-    void OnUpdateEssentialItemContainer(UPalItemContainer* Container);
+    void OnUpdateLanternEquipSetting(const FPalPlayerDataEquipLanternData& NewLanternSetting);
     
 protected:
     UFUNCTION(BlueprintCallable)
@@ -241,6 +307,9 @@ private:
     UFUNCTION(BlueprintCallable)
     void OnDyingDeadEnd_Server(APalPlayerCharacter* PlayerCharacter, const FPalDyingEndInfo& DyingEndInfo);
     
+    UFUNCTION(BlueprintCallable)
+    void OnDyingDeadEnd_All(APalPlayerCharacter* PlayerCharacter, const FPalDyingEndInfo& DyingEndInfo);
+    
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void OnDownBattleEnemyRank(EPalPlayerBattleFinishType FinishType);
     
@@ -268,7 +337,7 @@ private:
     void OnChangeNearEnemy_ToAll(bool IsExist);
     
     UFUNCTION(BlueprintCallable)
-    void OnChangeMovementMode(UPalCharacterMovementComponent* Component, TEnumAsByte<EMovementMode> prevMode, TEnumAsByte<EMovementMode> newMode, EPalCharacterMovementCustomMode PrevCustomMode, EPalCharacterMovementCustomMode NewCustomMode);
+    void OnChangeMovementMode(UPalCharacterMovementComponent* Component, TEnumAsByte<EMovementMode> PrevMode, TEnumAsByte<EMovementMode> NewMode, EPalCharacterMovementCustomMode PrevCustomMode, EPalCharacterMovementCustomMode NewCustomMode);
     
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void OnChangeBattleBGM(EPalBattleBGMType Rank);
@@ -302,22 +371,28 @@ public:
     USkeletalMeshComponent* GetHeadMesh();
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    void GetForceWarningLoupeList(TArray<APalCharacter*>& List) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    void GetForceHPGaugeList(TArray<APalCharacter*>& List) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalPlayerDataCharacterMakeInfo GetCharacterMakeInfo() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FRotator GetCameraRotator() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    APalPlayerState* GetCachedPlayerState() const;
+    
+    UFUNCTION(BlueprintCallable)
+    void Editor_ChangeToMale();
     
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void CreateLantern();
     
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void ClearLantern();
-    
-    UFUNCTION(BlueprintCallable)
-    void ChangeToMale();
-    
-    UFUNCTION(BlueprintCallable)
-    void ChangeToFemale();
     
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void CallReviveDelegate();

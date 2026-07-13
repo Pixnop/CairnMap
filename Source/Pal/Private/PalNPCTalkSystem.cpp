@@ -1,37 +1,29 @@
 #include "PalNPCTalkSystem.h"
 
 UPalNPCTalkSystem::UPalNPCTalkSystem() {
-    this->talkWidgetParameter = NULL;
-    this->talkWidget = NULL;
-    this->nowTalkDataIndex = 0;
-    this->FuncParam = NULL;
-    this->CustomFuncResult = EPalNPCTalkCustomFunctionResult::None;
-    this->CustomFuncChoseIndex = 0;
-    this->CustomFuncTalkDataIndex = 0;
+    this->TalkWidget = NULL;
 }
 
-void UPalNPCTalkSystem::SetCustomFunctionResult_Implementation(EPalNPCTalkCustomFunctionResult Result) {
+void UPalNPCTalkSystem::SetVisibleTalkHUD(const FName& FlagKey, bool bIsVisible) {
 }
 
-void UPalNPCTalkSystem::SetCustomFunctionChoseIndex_Implementation(int32 Index) {
+void UPalNPCTalkSystem::SetTalkWindowVisibility(const FName& FlagKey, bool bIsVisible) {
 }
 
-EPalNPCTalkProceedResult UPalNPCTalkSystem::Proceed() {
-    return EPalNPCTalkProceedResult::Failed;
+void UPalNPCTalkSystem::SetDynamicParameters(const FName& ParameterName, UPalNPCTalkDynamicParameter* InParameter) {
 }
 
-void UPalNPCTalkSystem::Initialize(UPalTalkWidgetParameter* InParameter, UPalTalkWindowWidgetBase* inTalkWidget) {
+void UPalNPCTalkSystem::OnEndText(UPalTalkWindowWidgetBase* SelfTalkWidget) {
 }
 
-bool UPalNPCTalkSystem::ChangeSeqence(FName targetSeqenceName) {
-    return false;
+void UPalNPCTalkSystem::OnConfirmChoice(UPalTalkWindowWidgetBase* SelfTalkWidget, const FName& ChoiceMsgID, const int32 ChoiceIndex) {
 }
 
-bool UPalNPCTalkSystem::CallCustomFunc() {
-    return false;
+UPalNPCTalkDynamicParameter* UPalNPCTalkSystem::GetDynamicParameters(const FName& ParameterName) {
+    return NULL;
 }
 
-void UPalNPCTalkSystem::AddArgument_Implementation(const FString& Key, const FText& Text) {
+void UPalNPCTalkSystem::AddCustomTextTagArgument(const FName& TagName, const FString& ArgumentString) {
 }
 
 

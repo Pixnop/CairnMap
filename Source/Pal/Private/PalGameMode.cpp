@@ -7,9 +7,6 @@ APalGameMode::APalGameMode(const FObjectInitializer& ObjectInitializer) : Super(
 void APalGameMode::RestartGame() {
 }
 
-void APalGameMode::RespawnPlayer(int32 PlayerIndex) {
-}
-
 void APalGameMode::OnUpdateSession(const FString& ResponseBody, bool bResponseOK, int32 ResponseCode) {
 }
 
@@ -22,10 +19,17 @@ void APalGameMode::OnEOSLoginDedicatedServerComplete(const UPocketpairUserInfo* 
 void APalGameMode::OnCompleteCreateSession(const FString& ResponseBody, bool bResponseOK, int32 ResponseCode) {
 }
 
+void APalGameMode::OnCompleteAuth(const FString& ResponseBody, bool bResponseOK, int32 ResponseCode) {
+}
+
 void APalGameMode::InitDedicatedServer() {
 }
 
 APlayerStart* APalGameMode::FindPlayerStartWithTag(const FName& Tag) {
+    return NULL;
+}
+
+APlayerStart* APalGameMode::FindPlayerStartDebugInitialStart() {
     return NULL;
 }
 

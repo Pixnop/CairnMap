@@ -5,6 +5,12 @@ UPalAIActionBase::UPalAIActionBase() {
     this->bIsAutoStopBehaviorTree = true;
     this->AiActionCategory = EPalAIActionCategory::Undefined;
     this->DefaultPriority = EAIRequestPriority::SoftScript;
+    this->bRejectUnwalkableNonLinkPath = false;
+    this->UnwalkablePathRejectZTolerance = 80.00f;
+    this->UnwalkablePathMaxValidationDistance = 800.00f;
+}
+
+void UPalAIActionBase::SetWalkSpeedByMaxSpeed_ForAIAction(const float MaxSpeed, const EPalMovementSpeedType DefaultMoveSpeedType) {
 }
 
 void UPalAIActionBase::SetWalkSpeed_ForAIAction(EPalMovementSpeedType MoveSpeedType) {
@@ -14,10 +20,13 @@ UPalAIActionBase* UPalAIActionBase::SetAIActionClassParameter(TSubclassOf<UPalAI
     return NULL;
 }
 
+UPalAIActionBase* UPalAIActionBase::PushChildActionByClass(TSubclassOf<UPalAIActionBase> NewActionClass, FPalAIActionDynamicParameter Parameter) {
+    return NULL;
+}
+
 bool UPalAIActionBase::PushChildAction(UPawnAction* action) {
     return false;
 }
-
 
 bool UPalAIActionBase::IsPaused() const {
     return false;
@@ -25,6 +34,9 @@ bool UPalAIActionBase::IsPaused() const {
 
 bool UPalAIActionBase::IsActive() const {
     return false;
+}
+
+void UPalAIActionBase::HandleSensorSightCheckAsyncCompleted(bool bIncludedPlayer, bool bIncludedAliveNPC, bool bIncludedEdibleDeadNPC, const TArray<APalCharacter*>& InSightCharacters) {
 }
 
 FString UPalAIActionBase::GetSimpleName() const {

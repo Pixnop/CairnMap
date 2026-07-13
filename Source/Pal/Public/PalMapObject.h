@@ -15,6 +15,7 @@
 #include "PalMapObjectConcreteModelMulticastDelegateDelegate.h"
 #include "PalMapObjectDisposeOptions.h"
 #include "PalMapObjectMeshVisibleData.h"
+#include "PalMapObjectPoolSpawnState.h"
 #include "PalReticleTargetableInterface.h"
 #include "Templates/SubclassOf.h"
 #include "PalMapObject.generated.h"
@@ -69,6 +70,9 @@ protected:
     bool bSpawnableIfOverlapped;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bNotSpawnableIfOverlapMapObject;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bLevelSpawnObject;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -107,6 +111,9 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FGuid HPHUDId;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FGuid MultiplayModifierHUDId;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     EPalMapObjectDamagableType DamagableType;
     
@@ -116,6 +123,9 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, ReplicatedUsing=OnRep_MapObjectModel, meta=(AllowPrivateAccess=true))
     UPalMapObjectModel* MapObjectModel;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, ReplicatedUsing=OnRep_PoolSpawnState, meta=(AllowPrivateAccess=true))
+    FPalMapObjectPoolSpawnState PoolSpawnState;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bUnmanagedInLocal;
@@ -136,7 +146,13 @@ private:
     bool bWorkLocationGroupRaycastStartOffsetOrigin;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIgnoreBuildInstallConnection;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bShouldPlayDestroyFX;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bShouldPlayBuildCancelDestroyFX;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<FPalMapObjectComponentInfo> TickableComponentInfos;
@@ -155,6 +171,9 @@ public:
 private:
     UFUNCTION(BlueprintCallable)
     void OnUpdatedEnableTickByModel(UPalMapObjectModel* Model);
+    
+    UFUNCTION(BlueprintCallable)
+    void OnRep_PoolSpawnState();
     
     UFUNCTION(BlueprintCallable)
     void OnRep_MapObjectModel();
@@ -178,10 +197,19 @@ private:
     
 public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsExistsWorkingAnyWorker() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsExistsAssignedAnyWorker() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     UPalMapObjectModel* GetModel() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FGuid GetGroupIdBelongTo() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FGuid GetBaseCampIdBelongTo() const;
     
     UFUNCTION(BlueprintCallable)
     void DisposeSelf_ServerInternal();
@@ -189,11 +217,28 @@ public:
     UFUNCTION(BlueprintCallable)
     void CallOrRegisterOnSetConcreteModel(FPalMapObjectConcreteModelDelegate Delegate);
     
-private:
+protected:
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void BroadcastShouldPlayDestroyFX();
     
-protected:
+    UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+    void BroadcastShouldPlayBuildCancelDestroyFX();
+    
+    UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+    void BroadcastShouldNotPlayDestroyFX();
+    
+    UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+    void BroadcastShouldNotPlayBuildCancelDestroyFX();
+    
+    UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+    void BroadcastPlayRespawnFX();
+    
+    UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+    void BroadcastDestroyPoolableObjectWithDestroyFX();
+    
+    UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+    void BroadcastDestroyPoolableObject();
+    
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void BP_OnSetConcreteModel(UPalMapObjectConcreteModelBase* ConcreteModel);
     

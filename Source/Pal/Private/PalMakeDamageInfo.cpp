@@ -11,6 +11,7 @@ FPalMakeDamageInfo::FPalMakeDamageInfo() {
     this->WeaponType = EPalWeaponType::None;
     this->IsLeanBack = false;
     this->IsBlow = false;
+    this->HumanStunType = EPalHumanStunType::None;
     this->EffectType1 = EPalAdditionalEffectType::None;
     this->EffectValue1 = 0;
     this->EffectValueEx1 = 0.00f;
@@ -19,6 +20,9 @@ FPalMakeDamageInfo::FPalMakeDamageInfo() {
     this->EffectValueEx2 = 0.00f;
     this->SneakAttackRate = 0.00f;
     this->DamageRatePerCollision = 0.00f;
+    this->PvPBuildingDamageRate = 0.00f;
+    this->PvPPlayerToGuildPalDamageRate = 0.00f;
+    this->CollectionObjectDamageRate = 0.00f;
     this->DamageReactionAnimationType = EPalDamageAnimationReactionType::None;
     this->bAttackableToFriend = false;
     this->NoDamage = false;
@@ -27,5 +31,10 @@ FPalMakeDamageInfo::FPalMakeDamageInfo() {
     this->CameraShake = EPalPlayerDamageCameraShakeCategory::None;
     this->ForceRagdollSize = EPalSizeType::None;
     this->OverrideNetworkOwner = NULL;
+    this->WeaponDamageRatePvP = 0.00f;
+    this->bIsExplosionDamage = false;
+    this->bCannotKill = false;
+    this->bIsLastBullet = false;
+    this->bIsPartnerSkillAttackBullet = false;
 }
 

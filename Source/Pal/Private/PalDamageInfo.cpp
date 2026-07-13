@@ -2,6 +2,8 @@
 
 FPalDamageInfo::FPalDamageInfo() {
     this->NativeDamageValue = 0;
+    this->BasePower = 0;
+    this->RedirectDamageValue = 0;
     this->Category = EPalWazaCategory::Melee;
     this->IsBlowAttack = false;
     this->IsLeanBack = false;
@@ -21,6 +23,9 @@ FPalDamageInfo::FPalDamageInfo() {
     this->SneakAttackRate = 0.00f;
     this->PlaySneakAttackEffect = false;
     this->DamageRatePerCollision = 0.00f;
+    this->PvPBuildingDamageRate = 0.00f;
+    this->PvPPlayerToGuildPalDamageRate = 0.00f;
+    this->CollectionObjectDamageRate = 0.00f;
     this->DamageReactionAnimationType = EPalDamageAnimationReactionType::None;
     this->bAttackableToFriend = false;
     this->NoDamage = false;
@@ -30,5 +35,16 @@ FPalDamageInfo::FPalDamageInfo() {
     this->ForceRagdollSize = EPalSizeType::None;
     this->bApplyNativeDamageValue = false;
     this->IgnorePlayerEquipItemDamage = false;
+    this->IgnoreCheckGroupForStun = false;
+    this->IsPlayerVsPlayerDamage = false;
+    this->WeaponDamageRatePvP = 0.00f;
+    this->statusID = EPalStatusID::None;
+    this->bRedirectDamage = false;
+    this->IgnoreCanProcessDamage = false;
+    this->HumanStunType = EPalHumanStunType::None;
+    this->bIsExplosionDamage = false;
+    this->bCannotKill = false;
+    this->bIsLastBullet = false;
+    this->bIsPartnerSkillAttackBullet = false;
 }
 

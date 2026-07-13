@@ -8,11 +8,18 @@ FGeneralAnimationParameter::FGeneralAnimationParameter() {
     this->bIsSwimming = false;
     this->RangeForGround = 0.00f;
     this->bIsNearGround = false;
+    this->bIsJetpackGliding = false;
+    this->JetpackGliderPitchDelta = 0.00f;
+    this->JetpackGliderYawDelta = 0.00f;
     this->FootIKRootOffset = 0.00f;
     this->MoveSpeedPlusByRotateYaw = 0.00f;
     this->YawSpeed = 0.00f;
     this->AdditiveAnimationRate = 0.00f;
     this->DisableUpperOverrideFlag = false;
     this->bTransportingObject = false;
+    this->MovementMode = MOVE_None;
+    this->CustomMovementMode = EPalCharacterMovementCustomMode::None;
+    this->bForceSprintForNPC = false;
+    this->bUseUpperBodyOnlyWhileRidingFlag = false;
 }
 

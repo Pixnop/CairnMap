@@ -6,10 +6,25 @@ UPalNetworkBaseCampComponent::UPalNetworkBaseCampComponent(const FObjectInitiali
 void UPalNetworkBaseCampComponent::RequestUnassignWorkInBaseCamp_ToServer_Implementation(const FGuid& BaseCampId, const FGuid& WorkId, const FPalInstanceID& IndividualId) {
 }
 
+void UPalNetworkBaseCampComponent::RequestSwapWorkerSlot_ToServer_Implementation(const FGuid& BaseCampId, const FPalCharacterSlotId& SlotIdA, const FPalCharacterSlotId& SlotIdB, const FGuid& ByMapObjectInstanceId) {
+}
+
 void UPalNetworkBaseCampComponent::RequestReplicateBaseCampWork_ToServer_Implementation(const FGuid& BaseCampId, const bool bReplicate) {
 }
 
 void UPalNetworkBaseCampComponent::RequestReplicateBaseCampItemStackInfo_ToServer_Implementation(const FGuid& BaseCampId, const bool bReplicate) {
+}
+
+void UPalNetworkBaseCampComponent::RequestMoveWorkerToPalBox_ToServer_Implementation(const FGuid& BaseCampId, const FPalCharacterSlotId& SlotId, const int32 CurrentPage, const FGuid& ByMapObjectInstanceId) {
+}
+
+void UPalNetworkBaseCampComponent::RequestMoveItemToInventory_ToServer_Implementation(const FGuid& BaseCampId, const FPalItemId& ItemId, const int64 Num) {
+}
+
+void UPalNetworkBaseCampComponent::RequestMoveInventoryItemToBaseCamp_ToServer_Implementation(const TArray<FPalItemSlotId>& InventoryItemSlotIds, const FGuid& BaseCampId, const bool bQuickStackMode) {
+}
+
+void UPalNetworkBaseCampComponent::RequestMoveCharacterToWorker_ToServer_Implementation(const FGuid& BaseCampId, const FPalCharacterSlotId& SlotId, const FPalContainerId& ToContainerId, const FGuid& ByMapObjectInstanceId) {
 }
 
 void UPalNetworkBaseCampComponent::RequestModule_Server_void_Implementation(const FGuid& BaseCampId, const EPalBaseCampModuleType ModuleType, const FName FunctionName) {
@@ -123,13 +138,22 @@ void UPalNetworkBaseCampComponent::BroadcastBaseCampWorkerMealLog_Server_Impleme
 void UPalNetworkBaseCampComponent::BroadcastBaseCampWorkerLog_Server_Implementation(EPalLogType DisplayLogType, const FPalInstanceID& WorkerCharacterInstanceId, const FName& EventDataID) {
 }
 
+void UPalNetworkBaseCampComponent::BroadcastBaseCampWorkerFriendshipRankupLog_Server_Implementation(const FGuid& BaseCampId, const FPalInstanceID& IndividualId, int32 NewRank, const bool bIsFirstRankup) {
+}
+
 void UPalNetworkBaseCampComponent::BroadcastBaseCampLog_Server_Implementation(const FPalMonsterControllerBaseCampLogContent& LogContent) {
 }
 
 void UPalNetworkBaseCampComponent::BroadcastAddBaseCampBurningLog_Server_Implementation(const FGuid& BaseCampId) {
 }
 
+void UPalNetworkBaseCampComponent::AddBaseCampWorkerLowSanityLog_Client_Implementation(const FPalInstanceID& WorkerCharacterInstanceId) {
+}
+
 void UPalNetworkBaseCampComponent::AddBaseCampWorkerLog_Client_Implementation(EPalLogType DisplayLogType, const FPalInstanceID& WorkerCharacterInstanceId, const FName& EventDataID) {
+}
+
+void UPalNetworkBaseCampComponent::AddBaseCampWorkerFriendshipRankupLog_Client_Implementation(const FPalInstanceID& IndividualId, int32 NewRank, const bool bIsFirstRankup) {
 }
 
 void UPalNetworkBaseCampComponent::AddBaseCampWorkerDeathLog_Client_Implementation(const FPalKillLogDisplayData& DeathLogDisplayData) {

@@ -27,7 +27,10 @@ APalAIController::APalAIController(const FObjectInitializer& ObjectInitializer) 
 void APalAIController::WaitForSeconds(float Time) {
 }
 
-void APalAIController::SimpleMoveToActorWithLineTraceGround(const AActor* GoalActor) {
+void APalAIController::SkillCoolDownByTimerEvent() {
+}
+
+void APalAIController::SimpleMoveToActorWithLineTraceGround(const AActor* GoalActor, TEnumAsByte<ECollisionChannel> CollisionChannel) {
 }
 
 void APalAIController::ShowHateArrow() {
@@ -86,6 +89,10 @@ bool APalAIController::IsExistPathForLocation_ForBP(const FVector Location, cons
     return false;
 }
 
+bool APalAIController::IsActiveSkillCooldownFinished(const EPalWazaID WazaID) const {
+    return false;
+}
+
 bool APalAIController::IsActiveAI() const {
     return false;
 }
@@ -138,6 +145,22 @@ void APalAIController::CreatePalBlackboard() {
 
 AActor* APalAIController::CopyTargetFromOtherAI(const AActor* FromAcotr) {
     return NULL;
+}
+
+bool APalAIController::CanMoveStraight_TargetLocation(FVector TargetLocation) {
+    return false;
+}
+
+FPalAsyncMoveRequestId APalAIController::BP_RequestAsyncMoveTo(FVector Goal, float AcceptanceRadius, bool bProjectDestinationToNavigation, bool bCanStrafe, bool bAllowPartialPath) {
+    return FPalAsyncMoveRequestId{};
+}
+
+EPalAsyncMoveStatus APalAIController::BP_GetAsyncMoveStatus(FPalAsyncMoveRequestId ID, bool& bIsOwnerActive) const {
+    return EPalAsyncMoveStatus::Pending;
+}
+
+bool APalAIController::BP_CancelAsyncMoveIfOwner(FPalAsyncMoveRequestId ID) {
+    return false;
 }
 
 void APalAIController::AddTargetPlayer_ForEnemy(AActor* PlayerOrPal) {

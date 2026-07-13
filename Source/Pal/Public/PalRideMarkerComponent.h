@@ -10,9 +10,11 @@
 
 class APalCharacter;
 class APalUniqueRideWeaponBase;
+class UAnimMontage;
 class UPalActiveSkillSlot;
 class UPalIndividualCharacterParameter;
 class UPalRiderComponent;
+class UPalSoundPlayer;
 
 UCLASS(Blueprintable, EditInlineNew, ClassGroup=Custom, meta=(BlueprintSpawnableComponent))
 class UPalRideMarkerComponent : public UStaticMeshComponent {
@@ -33,6 +35,12 @@ public:
     bool bHiddenCharacterWhenAim;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float bHiddenCharacterWhenLowAngleAim;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bDisableRide;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bDisableLookAtByRide;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -43,6 +51,9 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalDataTableRowName_PalMonsterData UniqueRidePalID;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float RideNetUpdateFrequency;
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FChangeRiding OnChangeRiding;
@@ -57,6 +68,12 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     APalUniqueRideWeaponBase* WeaponActor;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TWeakObjectPtr<UPalSoundPlayer> RideMoveSoundPlayer;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    int32 RideMovePlayingId;
+    
 public:
     UPalRideMarkerComponent(const FObjectInitializer& ObjectInitializer);
 
@@ -64,7 +81,13 @@ public:
 
 private:
     UFUNCTION(BlueprintCallable)
+    void UpdateOpacity();
+    
+    UFUNCTION(BlueprintCallable)
     void SyncActiveSkill(UPalIndividualCharacterParameter* IndividualParameter);
+    
+    UFUNCTION(BlueprintCallable)
+    void StartAim();
     
     UFUNCTION(BlueprintCallable)
     void SetVisibleWeapon();
@@ -76,8 +99,21 @@ public:
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void SetRidingFlag(bool bIsEnable);
     
+private:
+    UFUNCTION(BlueprintCallable)
+    void OnEndShootingAnimation(UAnimMontage* Montage);
+    
+public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsRiding() const;
+    
+private:
+    UFUNCTION(BlueprintCallable)
+    bool IsNeedLowAngleOpacity() const;
+    
+public:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsDisableRideByMarker() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsAdjustRotation() const;
@@ -95,6 +131,9 @@ public:
     UPalActiveSkillSlot* GetActiveSkillSlot();
     
 private:
+    UFUNCTION(BlueprintCallable)
+    void EndAim();
+    
     UFUNCTION(BlueprintCallable)
     void CameraChangeActorActive(bool Active);
     

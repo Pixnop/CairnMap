@@ -9,9 +9,14 @@ UPalBaseCampWorkerDirector::UPalBaseCampWorkerDirector() {
     this->BattleDirector = NULL;
     this->WorkerEventTickCount = 0;
     this->State = EPalBaseCampWorkerDirectorState::Init;
+    this->bEnableWorkerPlayerTracking = false;
+    this->bIsRaidBossAreaShuttingDown = false;
 }
 
 void UPalBaseCampWorkerDirector::OrderCommand(const EPalMapBaseCampWorkerOrderType OrderType) {
+}
+
+void UPalBaseCampWorkerDirector::OnUpdateWorkerFriendshipRank(UPalIndividualCharacterParameter* IndividualParameter, const int32 NewRank, const int32 OldRank, bool bIsFirstRankup) {
 }
 
 void UPalBaseCampWorkerDirector::OnUpdateOwnerBaseCampStatus_ServerInternal(UPalBaseCampModel* OwnerBaseCamp) {
@@ -26,12 +31,6 @@ void UPalBaseCampWorkerDirector::OnRequiredAssignWork_ServerInternal(UPalWorkBas
 void UPalBaseCampWorkerDirector::OnRep_CharacterContainer() {
 }
 
-void UPalBaseCampWorkerDirector::OnRemovedNewCharacterInServer(const FPalInstanceID& IndividualId) {
-}
-
-void UPalBaseCampWorkerDirector::OnReflectSlotCompleteInServer() {
-}
-
 void UPalBaseCampWorkerDirector::OnRaisedPhantomCharacterInServer(FPalInstanceID IndividualId, int32 PhantomId) {
 }
 
@@ -44,7 +43,8 @@ void UPalBaseCampWorkerDirector::OnDeadWorkerInServer_Internal(APalCharacter* De
 void UPalBaseCampWorkerDirector::OnDeadWorkerInServer(const FPalDeadInfo Info) {
 }
 
-void UPalBaseCampWorkerDirector::OnAddedNewCharacterInServer(const FPalInstanceID& IndividualId) {
+bool UPalBaseCampWorkerDirector::HasWorkerWithSuitabilityRank(const EPalWorkSuitability WorkSuitability, const int32 RequireRank) const {
+    return false;
 }
 
 void UPalBaseCampWorkerDirector::GetCharacterHandleSlots(TArray<UPalIndividualCharacterSlot*>& OutSlots) const {

@@ -8,6 +8,8 @@ UPalSkeletalMeshComponent::UPalSkeletalMeshComponent(const FObjectInitializer& O
     this->PitchAngle = 0.00f;
     this->RollAngle = 0.00f;
     this->TiltingInterpTime = 0.25f;
+    this->bEnableCCDForRootOnlyInRagdoll = false;
+    this->bEnableCCDForRagdoll = false;
     this->TiltTimer = 0.00f;
     this->UpdateRate = 0.00f;
     this->EvaluationRate = 0.00f;
@@ -36,10 +38,16 @@ void UPalSkeletalMeshComponent::SetRuntimePitch(FName flagName, float Pitch) {
 void UPalSkeletalMeshComponent::SetRuntimeAnimRateScale(FName flagName, float RateScale) {
 }
 
+void UPalSkeletalMeshComponent::SetLoop(const bool bLoop) {
+}
+
+void UPalSkeletalMeshComponent::SetForceRuntimeScaleDefault(FName flagName, bool bIsForce) {
+}
+
 void UPalSkeletalMeshComponent::SetEvaluationRate(float InRate, bool bResetCurrentInterval) {
 }
 
-void UPalSkeletalMeshComponent::SetEnableRagdollCCD(bool IsActive) {
+void UPalSkeletalMeshComponent::SetEnableRagdollCCD(bool IsActive, bool bRootOnly) {
 }
 
 void UPalSkeletalMeshComponent::SetDisableChangeMesh(bool Disable) {
@@ -49,6 +57,13 @@ void UPalSkeletalMeshComponent::SetCharacterMakeInfo(const FPalPlayerDataCharact
 }
 
 void UPalSkeletalMeshComponent::ResetTransformToDefault() {
+}
+
+void UPalSkeletalMeshComponent::ResetRagdollSettingByPreset() {
+}
+
+bool UPalSkeletalMeshComponent::IsRuntimeScaleDefault() const {
+    return false;
 }
 
 bool UPalSkeletalMeshComponent::IsDisableTilt() const {
@@ -65,6 +80,18 @@ EPalSkeletalMeshType UPalSkeletalMeshComponent::GetPalSkeletalMeshType() const {
 
 float UPalSkeletalMeshComponent::GetEvaluationRate() const {
     return 0.0f;
+}
+
+TArray<UMaterialInstanceDynamic*> UPalSkeletalMeshComponent::GetDynamicMaterials() const {
+    return TArray<UMaterialInstanceDynamic*>();
+}
+
+UMaterialInstanceDynamic* UPalSkeletalMeshComponent::GetDynamicMaterialFromSlotName(const FName& InName) const {
+    return NULL;
+}
+
+UMaterialInstanceDynamic* UPalSkeletalMeshComponent::GetDynamicMaterialFromIndex(int32 Index) const {
+    return NULL;
 }
 
 float UPalSkeletalMeshComponent::GetAnimRateScale() {

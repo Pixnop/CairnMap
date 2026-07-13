@@ -8,5 +8,8 @@ enum class EPalCharacterContainerSortType : uint8 {
     Level_Desc,
     ElementType,
     BossFlag,
+    WorkRank,
+    FriendshipPointDesc,
+    ExpeditionPower_Desc,
 };
 

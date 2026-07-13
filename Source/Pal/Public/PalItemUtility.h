@@ -1,6 +1,10 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "EPalItemInfoCollectType.h"
+#include "EPalItemTypeB.h"
+#include "EPalRelicType.h"
 #include "PalItemAndNum.h"
 #include "PalItemId.h"
 #include "PalItemRecipe.h"
@@ -8,9 +12,11 @@
 #include "PalItemUtility.generated.h"
 
 class AActor;
+class APalCharacter;
 class UObject;
 class UPalIndividualCharacterParameter;
 class UPalItemSlot;
+class UPalMapObjectConcreteModelBase;
 class UPalStaticItemDataBase;
 
 UCLASS(Blueprintable)
@@ -22,11 +28,8 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
     static bool TryGetItemVisualBlueprintClass(const UObject* WorldContextObject, const FName StaticItemId, TSoftClassPtr<AActor>& VisualBlueprintClass);
     
-    UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
-    static void RestoreWithItem(const UObject* WorldContextObject, FName StaticItemName, UPalIndividualCharacterParameter* TargetParameter);
-    
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    static void MaterialInfos(const FPalItemRecipe& Recipe, TArray<FPalStaticItemIdAndNum>& NewMaterialInfos);
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static FName RelicTypeToItemId(const UObject* WorldContextObject, EPalRelicType RelicType);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     static bool IsValid(const FPalItemRecipe& Recipe);
@@ -37,20 +40,56 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
     static bool IsRepairableItem(UObject* WorldContextObject, const FPalItemId& TargetItemId);
     
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static bool IsItemEffectiveOnCharacterParameter(const UObject* WorldContextObject, const UPalStaticItemDataBase* ItemData, UPalIndividualCharacterParameter* TargetIndividual);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static bool IsItemEffectiveOnCharacter(const UObject* WorldContextObject, const UPalStaticItemDataBase* ItemData, APalCharacter* TargetCharacter);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    static bool IsEnhanceStatItem(const UObject* WorldObjectContext, const FName& StaticItemId);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    static bool IsEmptyAllSlots(const TArray<UPalItemSlot*> Slots);
+    
     UFUNCTION(BlueprintCallable, BlueprintPure)
     static bool IsEmpty(const FPalItemAndNum& ItemInfo);
     
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    static int32 GetRecipeMaterialKindCount(const FPalItemRecipe& Recipe);
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static void GetProductItemRequiredMaterialInfos(const UObject* WorldContextObject, const UPalMapObjectConcreteModelBase* OwnerConcreteModel, const FName RecipeID, TArray<FPalStaticItemIdAndNum>& OutRequiredMaterialInfos);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static void GetProductItemRequiredMaterialInfoMap(const UObject* WorldContextObject, const UPalMapObjectConcreteModelBase* OwnerConcreteModel, const FName RecipeID, TMap<FName, int32>& OutRequiredMaterialInfoMap);
     
     UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
     static UPalItemSlot* CreateLocalItemSlot(UObject* WorldContextObject, const FName StaticItemId, const int32 Stack);
     
-    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
-    static void CollectLocalPlayerControllableItemInfos(const UObject* WorldContextObject, TArray<FName> StaticItemIds, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const bool bIncludeInRangeBaseCamp);
+    UFUNCTION(BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static int64 CountLocalPlayerInventoryItemNum64(const UObject* WorldContextObject, const FName& StaticItemId);
     
-    UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
-    static bool CanUseHealItem(const UObject* WorldContextObject, FName StaticItemName, UPalIndividualCharacterParameter* TargetParameter);
+    UFUNCTION(BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static int64 CountLocalPlayerInsideBaseCampItemNum64(const UObject* WorldContextObject, const FName& StaticItemId);
+    
+    UFUNCTION(BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static int64 CountLocalPlayerAndInsideBaseCampItemNum64(const UObject* WorldContextObject, const FGuid& PlayerUId, const FName& StaticItemId);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static void CollectLocalPlayerQuickStackTargetItemInfos(const UObject* WorldContextObject, TArray<FName> StaticItemIds, TArray<FPalStaticItemIdAndNum>& OutItemInfos);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static void CollectLocalPlayerControllableItemInfos_ByTypeB_WithSort(const UObject* WorldContextObject, TArray<EPalItemTypeB> ItemTypes, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const EPalItemInfoCollectType CollectType);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static void CollectLocalPlayerControllableItemInfos_ByTypeB(const UObject* WorldContextObject, TArray<EPalItemTypeB> ItemTypes, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const EPalItemInfoCollectType CollectType);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static void CollectLocalPlayerControllableItemInfos(const UObject* WorldContextObject, TArray<FName> StaticItemIds, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const EPalItemInfoCollectType CollectType);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    static void CollectLocalPlayerControllableAllItemInfos(const UObject* WorldContextObject, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const EPalItemInfoCollectType CollectType);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    static bool CanUseEnhanceStatItemInCurrentWorld(const UObject* WorldObjectContext, const FName& StaticItemId);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     static bool CanItemLevelUp(const UPalStaticItemDataBase* ItemData, UPalIndividualCharacterParameter* TargetParameter);

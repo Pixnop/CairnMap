@@ -4,6 +4,7 @@
 #include "EPalDropItemType.h"
 #include "EPalItemTypeA.h"
 #include "EPalItemTypeB.h"
+#include "PalInstanceID.h"
 #include "Templates/SubclassOf.h"
 #include "PalStaticItemDataBase.generated.h"
 
@@ -45,13 +46,16 @@ public:
     int32 MaxStackCount;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    int32 SortID;
+    int32 SortId;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalDynamicItemDataBase> DynamicItemDataClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bNotConsumed;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bNotAvailableInPVP;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSoftClassPtr<AActor> actorClass;
@@ -99,9 +103,6 @@ protected:
 public:
     UPalStaticItemDataBase();
 
-    UFUNCTION(BlueprintCallable, meta=(WorldContext="WorldContextObject"))
-    bool UseItem(UPalDynamicItemDataBase* DynamicItemData, const UObject* WorldContextObject);
-    
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsCorruptible() const;
     
@@ -110,6 +111,9 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool HasActorClass() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+    float GetWorldScaledWeight(const UObject* WorldContextObject) const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
     TSoftClassPtr<AActor> GetVisualBlueprintClass(const UObject* WorldContextObject) const;
@@ -130,6 +134,9 @@ public:
     void GetNameMsgId(FName& OutMsgID) const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    int32 GetMaxUseableNumToCharacter(const UPalIndividualCharacterParameter* TargetCharacter) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     int32 GetMaxStackCount() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -146,6 +153,9 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     TSoftClassPtr<AActor> GetActorClass() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool CanUseItemToCharacter(const UObject* WorldContentObject, const FPalInstanceID& TargetCharacterID);
     
 };
 

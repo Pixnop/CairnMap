@@ -25,10 +25,16 @@ void APalFunnelCharacter::OnRep_OwnerCharacterId() {
 void APalFunnelCharacter::OnOwnerDead(FPalDeadInfo DeadInfo) {
 }
 
-void APalFunnelCharacter::OnInactive_Implementation() {
+void APalFunnelCharacter::OnInactive_Implementation(bool NoEffect) {
 }
 
-void APalFunnelCharacter::OnActive_Implementation() {
+void APalFunnelCharacter::OnFinishEndEffect() {
+}
+
+void APalFunnelCharacter::OnAssistActionEnded(const UPalActionComponent* ActionComp) {
+}
+
+void APalFunnelCharacter::OnActive_Implementation(bool NoEffect) {
 }
 
 void APalFunnelCharacter::InactivateSelf() {

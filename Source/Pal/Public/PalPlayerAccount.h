@@ -1,9 +1,11 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "UObject/NoExportTypes.h"
 #include "UObject/Object.h"
 #include "UObject/NoExportTypes.h"
 #include "EPalPlayerAccountState.h"
+#include "EPalPlayerPlatform.h"
 #include "PalInstanceID.h"
 #include "PalPlayerAccount.generated.h"
 
@@ -14,6 +16,7 @@ class UPalPlayerInventoryData;
 class UPalPlayerOtomoData;
 class UPalPlayerRecordData;
 class UPalPlayerSkinData;
+class UPalQuestManager;
 class UPalTechnologyData;
 
 UCLASS(Blueprintable)
@@ -58,10 +61,25 @@ private:
     UPalPlayerSkinData* PlayerSkinData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalQuestManager* QuestManager;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     bool bIsSelectedInitMapPoint;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     bool bShouldSaveOnNextTime;
+    
+    UPROPERTY(EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    uint64 PsnAccountId;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FDateTime GuildLastExitTime;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FDateTime LastOnlineDateTime;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    EPalPlayerPlatform PlayerPlatform;
     
 public:
     UPalPlayerAccount();

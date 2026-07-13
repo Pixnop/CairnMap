@@ -7,8 +7,10 @@
 #include "EPalBodyPartsType.h"
 #include "EPalDamageAnimationReactionType.h"
 #include "EPalElementType.h"
+#include "EPalHumanStunType.h"
 #include "EPalPlayerDamageCameraShakeCategory.h"
 #include "EPalSizeType.h"
+#include "EPalStatusID.h"
 #include "EPalWazaCategory.h"
 #include "EPalWeaponType.h"
 #include "PalFoliageInstanceId.h"
@@ -16,6 +18,7 @@
 #include "PalDamageInfo.generated.h"
 
 class AActor;
+class UNiagaraSystem;
 
 USTRUCT(BlueprintType)
 struct FPalDamageInfo {
@@ -23,6 +26,12 @@ struct FPalDamageInfo {
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     int32 NativeDamageValue;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 BasePower;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 RedirectDamageValue;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     EPalWazaCategory Category;
@@ -100,6 +109,15 @@ public:
     TArray<FPalSpecialAttackRateInfo> SpecialAttackRateInfos;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float PvPBuildingDamageRate;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float PvPPlayerToGuildPalDamageRate;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float CollectionObjectDamageRate;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     EPalDamageAnimationReactionType DamageReactionAnimationType;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -125,6 +143,45 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool IgnorePlayerEquipItemDamage;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool IgnoreCheckGroupForStun;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool IsPlayerVsPlayerDamage;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float WeaponDamageRatePvP;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSoftObjectPtr<UNiagaraSystem> OverrideHitEffect;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalStatusID statusID;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bRedirectDamage;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FName AttackStaticItemID;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool IgnoreCanProcessDamage;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalHumanStunType HumanStunType;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsExplosionDamage;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bCannotKill;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsLastBullet;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsPartnerSkillAttackBullet;
     
     PAL_API FPalDamageInfo();
 };

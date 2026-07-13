@@ -1,5 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "EPalFishingMotionType.h"
+#include "EPalFishingPlayerMotionType.h"
 #include "EPalRidePositionType.h"
 #include "EWeaponAnimationPoseType.h"
 #include "EWeaponAnimationType.h"
@@ -18,7 +20,7 @@ struct FWeaponAnimationInfo {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    UBlendSpace1D* NormalMoveBlendSpace;
+    UBlendSpace* NormalMoveBlendSpace;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     UBlendSpace1D* CrouchMoveBlendSpace;
@@ -46,6 +48,9 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     UAnimSequence* JumpEnd;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UAnimSequence* AirJumpUp;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     UAnimSequence* Sliding;
@@ -79,6 +84,12 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<EPalRidePositionType, FRidingAnimationInfo> RidingAnimationMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<EPalFishingMotionType, UAnimMontage*> FishingAnimationMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<EPalFishingPlayerMotionType, UAnimMontage*> FishingSuccessAnimationMap;
     
     PAL_API FWeaponAnimationInfo();
 };

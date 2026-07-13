@@ -7,7 +7,6 @@
 #include "NetworkActorSpawnParameters.h"
 #include "PalIndividualCharacterSaveParameter.h"
 #include "PalInstanceID.h"
-#include "PalItemSlotIdAndNum.h"
 #include "PalNetArchive.h"
 #include "PalNetworkIndividualComponent.generated.h"
 
@@ -20,9 +19,6 @@ class UPalNetworkIndividualComponent : public UActorComponent {
 public:
     UPalNetworkIndividualComponent(const FObjectInitializer& ObjectInitializer);
 
-    UFUNCTION(BlueprintCallable, Reliable, Server)
-    void UseItemInSlotToCharacter_ToServer(const FPalInstanceID& ID, const FPalItemSlotIdAndNum SlotAndNum);
-    
 private:
     UFUNCTION(BlueprintCallable)
     void UpdateCharacterParameter_ServerInternal(const FPalInstanceID& ID, const FPalNetArchive& parameterArchive, FGuid Guid);
@@ -66,10 +62,10 @@ private:
     void OnDespawnIndividualActor_ServerInternal(FPalInstanceID ID, FGuid Guid);
     
     UFUNCTION(BlueprintCallable)
-    void OmCreateIndividualID_ServerInternal(FPalIndividualCharacterSaveParameter initParameter, FPalInstanceID ID, FGuid Guid);
+    void OmCreateIndividualID_ServerInternal(FPalIndividualCharacterSaveParameter InitParameter, FPalInstanceID ID, FGuid Guid);
     
 public:
-    UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+    UFUNCTION(NetMulticast, Reliable)
     void NotifyAddedMasteredWaza_ToAll(const FPalInstanceID& ID, EPalWazaID WazaID);
     
 private:
@@ -95,10 +91,10 @@ private:
     void CreateIndividualID_SyncCheck(FPalInstanceID ID, FGuid Guid);
     
     UFUNCTION(BlueprintCallable)
-    void CreateIndividualID_ServerInternal(FPalIndividualCharacterSaveParameter initParameter, FGuid Guid, int32 RequestPlayerId);
+    void CreateIndividualID_ServerInternal(FPalIndividualCharacterSaveParameter InitParameter, FGuid Guid, int32 RequestPlayerId);
     
     UFUNCTION(BlueprintCallable)
-    void CreateFixedIndividualID_ServerInternal(FPalInstanceID ID, FPalIndividualCharacterSaveParameter initParameter, FGuid Guid, int32 RequestPlayerId);
+    void CreateFixedIndividualID_ServerInternal(FPalInstanceID ID, FPalIndividualCharacterSaveParameter InitParameter, FGuid Guid, int32 RequestPlayerId);
     
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void BroadcastChangeOwnerCharacter_ToAll(FPalInstanceID ID, const FGuid& PlayerUId, FDateTime OwnedTime);

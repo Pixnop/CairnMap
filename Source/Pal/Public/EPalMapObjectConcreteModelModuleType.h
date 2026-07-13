@@ -17,5 +17,10 @@ enum class EPalMapObjectConcreteModelModuleType : uint8 {
     PasswordLock,
     RequireElementalAction,
     Picking,
+    PlayerBed,
+    WeakPoint,
+    OperationalLoad,
+    ColorSetting,
+    GuildSecurity,
 };
 

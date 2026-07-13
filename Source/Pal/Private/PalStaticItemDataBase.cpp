@@ -8,18 +8,15 @@ UPalStaticItemDataBase::UPalStaticItemDataBase() {
     this->Rarity = 0;
     this->Price = 0;
     this->MaxStackCount = 0;
-    this->SortID = 0;
+    this->SortId = 0;
     this->DynamicItemDataClass = NULL;
     this->bNotConsumed = false;
+    this->bNotAvailableInPVP = false;
     this->DropItemType = EPalDropItemType::None;
     this->Weight = 0.00f;
     this->Durability = 0.00f;
     this->CorruptionFactor = 0.00f;
     this->FloatValue1 = 0.00f;
-}
-
-bool UPalStaticItemDataBase::UseItem(UPalDynamicItemDataBase* DynamicItemData, const UObject* WorldContextObject) {
-    return false;
 }
 
 bool UPalStaticItemDataBase::IsCorruptible() const {
@@ -32,6 +29,10 @@ bool UPalStaticItemDataBase::HasDynamicItemClass() const {
 
 bool UPalStaticItemDataBase::HasActorClass() const {
     return false;
+}
+
+float UPalStaticItemDataBase::GetWorldScaledWeight(const UObject* WorldContextObject) const {
+    return 0.0f;
 }
 
 TSoftClassPtr<AActor> UPalStaticItemDataBase::GetVisualBlueprintClass(const UObject* WorldContextObject) const {
@@ -57,6 +58,10 @@ FName UPalStaticItemDataBase::GetPassiveSkill() const {
 void UPalStaticItemDataBase::GetNameMsgId(FName& OutMsgID) const {
 }
 
+int32 UPalStaticItemDataBase::GetMaxUseableNumToCharacter(const UPalIndividualCharacterParameter* TargetCharacter) const {
+    return 0;
+}
+
 int32 UPalStaticItemDataBase::GetMaxStackCount() const {
     return 0;
 }
@@ -77,6 +82,10 @@ void UPalStaticItemDataBase::GetAllPassiveSkill(TArray<FName>& OutArray) const {
 
 TSoftClassPtr<AActor> UPalStaticItemDataBase::GetActorClass() const {
     return NULL;
+}
+
+bool UPalStaticItemDataBase::CanUseItemToCharacter(const UObject* WorldContentObject, const FPalInstanceID& TargetCharacterID) {
+    return false;
 }
 
 

@@ -24,8 +24,18 @@ void UPalMapObjectSignboardModel::OnReceivedWordFilteringResult(const FString& R
 void UPalMapObjectSignboardModel::OnOpenEdit() {
 }
 
+void UPalMapObjectSignboardModel::OnChangedBlockedUsersByUserId(const FString& UserId) {
+}
+
+void UPalMapObjectSignboardModel::OnChangedBlockedUsers() {
+}
+
 FString UPalMapObjectSignboardModel::GetSignboardText() {
     return TEXT("");
+}
+
+FGuid UPalMapObjectSignboardModel::GetLastModifiedPlayerUid_BP() const {
+    return FGuid{};
 }
 
 void UPalMapObjectSignboardModel::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
@@ -34,6 +44,7 @@ void UPalMapObjectSignboardModel::GetLifetimeReplicatedProps(TArray<FLifetimePro
     DOREPLIFETIME(UPalMapObjectSignboardModel, MenuUIWidgetClass);
     DOREPLIFETIME(UPalMapObjectSignboardModel, SignboardText);
     DOREPLIFETIME(UPalMapObjectSignboardModel, bIsEditing);
+    DOREPLIFETIME(UPalMapObjectSignboardModel, LastModifiedPlayerUid);
 }
 
 

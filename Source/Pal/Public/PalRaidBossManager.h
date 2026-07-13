@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "EPalRaidBattleGuildCheckResult.h"
 #include "EPalRaidBossBattleFinishType.h"
 #include "PalRaidBossDataRow.h"
 #include "PalRaidBossSpawnInfo.h"
@@ -9,6 +10,7 @@
 #include "PalRaidBossManager.generated.h"
 
 class AActor;
+class APalCharacter;
 class APalMapObject;
 class UDataTable;
 class UPalRaidBossComponent;
@@ -37,6 +39,9 @@ protected:
     float BattleAreaRadius;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float BattleSequencePlayRangeScale;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     int32 NPCTargetCount_ForForcePlayerTarget;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -45,12 +50,18 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<AActor> RaidBossBattleActorClass;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float GiftSuccessItemRangeScale;
+    
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced, Transient, meta=(AllowPrivateAccess=true))
     TMap<FGuid, UPalRaidBossComponent*> RaidComponentMap;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FGuid GroupGuid;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TSet<FName> CachedPreloadItemIds;
     
 public:
     UPalRaidBossManager();
@@ -59,7 +70,13 @@ public:
     bool IsRaidBossOfferItem(FName ItemName);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsInProcessRaidBattleInByOwnerBaseCampId(const FGuid& OwnerBaseCampId) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     int32 GetNPCTargetCount_ForForcePlayerTarget() const;
+    
+    UFUNCTION(BlueprintCallable)
+    UPalRaidBossComponent* FindRaidComponent_ByRaidBoss(APalCharacter* RaidBoss);
     
     UFUNCTION(BlueprintCallable)
     UPalRaidBossComponent* FindRaidComponent_ByBuildObject(APalMapObject* BuildObject);
@@ -71,7 +88,16 @@ public:
     FPalRaidBossSpawnInfo FindRaidBossInfoByCharacterID(FName CharacterID);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    FPalRaidBossDataRow FindRaidBossDataByCharacterID(FName CharacterID) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalRaidBossDataRow FindRaidBossData(FName ItemName) const;
+    
+    UFUNCTION(BlueprintCallable)
+    void EnsureRaidBossWazaPreloaded_ServerInternal(FName StaticItemId);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    void CheckRaidBattleAllowedInGuildOfPlayer(const FGuid& RequestPlayerUId, EPalRaidBattleGuildCheckResult& OutResult) const;
     
 };
 

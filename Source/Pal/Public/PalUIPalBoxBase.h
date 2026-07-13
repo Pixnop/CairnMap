@@ -19,7 +19,10 @@ public:
     void TryMoveToOtomo(UPalIndividualCharacterSlot* MoveSlot);
     
     UFUNCTION(BlueprintCallable)
-    void TryMoveToBox(UPalIndividualCharacterSlot* MoveSlot);
+    void TryMoveToBoxForWorker(UPalIndividualCharacterSlot* MoveSlot);
+    
+    UFUNCTION(BlueprintCallable)
+    void TryMoveToBoxForOtomo(UPalIndividualCharacterSlot* MoveSlot);
     
     UFUNCTION(BlueprintCallable)
     void TryMoveToBaseCamp(UPalIndividualCharacterSlot* MoveSlot);
@@ -27,8 +30,16 @@ public:
     UFUNCTION(BlueprintCallable)
     void TryLoosePal(UPalIndividualCharacterSlot* TargetSlot);
     
+protected:
     UFUNCTION(BlueprintCallable)
-    void SetPagePalBoxList(int32 newPage);
+    void ToggleFavorite(UPalIndividualCharacterSlot* TargetSlot);
+    
+public:
+    UFUNCTION(BlueprintCallable)
+    void SetPagePalBoxList(int32 NewPage);
+    
+    UFUNCTION(BlueprintCallable)
+    void SetByMapObjectInstanceId(const FGuid& ByMapObjectInstanceId);
     
     UFUNCTION(BlueprintCallable)
     void SetBaseCampId(const FGuid& BaseCampId);
@@ -46,17 +57,23 @@ private:
     
 protected:
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-    void OnUpdatePageWorkerList(const TArray<UPalIndividualCharacterSlot*>& slotList);
+    void OnUpdatePageWorkerList(const TArray<UPalIndividualCharacterSlot*>& SlotList);
     
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-    void OnUpdatePagePalBoxList(int32 nowPage, const TArray<UPalIndividualCharacterSlot*>& slotList);
+    void OnUpdatePagePalBoxList(int32 NowPage, const TArray<UPalIndividualCharacterSlot*>& SlotList);
     
 public:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool GetNowDisplayWorkerList(TArray<UPalIndividualCharacterSlot*>& OutSlots);
+    
     UFUNCTION(BlueprintCallable, BlueprintPure)
     int32 GetBoxMaxPageNum();
     
     UFUNCTION(BlueprintCallable)
     void ChangePrevPagePalBoxList();
+    
+    UFUNCTION(BlueprintCallable)
+    void ChangePageByDataIndex(int32 DataIndex);
     
     UFUNCTION(BlueprintCallable)
     void ChangeNextPagePalBoxList();

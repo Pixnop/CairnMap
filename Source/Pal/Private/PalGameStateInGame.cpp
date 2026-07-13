@@ -8,6 +8,7 @@ APalGameStateInGame::APalGameStateInGame(const FObjectInitializer& ObjectInitial
     this->OptionReplicator = NULL;
     this->StageReplicator = NULL;
     this->LocationReplicator = NULL;
+    this->ClientOnlyPlayerInfoReplicator = NULL;
     this->DedicatedServerTransmitter = NULL;
     this->GameSystemInitManager = CreateDefaultSubobject<UPalGameSystemInitManagerComponent>(TEXT("GameSystemInitManager"));
     this->bIsDedicatedServer = false;
@@ -35,6 +36,9 @@ APalGameStateInGame::APalGameStateInGame(const FObjectInitializer& ObjectInitial
 void APalGameStateInGame::SetWorldOceanPlaneZ(const float InZ) {
 }
 
+void APalGameStateInGame::OnRep_WorldTime() {
+}
+
 void APalGameStateInGame::OnRep_WorldSaveDirectoryName() {
 }
 
@@ -47,10 +51,16 @@ void APalGameStateInGame::OnRep_OptionReplicator() {
 void APalGameStateInGame::OnRep_LocationReplicator() {
 }
 
+void APalGameStateInGame::OnRep_ClientOnlyPlayerInfo() {
+}
+
 void APalGameStateInGame::OnRep_CharacterManagerReplicator() {
 }
 
 void APalGameStateInGame::OnRep_BaseCampReplicator() {
+}
+
+void APalGameStateInGame::OnCompleteSyncAllFromServer_InClient(APalPlayerState* PlayerState) {
 }
 
 FString APalGameStateInGame::GetWorldSaveDirectoryName() const {
@@ -75,14 +85,19 @@ void APalGameStateInGame::BroadcastServerNotice_Implementation(const FString& No
 void APalGameStateInGame::BroadcastChatMessage_Implementation(const FPalChatMessage& ChatMessage) {
 }
 
+void APalGameStateInGame::ApplyGrid0LoadingRangeFromGraphicsOption(const FPalOptionGraphicsSettings& PrevSettings, const FPalOptionGraphicsSettings& NewSettings) {
+}
+
 void APalGameStateInGame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     
+    DOREPLIFETIME(APalGameStateInGame, RealProgressDateTime_ForRep);
     DOREPLIFETIME(APalGameStateInGame, CharacterManagerReplicator);
     DOREPLIFETIME(APalGameStateInGame, BaseCampReplicator);
     DOREPLIFETIME(APalGameStateInGame, OptionReplicator);
     DOREPLIFETIME(APalGameStateInGame, StageReplicator);
     DOREPLIFETIME(APalGameStateInGame, LocationReplicator);
+    DOREPLIFETIME(APalGameStateInGame, ClientOnlyPlayerInfoReplicator);
     DOREPLIFETIME(APalGameStateInGame, WorldName);
     DOREPLIFETIME(APalGameStateInGame, WorldSaveDirectoryName);
     DOREPLIFETIME(APalGameStateInGame, bIsDedicatedServer);
@@ -107,6 +122,7 @@ void APalGameStateInGame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     DOREPLIFETIME(APalGameStateInGame, BaseCampCount);
     DOREPLIFETIME(APalGameStateInGame, NavMeshInvokerCount);
     DOREPLIFETIME(APalGameStateInGame, SupplySpawnerDataList);
+    DOREPLIFETIME(APalGameStateInGame, DiscordLobbySecret);
 }
 
 

@@ -2,10 +2,13 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
+#include "UObject/NoExportTypes.h"
 #include "EPalOtomoPalOrderType.h"
+#include "EPalPlayerPlatform.h"
 #include "PalContainerId.h"
 #include "PalInstanceID.h"
 #include "PalLoggedinPlayerSaveDataRecordData.h"
+#include "PalOrderedQuestSaveData.h"
 #include "PalPlayerDataCharacterMakeInfo.h"
 #include "PalPlayerDataInventoryInfo.h"
 #include "PalSkinInventoryInfo.h"
@@ -55,6 +58,9 @@ public:
     FPalContainerId PalStorageContainerId;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FPalInstanceID> PalStorageOverflownIndividualIds;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalLoggedinPlayerSaveDataRecordData RecordData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -62,6 +68,27 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bIsSelectedInitMapPoint;
+    
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+    uint64 PsnAccountId;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FPalOrderedQuestSaveData> OrderedQuestArray_DUPRECATED;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FName> CompletedQuestArray_DUPRECATED;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FPalOrderedQuestSaveData> OrderedQuestArray_FullRelease;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FName> CompletedQuestArray_FullRelease;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FDateTime LastOnlineDateTime;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalPlayerPlatform PlayerPlatform;
     
     PAL_API FPalWorldPlayerSaveData();
 };

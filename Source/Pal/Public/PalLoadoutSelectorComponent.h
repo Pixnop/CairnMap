@@ -2,11 +2,13 @@
 #include "CoreMinimal.h"
 #include "EPalPlayerInventoryType.h"
 #include "PalItemSelectorComponent.h"
+#include "PalLoadoutSummonData.h"
 #include "PalLoadoutSynchronalizedData.h"
 #include "Templates/SubclassOf.h"
 #include "PalLoadoutSelectorComponent.generated.h"
 
 class APalWeaponBase;
+class UPalDynamicWeaponItemDataBase;
 class UPalItemSlot;
 
 UCLASS(Blueprintable, ClassGroup=Custom, meta=(BlueprintSpawnableComponent))
@@ -14,6 +16,7 @@ class PAL_API UPalLoadoutSelectorComponent : public UPalItemSelectorComponent {
     GENERATED_BODY()
 public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FRemoveItem, EPalPlayerInventoryType, inventoryType, int32, Index);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponSpawnedForLoadoutDelegate, APalWeaponBase*, NewWeapon);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipmentItem, EPalPlayerInventoryType, inventoryType, int32, Index);
     
 protected:
@@ -29,6 +32,9 @@ public:
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FRemoveItem OnRemoveItemDelegate;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnWeaponSpawnedForLoadoutDelegate OnWeaponSpawnedForLoadoutDelegate;
     
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
@@ -57,6 +63,12 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_CurrentItemSlotIndex, meta=(AllowPrivateAccess=true))
     int32 replicatedCurrentItemSlotIndex;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    TArray<FPalLoadoutSummonData> replicatedSummonData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TArray<FPalLoadoutSummonData> localonlySummonData;
     
 public:
     UPalLoadoutSelectorComponent(const FObjectInitializer& ObjectInitializer);
@@ -88,11 +100,23 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetBallLoadoutIndex(int32 Index);
     
+    UFUNCTION(BlueprintCallable, Reliable, Server)
+    void ReserveSummonWeapon_ToServer(UPalDynamicWeaponItemDataBase* InDynamicItem);
+    
+    UFUNCTION(BlueprintCallable)
+    void ReserveSummonWeapon(APalWeaponBase* InWeapon);
+    
 private:
     UFUNCTION(BlueprintCallable, Reliable, Server)
     void RequestChangeNowEquipBallItemID_ToServer(FName NextBallID);
     
 public:
+    UFUNCTION(BlueprintCallable, Reliable, Server)
+    void ReleaseSummonWeapon_ToServer(UPalDynamicWeaponItemDataBase* InDynamicItem);
+    
+    UFUNCTION(BlueprintCallable)
+    void ReleaseSummonWeapon(APalWeaponBase* InWeapon);
+    
     UFUNCTION(BlueprintCallable)
     void OnUpdateWeaponLoadoutSlot(UPalItemSlot* itemSlot);
     
@@ -124,6 +148,18 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     void GetNowEquipedBallItemID(FName& OutBallItemID) const;
+    
+    UFUNCTION(BlueprintCallable)
+    int32 GetNeedSpawnSummonWeaponCount(APalWeaponBase* InWeapon);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    int32 GetMaxSummonCount() const;
+    
+    UFUNCTION(BlueprintCallable, Reliable, Server)
+    void ClearSummonWeapon_ToServer(UPalDynamicWeaponItemDataBase* InDynamicItem);
+    
+    UFUNCTION(BlueprintCallable)
+    void ClearSummonWeapon(APalWeaponBase* InWeapon);
     
 private:
     UFUNCTION(BlueprintCallable)
@@ -167,6 +203,9 @@ private:
 public:
     UFUNCTION(BlueprintCallable)
     void ChangeNextBallLoadout();
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool CanReserveSummonWeapon() const;
     
 private:
     UFUNCTION(BlueprintCallable, Reliable, Server)

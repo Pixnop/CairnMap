@@ -20,6 +20,9 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     int32 DefaultVoiceID;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsScarecrow;
+    
 public:
     APalNPC(const FObjectInitializer& ObjectInitializer);
 
@@ -27,6 +30,11 @@ private:
     UFUNCTION(BlueprintCallable)
     void RemoveEnemyFromBattleManager(FPalDeadInfo DeadInfo);
     
+public:
+    UFUNCTION(BlueprintCallable)
+    void OnPostSpawned();
+    
+private:
     UFUNCTION(BlueprintCallable)
     void OnCompletedInitParam(APalCharacter* InCharacter);
     

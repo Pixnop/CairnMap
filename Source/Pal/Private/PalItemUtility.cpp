@@ -7,10 +7,8 @@ bool UPalItemUtility::TryGetItemVisualBlueprintClass(const UObject* WorldContext
     return false;
 }
 
-void UPalItemUtility::RestoreWithItem(const UObject* WorldContextObject, FName StaticItemName, UPalIndividualCharacterParameter* TargetParameter) {
-}
-
-void UPalItemUtility::MaterialInfos(const FPalItemRecipe& Recipe, TArray<FPalStaticItemIdAndNum>& NewMaterialInfos) {
+FName UPalItemUtility::RelicTypeToItemId(const UObject* WorldContextObject, EPalRelicType RelicType) {
+    return NAME_None;
 }
 
 bool UPalItemUtility::IsValid(const FPalItemRecipe& Recipe) {
@@ -25,22 +23,64 @@ bool UPalItemUtility::IsRepairableItem(UObject* WorldContextObject, const FPalIt
     return false;
 }
 
+bool UPalItemUtility::IsItemEffectiveOnCharacterParameter(const UObject* WorldContextObject, const UPalStaticItemDataBase* ItemData, UPalIndividualCharacterParameter* TargetIndividual) {
+    return false;
+}
+
+bool UPalItemUtility::IsItemEffectiveOnCharacter(const UObject* WorldContextObject, const UPalStaticItemDataBase* ItemData, APalCharacter* TargetCharacter) {
+    return false;
+}
+
+bool UPalItemUtility::IsEnhanceStatItem(const UObject* WorldObjectContext, const FName& StaticItemId) {
+    return false;
+}
+
+bool UPalItemUtility::IsEmptyAllSlots(const TArray<UPalItemSlot*> Slots) {
+    return false;
+}
+
 bool UPalItemUtility::IsEmpty(const FPalItemAndNum& ItemInfo) {
     return false;
 }
 
-int32 UPalItemUtility::GetRecipeMaterialKindCount(const FPalItemRecipe& Recipe) {
-    return 0;
+void UPalItemUtility::GetProductItemRequiredMaterialInfos(const UObject* WorldContextObject, const UPalMapObjectConcreteModelBase* OwnerConcreteModel, const FName RecipeID, TArray<FPalStaticItemIdAndNum>& OutRequiredMaterialInfos) {
+}
+
+void UPalItemUtility::GetProductItemRequiredMaterialInfoMap(const UObject* WorldContextObject, const UPalMapObjectConcreteModelBase* OwnerConcreteModel, const FName RecipeID, TMap<FName, int32>& OutRequiredMaterialInfoMap) {
 }
 
 UPalItemSlot* UPalItemUtility::CreateLocalItemSlot(UObject* WorldContextObject, const FName StaticItemId, const int32 Stack) {
     return NULL;
 }
 
-void UPalItemUtility::CollectLocalPlayerControllableItemInfos(const UObject* WorldContextObject, TArray<FName> StaticItemIds, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const bool bIncludeInRangeBaseCamp) {
+int64 UPalItemUtility::CountLocalPlayerInventoryItemNum64(const UObject* WorldContextObject, const FName& StaticItemId) {
+    return 0;
 }
 
-bool UPalItemUtility::CanUseHealItem(const UObject* WorldContextObject, FName StaticItemName, UPalIndividualCharacterParameter* TargetParameter) {
+int64 UPalItemUtility::CountLocalPlayerInsideBaseCampItemNum64(const UObject* WorldContextObject, const FName& StaticItemId) {
+    return 0;
+}
+
+int64 UPalItemUtility::CountLocalPlayerAndInsideBaseCampItemNum64(const UObject* WorldContextObject, const FGuid& PlayerUId, const FName& StaticItemId) {
+    return 0;
+}
+
+void UPalItemUtility::CollectLocalPlayerQuickStackTargetItemInfos(const UObject* WorldContextObject, TArray<FName> StaticItemIds, TArray<FPalStaticItemIdAndNum>& OutItemInfos) {
+}
+
+void UPalItemUtility::CollectLocalPlayerControllableItemInfos_ByTypeB_WithSort(const UObject* WorldContextObject, TArray<EPalItemTypeB> ItemTypes, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const EPalItemInfoCollectType CollectType) {
+}
+
+void UPalItemUtility::CollectLocalPlayerControllableItemInfos_ByTypeB(const UObject* WorldContextObject, TArray<EPalItemTypeB> ItemTypes, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const EPalItemInfoCollectType CollectType) {
+}
+
+void UPalItemUtility::CollectLocalPlayerControllableItemInfos(const UObject* WorldContextObject, TArray<FName> StaticItemIds, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const EPalItemInfoCollectType CollectType) {
+}
+
+void UPalItemUtility::CollectLocalPlayerControllableAllItemInfos(const UObject* WorldContextObject, TArray<FPalStaticItemIdAndNum>& OutItemInfos, const EPalItemInfoCollectType CollectType) {
+}
+
+bool UPalItemUtility::CanUseEnhanceStatItemInCurrentWorld(const UObject* WorldObjectContext, const FName& StaticItemId) {
     return false;
 }
 

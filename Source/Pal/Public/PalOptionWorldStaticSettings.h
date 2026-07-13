@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "EPalBuildingLimitType.h"
 #include "PalOptionValueFloat.h"
 #include "PalOptionValueInt.h"
 #include "PalOptionWorldStaticSettings.generated.h"
@@ -60,6 +61,9 @@ public:
     FPalOptionValueFloat PalAutoHpRegeneRateInSleep;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueFloat BuildObjectHpRate;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOptionValueFloat BuildObjectDamageRate;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -79,6 +83,9 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOptionValueInt DropItemMaxNum;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueInt PhysicsActiveDropItemMaxNum;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOptionValueInt DropItemMaxNum_UNKO;
@@ -106,6 +113,36 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOptionValueInt SupplyDropSpan;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueFloat ItemWeightRate;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<EPalBuildingLimitType, int32> BuildingLimitType;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueFloat ServerReplicatePawnCullDistance;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueFloat EquipmentDurabilityDamageRate;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueFloat ItemCorruptionMultiplier;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueFloat MonsterFarmActionSpeedRate;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueFloat AutoTransferMasterCheckIntervalSeconds;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueInt AutoTransferMasterThresholdDays;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueInt GuildRejoinCooldownMinutes;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionValueInt MaxGuildsPerFrame;
     
     PAL_API FPalOptionWorldStaticSettings();
 };

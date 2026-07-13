@@ -3,6 +3,7 @@
 
 UPalActionComponent::UPalActionComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
     this->CurrentAction = NULL;
+    this->EndedActionMovementModeHistoryMaxNum = 8;
 }
 
 UPalActionBase* UPalActionComponent::PlayActionParameter(FActionDynamicParameter Param, TSubclassOf<UPalActionBase> actionClass) {
@@ -46,12 +47,34 @@ void UPalActionComponent::OnOwnerEndPlay(AActor* Actor, TEnumAsByte<EEndPlayReas
 void UPalActionComponent::OnCompleteCharacter(APalCharacter* InCharacter) {
 }
 
-EPalActionType UPalActionComponent::GetCurrentActionType() const {
+bool UPalActionComponent::IsReservedActionClass(TSubclassOf<UPalActionBase> actionClass) const {
+    return false;
+}
+
+bool UPalActionComponent::IsActiveActionType(EPalActionType ActionType, bool bIsCheckQueue) const {
+    return false;
+}
+
+bool UPalActionComponent::HasAction(EPalActionType Type) {
+    return false;
+}
+
+EPalActionType UPalActionComponent::GetCurrentActionType(bool bIsCheckQueue) const {
     return EPalActionType::None;
 }
 
 UPalActionBase* UPalActionComponent::GetCurrentAction() const {
     return NULL;
+}
+
+TSubclassOf<AActor> UPalActionComponent::GetActionTool(EPalActionType ActionType, TSubclassOf<AActor> InDefaultClass) const {
+    return NULL;
+}
+
+void UPalActionComponent::CancelQueuedWazaActions_ToServer_Implementation() {
+}
+
+void UPalActionComponent::CancelQueuedWazaActions_ToALL_Implementation() {
 }
 
 void UPalActionComponent::CancelAllAction_ToServer_Implementation(int32 ID) {

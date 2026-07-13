@@ -6,11 +6,17 @@ APalMapObjectSpawnerBase::APalMapObjectSpawnerBase(const FObjectInitializer& Obj
     this->RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
     this->ProbabilityRespawn = 100;
     this->LotteryCoolTimeMinutes = 60.00f;
+    this->bAdjustMapObjectToFloor = false;
+    this->bDebugBreakPointTryRespawnFor = false;
     this->LocateSphere = NULL;
     this->State = EPalMapObjectSpawnerState::Init;
 }
 
 void APalMapObjectSpawnerBase::OnWorldMapObjectSpawnableInServer() {
+}
+
+FTransform APalMapObjectSpawnerBase::GetSpawnTransform(int32 Index) const {
+    return FTransform{};
 }
 
 

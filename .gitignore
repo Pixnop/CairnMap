@@ -152,3 +152,14 @@ Saved/
 
 # Explcitly ignore Mac DS_Store files, regardless of where they are
 .DS_Store
+# Project meta (never swallow these again)
+!.github/
+!.github/**
+!docs/
+!docs/**
+!tools/**
+!cpp-mod/**
+tools/cairnmap-ui/Build/
+tools/cairnmap-ui/Saved/
+tools/cairnmap-ui/Content/
+tools/cairnmap-ui/DerivedDataCache/

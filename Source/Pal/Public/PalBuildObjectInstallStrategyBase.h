@@ -14,12 +14,15 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     APalBuildObject* TargetBuildObject;
     
-private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    AActor* SnapHitActorCache;
+    APalBuildObject* ReplaceTargetBuildObject;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     APalBuildObject* SnapHitBuildObjectCache;
+    
+private:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    AActor* SnapHitActorCache;
     
 public:
     UPalBuildObjectInstallStrategyBase();

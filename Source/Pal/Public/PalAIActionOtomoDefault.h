@@ -14,9 +14,11 @@ protected:
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     bool ShouldSetCombatAction() const;
     
+public:
     UFUNCTION(BlueprintCallable)
     void SetOtomoWorkActionFixedAssign(AActor* HitActor);
     
+protected:
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void SetOtomoWorkAction();
     
@@ -31,6 +33,12 @@ protected:
     
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void SetOtomoBaseCampAction();
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsSameTargetAsTrainerCommand() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    AActor* FindNearestAttackTarget(const TArray<AActor*>& Actors);
     
 };
 

@@ -2,14 +2,18 @@
 #include "CoreMinimal.h"
 #include "Components/CapsuleComponent.h"
 #include "EPalBodyPartsType.h"
+#include "PalBodyPartsInterface.h"
 #include "PalBodyPartsCapsuleComponent.generated.h"
 
 UCLASS(Blueprintable, EditInlineNew, ClassGroup=Custom, meta=(BlueprintSpawnableComponent))
-class UPalBodyPartsCapsuleComponent : public UCapsuleComponent {
+class UPalBodyPartsCapsuleComponent : public UCapsuleComponent, public IPalBodyPartsInterface {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     EPalBodyPartsType BodyPartsType;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 BodyPartsFlags;
     
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -27,5 +31,7 @@ private:
     UFUNCTION(BlueprintCallable)
     void OnRep_BroadcastCollisionProfileName();
     
+
+    // Fix for true pure virtual functions not being implemented
 };
 

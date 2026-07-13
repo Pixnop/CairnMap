@@ -3,6 +3,8 @@
 #include "PalSyncTeleportComponent.h"
 
 APalPlayerState::APalPlayerState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
+    this->KillSEAkEvent = NULL;
+    this->bPlayKillSEOnPalKill = true;
     this->CachedIsPlayerDead = false;
     this->CachedIsPlayerDying = false;
     this->OtomoData = NULL;
@@ -12,6 +14,7 @@ APalPlayerState::APalPlayerState(const FObjectInitializer& ObjectInitializer) : 
     this->TechnologyData = NULL;
     this->RecordData = NULL;
     this->PlayerSkinData = NULL;
+    this->TreasureMapPointData = NULL;
     this->bIsSelectedInitMapPoint = false;
     this->bDetectedInValidPlayer = false;
     this->LocalRecordData = NULL;
@@ -20,14 +23,25 @@ APalPlayerState::APalPlayerState(const FObjectInitializer& ObjectInitializer) : 
     this->GuildBelongTo = NULL;
     this->SyncTeleportComp = CreateDefaultSubobject<UPalSyncTeleportComponent>(TEXT("SyncTeleportComp"));
     this->UserAchievementChecker = NULL;
+    this->PvPItemCount = 0;
     this->bIsNewCharacter = false;
     this->TryCreateIndividualHandleTemporarily = NULL;
+    this->bIsCompleteLoadInitWorldPartition_InServer = false;
     this->bIsCompleteSyncPlayerFromServer_InClient = false;
+    this->CompleteSyncPlayerFromServerTime_InClient = -1.00f;
+    this->bAllowSkipNight = false;
+    this->RegisteringMultiPlayerContentType = EPalPlayerMatchingType::None;
     this->ChatCounter = 0;
     this->DisableGuildJoin = false;
 }
 
+void APalPlayerState::WaitWorldPartitionDelegateFromAction(FGuid InGuid, FTimerHandle& OutTimerHandle, APalPlayerState::FOnCompleteLoadWorldPartitionDelegate Delegate) {
+}
+
 void APalPlayerState::WaitWorldPartitionDelegate(FTimerHandle& OutTimerHandle, APalPlayerState::FOnCompleteLoadWorldPartitionDelegate Delegate) {
+}
+
+void APalPlayerState::SyncPlayerPlatformCache_Implementation(const TArray<FPalCachedPlayerPlatformInfo>& InPlayerPlatformInfos) {
 }
 
 void APalPlayerState::ShowUnlockHardModeUI() {
@@ -36,19 +50,31 @@ void APalPlayerState::ShowUnlockHardModeUI() {
 void APalPlayerState::ShowTowerBossDefeatRewardUI() {
 }
 
-void APalPlayerState::ShowBossDefeatRewardUI(int32 TechPoint) {
+void APalPlayerState::ShowOilRigCrateOpenUI() {
+}
+
+void APalPlayerState::ShowBossDefeatRewardUI(const FPalUIBossDefeatRewardDisplayData& BossDefeatDisplayData) {
+}
+
+void APalPlayerState::SetDiscordPlayerUniqueID_Implementation(const FString& InDiscordPlayerUniqueID) {
+}
+
+void APalPlayerState::SendRandomizerReplicateData_Implementation(FPalRandomizerReplicateData InRandomizerReplicateData) {
+}
+
+void APalPlayerState::SendCompleteLoadWorldPartition_InServer_Implementation(FGuid InGuid, bool bIsComplete) {
 }
 
 void APalPlayerState::SendAccountInitData_ForServer_Implementation(const FPalPlayerAccountInitData& accountInitData) {
-}
-
-void APalPlayerState::RequestUnlockFastTravelPoint_ToServer_Implementation(const FName UnlockFlagKey) {
 }
 
 void APalPlayerState::RequestSpawnMonsterForPlayer_Implementation(const FName& CharacterID, int32 Num, int32 Level) {
 }
 
 void APalPlayerState::RequestRespawn_Implementation() {
+}
+
+void APalPlayerState::RequestRandomizerReplicateData_Implementation() {
 }
 
 void APalPlayerState::RequestPalBoxSyncPage_ToServer_Implementation(int32 pageIndex) {
@@ -60,25 +86,50 @@ void APalPlayerState::RequestJoinPlayer_ToServer_Implementation(const FGuid& Joi
 void APalPlayerState::RequestForceSyncPalBoxSlot_ToServer_Implementation(bool isForceSync) {
 }
 
+void APalPlayerState::RequestDeletePlayerSelf_ToServer_Implementation() {
+}
+
+bool APalPlayerState::RequestDeletePlayerSelf() {
+    return false;
+}
+
 void APalPlayerState::RequestBotLocation_Implementation() {
+}
+
+void APalPlayerState::RequestAllowSkipNight_ToServer_Implementation() {
+}
+
+void APalPlayerState::RequestAllowSkipNight() {
 }
 
 void APalPlayerState::RequestAccountInitData_ForClient_Implementation() {
 }
 
-void APalPlayerState::RegisterForPalDex_ToClient_Implementation(const FPalUIPalCaptureInfo& CaptureInfo) {
+void APalPlayerState::RegisterForPalDex_ToClient_Implementation(const FPalUIPalCaptureInfo& CaptureInfo, bool bDisplayHUD) {
 }
 
-void APalPlayerState::RegisterForPalDex_ServerInternal(FPalInstanceID IndividualId) {
+void APalPlayerState::RegisterForPalDex_ServerInternal(FPalInstanceID IndividualId, bool bDisplayHUD) {
 }
 
 void APalPlayerState::ReceiveNotifyLoginComplete_Implementation() {
 }
 
-void APalPlayerState::ReceiveBuildResult_ToRequestClient_Implementation(const EPalMapObjectOperationResult Result) {
+void APalPlayerState::ReceiveDeletePlayerSelf_ToRequestClient_Implementation(bool bIsSuccess) {
+}
+
+void APalPlayerState::ReceiveBuildResult_ToRequestClient_Implementation(const EPalMapObjectOperationResult Result, FPalBuildResultParameter BuildResultParameter) {
+}
+
+void APalPlayerState::OverridePsnAccountId_Implementation(const uint64& InPsnAccountId) {
+}
+
+void APalPlayerState::OverridePlayerPlatform_Implementation(EPalPlayerPlatform InPlayerPlatform) {
 }
 
 void APalPlayerState::OnUpdatePlayerInfoInGuildBelongTo(const UPalGroupGuildBase* Guild, const FGuid& InPlayerUId, const FPalGuildPlayerInfo& InPlayerInfo) {
+}
+
+void APalPlayerState::OnTimer_CountPvPItem() {
 }
 
 void APalPlayerState::OnRep_PlayerUId() {
@@ -87,10 +138,19 @@ void APalPlayerState::OnRep_PlayerUId() {
 void APalPlayerState::OnRep_GuildBelongTo(UPalGroupGuildBase* OldValue) {
 }
 
-void APalPlayerState::OnRelicNumAdded(int32 AddNum) {
+void APalPlayerState::OnRep_AllowSkipNight() {
+}
+
+void APalPlayerState::OnRelicNumAddedByType(EPalRelicType Type, int32 AddNum) {
 }
 
 void APalPlayerState::OnNotifiedReturnToFieldFromStage_ToClient_Implementation() {
+}
+
+void APalPlayerState::OnNotifiedMovedToFieldFromStage_ToClient_Implementation(const FPalStageInstanceId& StageInstanceId) {
+}
+
+void APalPlayerState::OnNotifiedMovedIntoStage_ToClient_Implementation(const FPalStageInstanceId& StageInstanceId) {
 }
 
 void APalPlayerState::OnNotifiedEnteredStage_ToClient_Implementation() {
@@ -99,7 +159,13 @@ void APalPlayerState::OnNotifiedEnteredStage_ToClient_Implementation() {
 void APalPlayerState::OnNotifiedClientInitializedEssentialInServer() {
 }
 
+void APalPlayerState::OnMultiHatchedIndividualHandle_ServerInternal(FPalInstanceID IndividualId) {
+}
+
 void APalPlayerState::OnFinishInitSelectMapTeleport(const FGuid TeleportPlayerUId) {
+}
+
+void APalPlayerState::OnEndLocalWorldAutoSave(bool bIsSuccess) {
 }
 
 void APalPlayerState::OnCreatePlayerIndividualHandle_InServer(FPalInstanceID ID) {
@@ -117,13 +183,40 @@ void APalPlayerState::OnCompleteSyncPlayer_InClient(APalPlayerState* PlayerState
 void APalPlayerState::OnCompleteSyncAll_InClient(APalPlayerState* PlayerState) {
 }
 
+void APalPlayerState::OnCompleteLoadWorldPartitionAndAdjustCharacter_InServer() {
+}
+
 void APalPlayerState::OnCompleteLoadInitWorldPartition_InClient(APalPlayerState* PlayerState) {
+}
+
+void APalPlayerState::OnClosedDeletePlayerSelfNotifyDialog(bool bYes) {
 }
 
 void APalPlayerState::OnChangeOptionCommonSettings(const FPalOptionCommonSettings& PrevSettings, const FPalOptionCommonSettings& NewSettings) {
 }
 
+void APalPlayerState::NotifyTradeComplete_ToClient_Implementation() {
+}
+
 void APalPlayerState::NotifyRunInitialize_ToClient() {
+}
+
+void APalPlayerState::NotifyPalBoxOpenInHardcore_ToServer_Implementation() {
+}
+
+void APalPlayerState::NotifyOperatingPassiveComplete_ToClient_Implementation(bool IsSuccess) {
+}
+
+void APalPlayerState::NotifyOperatingGenderComplete_ToClient_Implementation(bool IsSuccess) {
+}
+
+void APalPlayerState::NotifyOnCompleteLoadInitWorldPartition_ToServer_Implementation() {
+}
+
+void APalPlayerState::NotifyMultiHatchComplete_ToClient_Implementation(const TArray<FPalInstanceID>& HatchedIDs) const {
+}
+
+void APalPlayerState::NotifyKillSE_ToClient_Implementation(bool bIsDirectKill) {
 }
 
 void APalPlayerState::NotifyInvalidPlayer_ToClient_Implementation() {
@@ -163,11 +256,31 @@ bool APalPlayerState::IsInStage() const {
     return false;
 }
 
+bool APalPlayerState::IsInPlayerMatching() const {
+    return false;
+}
+
+bool APalPlayerState::IsCompleteLoadWorldPartition_InServer(FGuid InGuid) const {
+    return false;
+}
+
 bool APalPlayerState::IsCompleteLoadInitWorldPartition() {
     return false;
 }
 
+bool APalPlayerState::IsAllowSkipNight() const {
+    return false;
+}
+
 UPalWorldMapUIData* APalPlayerState::GetWorldMapData() const {
+    return NULL;
+}
+
+TArray<FName> APalPlayerState::GetUnlockedAreaBarrierLockIds() const {
+    return TArray<FName>();
+}
+
+UPalPlayerTreasureMapPointData* APalPlayerState::GetTreasureMapPointData() const {
     return NULL;
 }
 
@@ -215,6 +328,14 @@ UPalPlayerInventoryData* APalPlayerState::GetInventoryData() const {
     return NULL;
 }
 
+FPalStageInstanceId APalPlayerState::GetEnteringStageInstanceId() const {
+    return FPalStageInstanceId{};
+}
+
+EPalOptionWorldDeathPenalty APalPlayerState::GetDeathPenaltyModeForGameOverUI() const {
+    return EPalOptionWorldDeathPenalty::None;
+}
+
 TArray<FPalLogInfo_DropPal> APalPlayerState::GetAndClearLastDropPalInfo() {
     return TArray<FPalLogInfo_DropPal>();
 }
@@ -225,14 +346,17 @@ void APalPlayerState::FixedCharacterName(const FString& CharacterName) {
 void APalPlayerState::FixedCharacterMakeData(const FPalPlayerDataCharacterMakeInfo& MakeInfo) {
 }
 
-void APalPlayerState::EnterChat_Receive_Implementation(const FPalChatMessage& ChatMessage) {
-}
-
 bool APalPlayerState::EnterChat(FText Msg, EPalChatCategory Category) {
     return false;
 }
 
 void APalPlayerState::Debug_ShutdownToClient_Implementation() {
+}
+
+void APalPlayerState::Debug_SetOverridePlayerUID(FGuid NewPlayerUId) {
+}
+
+void APalPlayerState::Debug_SetIsOverridePlayerUIDToClient_Implementation(bool bIsOverride) {
 }
 
 void APalPlayerState::Debug_SetDestructionByCompleteBuiltFlag_ToServer_Implementation() {
@@ -292,6 +416,9 @@ void APalPlayerState::Debug_BuildDebugBaseCamp_ToServer_Implementation(FName Cam
 void APalPlayerState::Debug_BotEnterDungeon_ToServer_Implementation() {
 }
 
+void APalPlayerState::ClearCompleteLoadWorldPartition_InServer(FGuid InGuid) {
+}
+
 void APalPlayerState::CallOrRegisterOnCompleteSyncPlayerFromServer_InClient(APalPlayerState::FReturnSelfSingleDelegate Delegate) {
 }
 
@@ -301,7 +428,10 @@ void APalPlayerState::CallOrRegisterOnCompleteLoadInitWorldPartition_InClient(AP
 void APalPlayerState::AddMealLog_Implementation(const TArray<FPalMealLogDisplayData>& DisplayDataArray) {
 }
 
-void APalPlayerState::AddItemGetLog_ToClient_Implementation(const FPalStaticItemIdAndNum& ItemAndNum) const {
+void APalPlayerState::AddItemGetLog_ToClient_Implementation(const FPalStaticItemIdAndNum& ItemAndNum, const float DelayTime) const {
+}
+
+void APalPlayerState::AddGuildLabCompleteLog_Implementation(const TArray<FPalGuildLabCompleteLogDisplayData>& DisplayDataArray) {
 }
 
 void APalPlayerState::AddFullPalBoxLog_ToClient_Implementation() const {
@@ -311,6 +441,9 @@ void APalPlayerState::AddFullInventoryLog_ToClient_Implementation() const {
 }
 
 void APalPlayerState::AddBaseCampWorkerMovementLog_Implementation(const TArray<FPalBaseCampWorkerMovementLogDisplayData>& DisplayDataArray) {
+}
+
+void APalPlayerState::AchivementUnlockCheck() {
 }
 
 void APalPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
@@ -327,8 +460,16 @@ void APalPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     DOREPLIFETIME(APalPlayerState, TechnologyData);
     DOREPLIFETIME(APalPlayerState, RecordData);
     DOREPLIFETIME(APalPlayerState, PlayerSkinData);
+    DOREPLIFETIME(APalPlayerState, TreasureMapPointData);
     DOREPLIFETIME(APalPlayerState, bIsSelectedInitMapPoint);
+    DOREPLIFETIME(APalPlayerState, BaseCampBuildingNum);
+    DOREPLIFETIME(APalPlayerState, QuestManager);
     DOREPLIFETIME(APalPlayerState, GuildBelongTo);
+    DOREPLIFETIME(APalPlayerState, PvPItemCount);
+    DOREPLIFETIME(APalPlayerState, DiscordPlayerUniqueID);
+    DOREPLIFETIME(APalPlayerState, bIsCompleteLoadInitWorldPartition_InServer);
+    DOREPLIFETIME(APalPlayerState, bAllowSkipNight);
+    DOREPLIFETIME(APalPlayerState, RegisteringMultiPlayerContentType);
     DOREPLIFETIME(APalPlayerState, ChatCounter);
     DOREPLIFETIME(APalPlayerState, DisableGuildJoin);
 }

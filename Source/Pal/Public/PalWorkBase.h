@@ -8,6 +8,7 @@
 #include "EPalWorkType.h"
 #include "PalBaseCampAssignableObjectInterface.h"
 #include "PalBoundsTransform.h"
+#include "PalCompositeWorkFacingInfo.h"
 #include "PalFastWorkAssignRepInfoArray.h"
 #include "PalInstanceID.h"
 #include "PalWorkAssignInfo.h"
@@ -18,6 +19,7 @@
 class UPalCharacterParameterComponent;
 class UPalIndividualCharacterHandle;
 class UPalIndividualCharacterSlot;
+class UPalMapObjectConcreteModelBase;
 class UPalWorkAssign;
 class UPalWorkBase;
 class UPalWorkProgressTransformBase;
@@ -61,6 +63,9 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FWorkAssignUpdateDelegateWithIndividualId OnEndWorkDelegate;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FWorkAssignUpdateDelegateWithIndividualId OnReassignedAfterSpawnDelegate;
+    
 protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FPalBoundsTransform WorkableBounds;
@@ -98,6 +103,12 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     bool bCanStealAssign;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bAssignWorldSitLocationAtWorkFacing;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TArray<FPalCompositeWorkFacingInfo> CompositeWorkInfos;
+    
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     FGuid ID;
@@ -113,6 +124,9 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     bool bGroupRaycastStartOffsetOrigin;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalMapObjectConcreteModelBase* CachedOwnerMapObjectConcreteModel;
     
 public:
     UPalWorkBase();

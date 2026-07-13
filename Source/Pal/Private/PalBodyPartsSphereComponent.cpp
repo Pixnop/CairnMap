@@ -6,6 +6,7 @@ UPalBodyPartsSphereComponent::UPalBodyPartsSphereComponent(const FObjectInitiali
     this->CanCharacterStepUpOn = ECB_No;
     this->bDynamicObstacle = true;
     this->BodyPartsType = EPalBodyPartsType::Normal;
+    this->BodyPartsFlags = 0;
 }
 
 void UPalBodyPartsSphereComponent::OnRep_BroadcastCollisionProfileName() {

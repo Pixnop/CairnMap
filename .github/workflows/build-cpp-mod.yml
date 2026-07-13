@@ -1,0 +1,97 @@
+name: build-cpp-mod
+
+on:
+  push:
+    paths:
+      - "cpp-mod/**"
+      - ".github/workflows/build-cpp-mod.yml"
+  workflow_dispatch:
+
+env:
+  # Headers source: Okaetsu's tree at the exact commit of the shipped UE4SS.
+  UE4SS_REPO: Okaetsu/RE-UE4SS
+  UE4SS_SHA: c2ac246447a8bcd92541070cb474044e7a2bbbe6
+  # Import library is generated from the exact shipped DLL (perfect ABI):
+  ZDEV_URL: https://github.com/Okaetsu/RE-UE4SS/releases/download/experimental-palworld/UE4SS-Palworld_zDev.zip
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch UE4SS headers (public submodules only)
+        shell: bash
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --no-recurse-submodules https://github.com/${UE4SS_REPO}.git ue4ss-src
+          cd ue4ss-src
+          git checkout ${UE4SS_SHA}
+          # everything except the private UEPseudo (deps/first/Unreal)
+          mapfile -t mods < <(git config --file .gitmodules --get-regexp path | awk '{print $2}' | grep -v '^deps/first/Unreal$')
+          git submodule update --init --depth 1 "${mods[@]}" || true
+
+      - name: Fetch third-party headers (FetchContent deps)
+        shell: bash
+        run: |
+          git clone --depth 1 --branch 11.2.0 https://github.com/fmtlib/fmt.git third/fmt
+          git clone --depth 1 --branch v1.92.1 https://github.com/ocornut/imgui.git third/imgui
+          git clone --depth 1 --branch v1.2.0 https://github.com/UE4SS-RE/ImGuiColorTextEdit.git third/ImGuiColorTextEdit
+          # UEPseudo (private) public vendored copy, 2026-07-03 — one week before our pinned UE4SS
+          git clone --depth 1 https://github.com/FottenSC/HorseMod.git third/HorseMod
+          git clone --depth 1 --branch v4.1.1 --recurse-submodules https://github.com/zyantific/zydis.git third/zydis
+
+      - name: Fetch shipped UE4SS.dll
+        shell: bash
+        run: |
+          curl -sL -o zdev.zip "$ZDEV_URL"
+          unzip -o -q zdev.zip -d zdev
+          find zdev -name UE4SS.dll
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Generate import library from the DLL
+        shell: pwsh
+        run: |
+          $dll = (Get-ChildItem -Recurse zdev -Filter UE4SS.dll | Select-Object -First 1).FullName
+          dumpbin /exports $dll > exports.txt
+          python .github/workflows/make_def.py exports.txt UE4SS.def
+          lib /def:UE4SS.def /machine:x64 /out:UE4SS.lib
+          Get-Item UE4SS.lib
+
+      - name: Compile mod DLL
+        shell: pwsh
+        run: |
+          $inc = @("/Iue4ss-src/UE4SS/include")
+          Get-ChildItem ue4ss-src/deps/first -Directory | ForEach-Object {
+            if (Test-Path "$($_.FullName)/include") { $inc += "/I$($_.FullName)/include" }
+            else { $inc += "/I$($_.FullName)" }
+          }
+          Get-ChildItem ue4ss-src/deps/third -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+            if (Test-Path "$($_.FullName)/include") { $inc += "/I$($_.FullName)/include" }
+          }
+          $inc += "/Ithird/fmt/include"
+          $inc += "/Ithird/imgui"
+          $inc += "/Ithird/ImGuiColorTextEdit"
+          $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/include"
+          $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/include/Unreal/Core"
+          $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/include/Unreal"
+          $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/generated_include"
+          $inc += "/Ithird/zydis/include"
+          $inc += "/Ithird/zydis/dependencies/zycore/include"
+          mkdir out
+          cl /nologo /LD /std:c++latest /EHsc /MD /utf-8 /DNDEBUG /DFMT_HEADER_ONLY=1 /DUE_BUILD_SHIPPING=1 /DUBT_COMPILED_PLATFORM=Windows /DPLATFORM_WINDOWS=1 /D_WIN32_WINNT=0x0A00 /DWINVER=0x0A00 /DZYDIS_STATIC_BUILD /DZYCORE_STATIC_BUILD /DUNICODE /D_UNICODE `
+             $inc cpp-mod/mods/CairnMap/src/dllmain.cpp `
+             /Feout/main.dll /link UE4SS.lib
+          Get-Item out/main.dll
+
+      - name: Collect artifact
+        shell: bash
+        run: |
+          mkdir -p dist/CairnMap/dlls
+          cp out/main.dll dist/CairnMap/dlls/main.dll
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CairnMap-dll
+          path: dist/

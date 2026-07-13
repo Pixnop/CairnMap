@@ -5,6 +5,7 @@
 #include "EPalAudioFadeType.h"
 #include "FloatContainer.h"
 #include "PalAudioFadeParameter.h"
+#include "PalOptionAudioSettings.h"
 #include "PalAudioSettingSystem.generated.h"
 
 UCLASS(Blueprintable)
@@ -18,10 +19,32 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<EPalAudioBus, FPalAudioFadeParameter> BussFadeMap;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<EPalAudioBus> LoadMuteBuses;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float OverrideFadeInSeconds;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float OverrideFadeOutSeconds;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float LoadMuteRecoverDelaySeconds;
+    
 public:
     UPalAudioSettingSystem();
+
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, meta=(WorldContext="WorldContextObject"))
+    void UpdateAudioSwitch(const UObject* WorldContextObject, const FPalOptionAudioSettings& NewAudioSettings);
+    
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void Tick_BP(float DeltaTime);
+    
+    UFUNCTION(BlueprintCallable)
+    void StartLoadMuteFade(EPalAudioFadeType FadeType, float DurationSeconds, bool bImmediately);
+    
+    UFUNCTION(BlueprintCallable)
+    void StartAudioFadeBuses(const TArray<EPalAudioBus>& AudioBuses, EPalAudioFadeType FadeType, float DurationSeconds, bool bImmediately);
     
     UFUNCTION(BlueprintCallable)
     void StartAudioFade(EPalAudioBus AudioBus, EPalAudioFadeType FadeType, bool bImmediately);

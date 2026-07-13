@@ -5,10 +5,14 @@ UPalPartnerSkillPassiveSkill::UPalPartnerSkillPassiveSkill() {
     this->bIsRestricted = false;
     this->bRequireWorkerWorkingPassiveSkill = false;
     this->bIsWorking = false;
+    this->bIsBoundToTimeChange = false;
     this->CurrentRank = 0;
 }
 
 void UPalPartnerSkillPassiveSkill::OnWorkerAssignChanged(UPalCharacterParameterComponent* Parameter) {
+}
+
+void UPalPartnerSkillPassiveSkill::OnUpdateOtomoSlotWithActor(int32 SlotIndex, UPalIndividualCharacterHandle* LastHandle) {
 }
 
 void UPalPartnerSkillPassiveSkill::OnUpdateOtomoHolder(APalCharacter* Character) {
@@ -21,6 +25,9 @@ void UPalPartnerSkillPassiveSkill::OnUpdateCurrentGround(TEnumAsByte<EPhysicalSu
 }
 
 void UPalPartnerSkillPassiveSkill::OnUpdateBaseCampId(const FGuid& BaseCampId) {
+}
+
+void UPalPartnerSkillPassiveSkill::OnStartPassiveSkillEffect(EPalPassiveSkillEffectType EffectType, float Value) {
 }
 
 void UPalPartnerSkillPassiveSkill::OnRideInactivated() {
@@ -47,7 +54,28 @@ void UPalPartnerSkillPassiveSkill::OnInactivatedAsOtomoHolder() {
 void UPalPartnerSkillPassiveSkill::OnInactivatedAsOtomo() {
 }
 
+void UPalPartnerSkillPassiveSkill::OnGetOffRide(AActor* RideActor) {
+}
+
+void UPalPartnerSkillPassiveSkill::OnEndPassiveSkillEffect(EPalPassiveSkillEffectType EffectType) {
+}
+
+void UPalPartnerSkillPassiveSkill::OnChangeSprint(UPalCharacterMovementComponent* Component, bool IsInSprint) {
+}
+
+void UPalPartnerSkillPassiveSkill::OnChangeOtomoActive(APalCharacter* Otomo, bool IsActive) {
+}
+
 void UPalPartnerSkillPassiveSkill::OnChangeDisablePassiveSkill(bool isDisable, bool IsAllReset) {
+}
+
+void UPalPartnerSkillPassiveSkill::OnChangeDayTime() {
+}
+
+void UPalPartnerSkillPassiveSkill::OnChangeDashSwim(UPalCharacterMovementComponent* Component, bool IsInDashSwim) {
+}
+
+void UPalPartnerSkillPassiveSkill::OnChangeBattleMode(bool bIsBattleMode) {
 }
 
 void UPalPartnerSkillPassiveSkill::OnAddNewWorker(UPalIndividualCharacterHandle* AddCharacterHandle) {
@@ -75,18 +103,6 @@ void UPalPartnerSkillPassiveSkill::Initialize(const TArray<FPalPassivePartnerSki
 void UPalPartnerSkillPassiveSkill::InactivateWorkingSkill() {
 }
 
-APalPlayerController* UPalPartnerSkillPassiveSkill::GetTrainerController() const {
-    return NULL;
-}
-
-APalPlayerCharacter* UPalPartnerSkillPassiveSkill::GetTrainerActor() const {
-    return NULL;
-}
-
-ACharacter* UPalPartnerSkillPassiveSkill::GetTrainer() const {
-    return NULL;
-}
-
 TArray<FName> UPalPartnerSkillPassiveSkill::GetPassiveSkillList() const {
     return TArray<FName>();
 }
@@ -97,6 +113,9 @@ APalCharacter* UPalPartnerSkillPassiveSkill::GetOwner() const {
 
 int32 UPalPartnerSkillPassiveSkill::GetOtomoRank() const {
     return 0;
+}
+
+void UPalPartnerSkillPassiveSkill::AllResetPassiveSkill() {
 }
 
 

@@ -1,9 +1,9 @@
 #include "PalBuildObjectGenerateEnergy.h"
+#include "Net/UnrealNetwork.h"
 
 APalBuildObjectGenerateEnergy::APalBuildObjectGenerateEnergy(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
-    this->GenerateEnergyType = EPalEnergyType::Electric;
-    this->GenerateEnergyRateByWorker = 1.00f;
-    this->MaxEnergyStorage = 100.00f;
+    this->bGenerating = false;
+    this->bOverHeatCooling = false;
 }
 
 void APalBuildObjectGenerateEnergy::OnUpdateWorkAssigned_ServerInternal(UPalWorkBase* Work) {
@@ -11,10 +11,18 @@ void APalBuildObjectGenerateEnergy::OnUpdateWorkAssigned_ServerInternal(UPalWork
 
 
 
-void APalBuildObjectGenerateEnergy::BroadcastStartGenerate_Implementation() {
+void APalBuildObjectGenerateEnergy::OnRep_OverHeatCooling(const bool bOldValue) {
 }
 
-void APalBuildObjectGenerateEnergy::BroadcastEndGenerate_Implementation() {
+void APalBuildObjectGenerateEnergy::OnRep_Generating(const bool bOldValue) {
+}
+
+
+void APalBuildObjectGenerateEnergy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    
+    DOREPLIFETIME(APalBuildObjectGenerateEnergy, bGenerating);
+    DOREPLIFETIME(APalBuildObjectGenerateEnergy, bOverHeatCooling);
 }
 
 

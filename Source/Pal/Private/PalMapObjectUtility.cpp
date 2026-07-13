@@ -4,7 +4,11 @@
 UPalMapObjectUtility::UPalMapObjectUtility() {
 }
 
-bool UPalMapObjectUtility::TryGetItemVisualModelStaticMesh(TSubclassOf<AActor> actorClass, UStaticMesh*& OutStaticMesh, FTransform& OutComponentTransform, FVector& OutCenterOfMass, UMaterialInterface*& OutMaterialInterface) {
+bool UPalMapObjectUtility::TryGetItemVisualModelStaticMesh(TSubclassOf<AActor> actorClass, UStaticMesh*& OutStaticMesh, FTransform& OutComponentTransform, FVector& OutCenterOfMass, TArray<UMaterialInterface*>& OutMaterialInterface) {
+    return false;
+}
+
+bool UPalMapObjectUtility::TryGetItemVisualModelSkeletalMesh(TSubclassOf<AActor> actorClass, USkeletalMesh*& OutSkeletalMesh, FTransform& OutComponentTransform, FVector& OutCenterOfMass, UMaterialInterface*& OutMaterialInterface) {
     return false;
 }
 
@@ -25,6 +29,10 @@ bool UPalMapObjectUtility::IsContainsCollisionProfiles(const UPrimitiveComponent
 }
 
 void UPalMapObjectUtility::GetItemVisualModelFX(TSubclassOf<AActor> actorClass, TArray<FPalItemVisualModelFXInfo>& OutFXInfos) {
+}
+
+FName UPalMapObjectUtility::ConvertBlueprintItemIdToBuildObjectId(const UObject* WorldContextObject, const FName& StaticItemId) {
+    return NAME_None;
 }
 
 

@@ -13,13 +13,25 @@ class PAL_API UPalUniqueRideAnimeAssetBase : public UObject {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FName SocketName_Hand_R;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FVector IKPoleLocation_Hand_R;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FName SocketName_Hand_L;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FVector IKPoleLocation_Hand_L;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FName SocketName_Foot_R;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FVector IKPoleLocation_Foot_R;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FName SocketName_Foot_L;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FVector IKPoleLocation_Foot_L;
@@ -30,6 +42,12 @@ public:
 protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     UAnimSequence* RidingAnimation;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UAnimSequence* RidingSprintStartAnimation;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UAnimSequence* RidingSprintAnimation;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     UAnimMontage* RidingAnimation_Ball_Aim;
@@ -46,6 +64,13 @@ private:
     
 public:
     UPalUniqueRideAnimeAssetBase();
+
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UAnimSequence* GetRidingSprintStartAnimation();
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UAnimSequence* GetRidingSprintAnimation();
+    
     UFUNCTION(BlueprintCallable, BlueprintPure)
     UAnimSequence* GetRideAnimSequence();
     

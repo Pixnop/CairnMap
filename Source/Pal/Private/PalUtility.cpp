@@ -67,13 +67,31 @@ bool UPalUtility::SpawnActorBroadcast(const UObject* WorldContextObject, UClass*
     return false;
 }
 
+TMap<int32, FName> UPalUtility::SortIntNameMap(const TMap<int32, FName>& InMap, const bool IsAscend) {
+    return TMap<int32, FName>();
+}
+
 void UPalUtility::SortActorListByLabel(TArray<AActor*>& ActorList) {
+}
+
+void UPalUtility::SortActorListByDistance(TArray<AActor*>& ActorList, const FVector& BaseLocation) {
+}
+
+FVector UPalUtility::Slerp(FVector Start, FVector End, float T) {
+    return FVector{};
 }
 
 void UPalUtility::ShowUI(const UObject* WorldContextObject, const EPalWidgetBlueprintType WBPType, UPalHUDDispatchParameterBase* Parameter) {
 }
 
+bool UPalUtility::ShouldHideCaptureReticleForCharacter(const APalCharacter* Character) {
+    return false;
+}
+
 void UPalUtility::SetYawApplyRate(AActor* Actor, float Rate, FName flagName) {
+}
+
+void UPalUtility::SetWorldTreeTerrainHLODEnabled(const UObject* WorldContextObject, bool bInsideWorldTreeBox) {
 }
 
 void UPalUtility::SetVoiceID(AActor* TargetActor, int32 VoiceID) {
@@ -102,6 +120,9 @@ void UPalUtility::SetStatusPoint(UPalIndividualCharacterHandle* Handle, FName St
 void UPalUtility::SetSpeedCollisionEnable(AActor* Actor, bool bEnable) {
 }
 
+void UPalUtility::SetSaveServerPassword(const UObject* WorldContextObject, bool bSave) {
+}
+
 void UPalUtility::SetRidingCharacterCollision(APalCharacter* Character) {
 }
 
@@ -112,6 +133,12 @@ void UPalUtility::SetOtomoCollisionProfile(APalCharacter* Character) {
 }
 
 void UPalUtility::SetOpacityForCharacter(AActor* Character, float opacityIntensity) {
+}
+
+void UPalUtility::SetOpacityFlagForCharacter(AActor* Character, float opacityIntensity, FName flagName) {
+}
+
+void UPalUtility::SetMovementComponentFlags(UPalCharacterMovementComponent* MovementComponent, FName flagName, bool bDisable) {
 }
 
 void UPalUtility::SetMoveDisableFlag(AActor* Actor, bool isDisable, FName flagName) {
@@ -132,7 +159,13 @@ void UPalUtility::SetEnableSkyCreator(const UObject* WorldContextObject, bool bE
 void UPalUtility::SetEnableCameraFade(AActor* Character, bool bIsEnable) {
 }
 
+void UPalUtility::SetDirtyNavmeshArea(UObject* WorldContextObject, const FBox& Bounds) {
+}
+
 void UPalUtility::SetCoopFlag(APalCharacter* Trainer, APalCharacter* Otomo, bool bIsEnable) {
+}
+
+void UPalUtility::SetCharacterRagdollForRevive(APalCharacter* Character) {
 }
 
 void UPalUtility::SetCharacterRagdollForNooseTrap(APalCharacter* Character) {
@@ -150,6 +183,12 @@ void UPalUtility::SetCharacterLocationAtMainMeshFoot(APalCharacter* Character, c
 void UPalUtility::SetBodyPartsGenerateOverlapEvents(APalCharacter* Character, bool IsEnable) {
 }
 
+void UPalUtility::SetBodyPartsCollisionProfileNotChangeEnabled(APalCharacter* Character, const FName ProfileName) {
+}
+
+void UPalUtility::SetBodyPartsCollisionProfile_WithFlag(APalCharacter* Character, const FName ProfileName, const FName flagName, const EPalBodyPartsFlagOverrideState OverwriteState) {
+}
+
 void UPalUtility::SetBodyPartsCollisionProfile(APalCharacter* Character, const FName ProfileName) {
 }
 
@@ -159,14 +198,26 @@ void UPalUtility::SetBodyPartsCollisionEnable(APalCharacter* Character, bool bEn
 void UPalUtility::SetActorQuat(AActor* TargetActor, FQuat NewQuat) {
 }
 
-void UPalUtility::SendSystemToPlayerChat(const UObject* WorldContextObject, const FString& Message, const FGuid& ReceiverPlayerUId) {
+void UPalUtility::SendSystemToPlayerChat_Localize(const UObject* WorldContextObject, const FName& MessageId, const TMap<FString, FString>& MessageArgs, const TArray<FGuid>& ReceiverPlayerUIds) {
+}
+
+void UPalUtility::SendSystemToPlayerChat(const UObject* WorldContextObject, const FString& Message, const TArray<FGuid>& ReceiverPlayerUIds) {
+}
+
+void UPalUtility::SendSystemAnnounce_Localize(const UObject* WorldContextObject, const FName& MessageId, const TMap<FString, FString>& MessageArgs) {
 }
 
 void UPalUtility::SendSystemAnnounce(const UObject* WorldContextObject, const FString& Message) {
 }
 
+void UPalUtility::SendPlayerEventTelemetry(const UObject* WorldContextObject, const FString& action, const FString& action_category, const FString& action_value) {
+}
+
 FText UPalUtility::SelectText(const FText& A, const FText& B, bool bPickA) {
     return FText::GetEmpty();
+}
+
+void UPalUtility::SaveServerPassword(const UObject* WorldContextObject, const FString& ServerGUID, const FString& Password) {
 }
 
 float UPalUtility::RSign(const float V) {
@@ -178,6 +229,9 @@ bool UPalUtility::RideTo(AActor* RiderActor, AActor* RidePal, bool bIsSkipAnimat
 }
 
 void UPalUtility::ReturnOtomoPalToHolder(const AController* TargetController) {
+}
+
+void UPalUtility::ResetCharacterRootCollisionResponse(APalCharacter* Character) {
 }
 
 void UPalUtility::ResetBodyPartsCollisionProfileToDefault(APalCharacter* Character) {
@@ -205,7 +259,7 @@ bool UPalUtility::ProjectWorldToScreenBehindCamera(APlayerController* Player, co
 void UPalUtility::ProcessDeadAction(APalCharacter* Character) {
 }
 
-void UPalUtility::ProcessDamageAndPlayEffectsByDamageInfo(AActor* Attacker, AActor* Defender, const FPalDamageInfo& DamageInfo, bool bIsEnableHitEffect) {
+void UPalUtility::ProcessDamageAndPlayEffectsByDamageInfo(AActor* Attacker, AActor* Defender, const FPalDamageInfo& DamageInfo, bool bIsEnableHitEffect, const int32 ExceedHitCount) {
 }
 
 void UPalUtility::ProcessDamageAndPlayEffects(AActor* Attacker, AActor* Defender, const FPalMakeDamageInfo& NewMakeDamageInfo) {
@@ -246,12 +300,20 @@ bool UPalUtility::PalAIMoveToTargetActor(APalAIController* Controller, AActor* T
     return false;
 }
 
+FGuid UPalUtility::OpenColorEditorMenu(const UObject* WorldContextObject, UPalHUDDispatchParameter_ColorEditor* Parameter) {
+    return FGuid{};
+}
+
 bool UPalUtility::NotContainsAny(const TArray<UObject*> SourceArray, const TArray<UObject*> FindElms) {
     return false;
 }
 
 FFixedPoint64 UPalUtility::NextPointCalculate(FFixedPoint64 CurrentPoint, FFixedPoint64 CurrentMax, FFixedPoint64 NextMax) {
     return FFixedPoint64{};
+}
+
+TArray<int32> UPalUtility::MakeUniqueRandomIntArray(int32 Count, FRandomStream RandomStream) {
+    return TArray<int32>();
 }
 
 FPalDamageInfo UPalUtility::MakeDamageInfoByWazaType(AActor* Attacker, AActor* Defencer, const USceneComponent* AttackerHitComponent, const USceneComponent* DefenderHitComponent, const FVector& HitLocation, TArray<int32> FoliageIndex, EPalWazaID WazaType, EPalBlowVelocityOwner BlowOwner, FVector NativeBlowVelocity, int32 referenceIndex, float DamageRatePerCollision) {
@@ -270,14 +332,22 @@ bool UPalUtility::LotteryFloat(const float ProbabilityPercentage) {
     return false;
 }
 
+bool UPalUtility::LoadServerPassword(const UObject* WorldContextObject, const FString& ServerGUID, FString& OutPassword) {
+    return false;
+}
+
 void UPalUtility::LoadIconToImage(const UObject* WorldContextObject, TSoftObjectPtr<UTexture2D> TexturePath, UImage* TargetImage, UPalUtility::FLoadIconToImageDelegate Callback) {
+}
+
+float UPalUtility::LineTraceToTargetDistance_ForReticleBlockOwner(AActor* SelfActor, AActor* Target) {
+    return 0.0f;
 }
 
 bool UPalUtility::LineTraceToTarget_ForAIAttack(AActor* SelfActor, AActor* Target, float Radius) {
     return false;
 }
 
-void UPalUtility::JudgePalCapture_TryAllPhase(const UPalIndividualCharacterHandle* targetHandle, const UPalIndividualCharacterHandle* throwCharacterHandle, int32 captureItemLevel, TArray<bool>& outJudgeFlagArray, bool Robbery) {
+void UPalUtility::JudgePalCapture_TryAllPhase(const UPalIndividualCharacterHandle* targetHandle, const UPalIndividualCharacterHandle* throwCharacterHandle, int32 captureItemLevel, TArray<bool>& outJudgeFlagArray, bool Robbery, bool bIsSneakBonus) {
 }
 
 bool UPalUtility::JudgePalCapture(AActor* Pal) {
@@ -316,6 +386,14 @@ bool UPalUtility::IsValid_ThreadSafe(UObject* Object) {
     return false;
 }
 
+bool UPalUtility::IsUseMods() {
+    return false;
+}
+
+bool UPalUtility::IsUpscalingSupported(const UObject* WorldContextObject) {
+    return false;
+}
+
 bool UPalUtility::IsUnderWorldOceanPlaneZ(const UObject* WorldContextObject, const FVector& Location) {
     return false;
 }
@@ -325,6 +403,14 @@ bool UPalUtility::IsUGCFilter() {
 }
 
 bool UPalUtility::IsUGCBlocked(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsTrialGame() {
+    return false;
+}
+
+bool UPalUtility::IsTransactionalObject(const UObject* Object) {
     return false;
 }
 
@@ -348,7 +434,27 @@ bool UPalUtility::IsServer(const UObject* WorldContextObject) {
     return false;
 }
 
+bool UPalUtility::IsRevivingByOtomoPartnerSkill(const APalPlayerCharacter* Player) {
+    return false;
+}
+
 bool UPalUtility::IsRandomizedPlayerUID(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsPvP(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsPS5Trinity(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsPS5Base(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsPS5(const UObject* WorldContextObject) {
     return false;
 }
 
@@ -357,6 +463,14 @@ bool UPalUtility::IsPointOnBase(const UObject* WorldContextObject, const FVector
 }
 
 bool UPalUtility::IsPointInDoor(const UObject* WorldContextObject, const FVector& Point, const TArray<AActor*>& IgnoreActors, const TEnumAsByte<EDrawDebugTrace::Type> DrawDebugType, const float DrawDebugDuration) {
+    return false;
+}
+
+bool UPalUtility::IsPlayersOtomo(const AActor* Actor) {
+    return false;
+}
+
+bool UPalUtility::IsPlayerOrOtomo(const AActor* Actor) {
     return false;
 }
 
@@ -372,6 +486,14 @@ bool UPalUtility::IsPalMonster(const AActor* Actor) {
     return false;
 }
 
+bool UPalUtility::IsPalmi(const AActor* Actor) {
+    return false;
+}
+
+bool UPalUtility::IsPalMeasurePerfMode(const UObject* WorldContextObject) {
+    return false;
+}
+
 bool UPalUtility::IsPalCharacter(AActor* Actor) {
     return false;
 }
@@ -381,6 +503,14 @@ bool UPalUtility::IsOtomo(const AActor* Actor) {
 }
 
 bool UPalUtility::IsOpenListenServer(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsNight(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsNetworkConnectionPoor(const UObject* WorldContextObject, float Threshold) {
     return false;
 }
 
@@ -408,7 +538,27 @@ bool UPalUtility::IsMultiplayer(const UObject* WorldContextObject) {
     return false;
 }
 
+bool UPalUtility::IsMovieRenderGameMode(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsMeleeWeaponType(EPalWeaponType WeaponType) {
+    return false;
+}
+
+bool UPalUtility::IsMatchCharacterContainerSortInfo(const UObject* WorldContextObject, const FPalCharacterContainerSortInfo& SortInfo, const FPalIndividualCharacterSaveParameter& SaveParameter) {
+    return false;
+}
+
+bool UPalUtility::IsMac(const UObject* WorldContextObject) {
+    return false;
+}
+
 bool UPalUtility::IsLocalPlayerCampPal(const AActor* Actor) {
+    return false;
+}
+
+bool UPalUtility::IsLocalControlCharacterOrOtomo(APalCharacter* Character) {
     return false;
 }
 
@@ -424,6 +574,14 @@ bool UPalUtility::IsLive(AActor* Actor) {
     return false;
 }
 
+bool UPalUtility::IsInsideStage(const AActor* TargetActor) {
+    return false;
+}
+
+bool UPalUtility::IsInsideAnyPlayerActorBounds(const AActor* TargetActor, const FVector& DetectMargin, const float AdditionalDetectMarginAbove, const bool bIncludeInStage, const bool bDrawDebugBox) {
+    return false;
+}
+
 bool UPalUtility::IsInClientConnection(const UObject* WorldContextObject) {
     return false;
 }
@@ -436,11 +594,23 @@ bool UPalUtility::IsIgnoreNetworkVersionCheck(const UObject* WorldContextObject)
     return false;
 }
 
+bool UPalUtility::IsHandheldPC(const UObject* WorldContextObject) {
+    return false;
+}
+
 bool UPalUtility::IsHairAttachAccessory(const UObject* WorldContextObject, const FName& EquipmentArmorName) {
     return false;
 }
 
 bool UPalUtility::IsGDK(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsGameConsole(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsFullBodyEquipment(const UObject* WorldContextObject, const FName& EquipmentBodyName) {
     return false;
 }
 
@@ -452,6 +622,14 @@ bool UPalUtility::IsForceQuitOnDisconnect(const UObject* WorldContextObject) {
     return false;
 }
 
+bool UPalUtility::IsExternalModEnabled() {
+    return false;
+}
+
+bool UPalUtility::IsExistsUsableTargetMedicine(const UObject* WorldContextObject, const UPalIndividualCharacterParameter* IndividualParameter, const TArray<FName>& StaticItemIds) {
+    return false;
+}
+
 bool UPalUtility::IsExistsPlayerInRange(const UObject* WorldContextObject, const FVector& Location, float Radius) {
     return false;
 }
@@ -460,11 +638,19 @@ bool UPalUtility::IsExistsInDoor(AActor* TargetActor, const TEnumAsByte<EDrawDeb
     return false;
 }
 
+bool UPalUtility::IsExecutionStatus(const APalCharacter* Character, EPalStatusID statusID) {
+    return false;
+}
+
 bool UPalUtility::IsEnemy(const AActor* ActorA, const AActor* ActorB) {
     return false;
 }
 
 bool UPalUtility::IsEnableRandomizeSpawner(const UObject* WorldContextObject) {
+    return false;
+}
+
+bool UPalUtility::IsEnableCloudSave(const UObject* WorldContextObject) {
     return false;
 }
 
@@ -492,6 +678,18 @@ bool UPalUtility::IsDyingPlayer(const APalPlayerCharacter* PlayerCharacter) {
     return false;
 }
 
+bool UPalUtility::IsDLSSReflexAvailable() {
+    return false;
+}
+
+bool UPalUtility::IsDLSSFGAvailable() {
+    return false;
+}
+
+bool UPalUtility::IsDipEnabled_Safe(const UObject* WorldContextObject, EPalDipType Type, int32 Threshold) {
+    return false;
+}
+
 bool UPalUtility::IsDevelopmentBuild() {
     return false;
 }
@@ -500,11 +698,23 @@ bool UPalUtility::IsDestructionByCompleteBuilt(const UObject* WorldContextObject
     return false;
 }
 
+bool UPalUtility::IsDefaultObject(const UObject* Object) {
+    return false;
+}
+
 bool UPalUtility::IsDedicatedServer(const UObject* WorldContextObject) {
     return false;
 }
 
-bool UPalUtility::IsDead(AActor* Actor) {
+bool UPalUtility::IsDeadInHardcore(AActor* Actor) {
+    return false;
+}
+
+bool UPalUtility::IsDead(const AActor* Actor) {
+    return false;
+}
+
+bool UPalUtility::IsCurrentGPUDriverRecommended() {
     return false;
 }
 
@@ -564,6 +774,10 @@ bool UPalUtility::IsApplicableDamage(UObject* Causer, AActor* Receiver, UPrimiti
     return false;
 }
 
+bool UPalUtility::IsAllyDamageImmune(APalCharacter* CauserCharacter, APalCharacter* ReceiverCharacter) {
+    return false;
+}
+
 bool UPalUtility::IsAllLevelLoaded(const UObject* WorldContextObject) {
     return false;
 }
@@ -592,6 +806,10 @@ bool UPalUtility::InFanShapAndDitance(const AActor* SelfActor, const AActor* Tar
 }
 
 bool UPalUtility::InFanShapAimTarget(const AActor* SelfActor, const AActor* TargetActor, float Degree) {
+    return false;
+}
+
+bool UPalUtility::InFanShap_TargetLocation_PlayerCamera(const FVector TargetLocation, const APalPlayerCharacter* Player, float Degree) {
     return false;
 }
 
@@ -624,6 +842,10 @@ bool UPalUtility::InConeShapAndDitance(FVector SelfLocation, FRotator SelfRotato
 }
 
 void UPalUtility::HeadBillboardEffectSetTransform(APalCharacter* Character, USceneComponent* Effect, const FVector AddOffset) {
+}
+
+bool UPalUtility::HasSavedServerPassword(const UObject* WorldContextObject, const FString& ServerGUID) {
+    return false;
 }
 
 bool UPalUtility::HasResponseToChannelByPalTraceType(const AActor* Actor, EPalTraceTypeQuery Type, TEnumAsByte<ECollisionResponse> Response) {
@@ -667,6 +889,10 @@ UPalWorkProgressManager* UPalUtility::GetWorkProgressManager(const UObject* Worl
     return NULL;
 }
 
+UPalWildlifeSanctuarySubsystem* UPalUtility::GetWildlifeSanctuarySubsystem(const UObject* WorldContextObject) {
+    return NULL;
+}
+
 void UPalUtility::GetWeakElementType(EPalElementType type1, EPalElementType type2, TArray<EPalElementType>& OutArray) {
 }
 
@@ -700,6 +926,14 @@ EPalTribeID UPalUtility::GetTribeIDFromCharacterID(const UObject* WorldContextOb
     return EPalTribeID::None;
 }
 
+bool UPalUtility::GetTrialGameTime(const UObject* WorldContextObject, int32& OutMinute) {
+    return false;
+}
+
+bool UPalUtility::GetTrialGameSaveDirectoryName(FString& OutWorldSaveDirectoryName) {
+    return false;
+}
+
 FQuat UPalUtility::GetTransformQuat(const FTransform SourceTransform) {
     return FQuat{};
 }
@@ -712,12 +946,24 @@ APalPlayerCharacter* UPalUtility::GetTrainerPlayer(const AActor* Monster) {
     return NULL;
 }
 
+int32 UPalUtility::GetTimeOffsetInSeconds(const UObject* WorldContextObject, FGameDateTime DateTime) {
+    return 0;
+}
+
 UPalTimeManager* UPalUtility::GetTimeManager(const UObject* WorldContextObject) {
     return NULL;
 }
 
+FString UPalUtility::GetTelemetryBaseURL(const UObject* WorldContextObject) {
+    return TEXT("");
+}
+
 UPalTechnologyData* UPalUtility::GetTechnologyDataByPlayerUID(const UObject* WorldContextObject, FGuid PlayerUId) {
     return NULL;
+}
+
+FVector UPalUtility::GetTargetActorAimSocketLocation(const AActor* TargetActor) {
+    return FVector{};
 }
 
 UPalSupplyManager* UPalUtility::GetSupplyManager(const UObject* WorldContextObject) {
@@ -755,6 +1001,10 @@ EPalLogFormatType UPalUtility::GetServerLogFormatType(const UObject* WorldContex
     return EPalLogFormatType::Text;
 }
 
+bool UPalUtility::GetSaveServerPassword(const UObject* WorldContextObject) {
+    return false;
+}
+
 UPalSaveGameManager* UPalUtility::GetSaveGameManager(const UObject* WorldContextObject) {
     return NULL;
 }
@@ -765,6 +1015,10 @@ float UPalUtility::GetSafeZero(float Value) {
 
 float UPalUtility::GetRTTJitter(const UObject* WorldContextObject) {
     return 0.0f;
+}
+
+APalCharacter* UPalUtility::GetRidePal(const APalPlayerCharacter* Player) {
+    return NULL;
 }
 
 UPalRESTAPISubsystem* UPalUtility::GetRESTAPISubsystem(const UObject* WorldContextObject) {
@@ -787,7 +1041,17 @@ float UPalUtility::GetRangeToGround(AActor* Actor) {
     return 0.0f;
 }
 
-void UPalUtility::GetRandomPointList(int32 pointNum, int32 maxLoopCount, float minXPos, float maxXPos, float minYPos, float maxYPos, float SizeX, float SizeY, FRandomStream RandomStream, TArray<FVector2D>& outPointArray) {
+void UPalUtility::GetRandomPointList_Cone(int32 pointNum, int32 maxLoopCount, FVector Direct, float Degree, float MaxDistance, float PointRadius, FRandomStream RandomStream, const TArray<FVector>& InPointArray, TArray<FVector>& outPointArray, float HeightRatio) {
+}
+
+void UPalUtility::GetRandomPointList_Circular(int32 pointNum, int32 maxLoopCount, FVector2D Center, float Radius, float PointRadius, FRandomStream RandomStream, const TArray<FVector2D>& InPointArray, TArray<FVector2D>& outPointArray) {
+}
+
+void UPalUtility::GetRandomPointList(int32 pointNum, int32 maxLoopCount, float minXPos, float maxXPos, float minYPos, float maxYPos, float SizeX, float SizeY, FRandomStream RandomStream, const TArray<FVector2D>& InPointArray, TArray<FVector2D>& outPointArray) {
+}
+
+bool UPalUtility::GetRandomLoginPlayerUId(const UObject* WorldContextObject, FGuid& PlayerUId) {
+    return false;
 }
 
 UPalRandomizerManager* UPalUtility::GetRandomizerManager(const UObject* WorldContextObject) {
@@ -796,6 +1060,14 @@ UPalRandomizerManager* UPalUtility::GetRandomizerManager(const UObject* WorldCon
 
 UPalRaidBossManager* UPalUtility::GetRaidBossManager(const UObject* WorldContextObject) {
     return NULL;
+}
+
+UPalQuestManager* UPalUtility::GetQuestManagerByPlayerUID(const UObject* WorldContextObject, FGuid PlayerUId) {
+    return NULL;
+}
+
+FString UPalUtility::GetPocketpairAuthBaseURL(const UObject* WorldContextObject) {
+    return TEXT("");
 }
 
 FString UPalUtility::GetPlayerUniqueIdToString(const FUniqueNetIdRepl& UserId) {
@@ -834,8 +1106,16 @@ UPalPlayerSkinData* UPalUtility::GetPlayerSkinDataFromCharacter(APalPlayerCharac
     return NULL;
 }
 
+float UPalUtility::GetPlayerRespawnTime(const UObject* WorldContextObject, FGuid InPlayerUId) {
+    return 0.0f;
+}
+
 UPalPlayerManager* UPalUtility::GetPlayerManager(const UObject* WorldContextObject) {
     return NULL;
+}
+
+bool UPalUtility::GetPlayerMakeInfo(const UObject* WorldContextObject, FPalPlayerDataCharacterMakeInfo& OutMakeInfo) {
+    return false;
 }
 
 TArray<FString> UPalUtility::GetPlayerListDisplayMessages(const UObject* WorldContextObject) {
@@ -852,6 +1132,14 @@ TArray<FPlayerListItem> UPalUtility::GetPlayerList(const UObject* WorldContextOb
 
 int32 UPalUtility::GetPlayerEquipmentShield(const UObject* WorldContextObject, FGuid PlayerUId) {
     return 0;
+}
+
+float UPalUtility::GetPlayerEquipmentPassiveSkillValue_UID(const UObject* WorldContextObject, FGuid PlayerUId, EPalPassiveSkillEffectType EffectType) {
+    return 0.0f;
+}
+
+float UPalUtility::GetPlayerEquipmentPassiveSkillValue(const APalPlayerCharacter* Player, EPalPassiveSkillEffectType EffectType) {
+    return 0.0f;
 }
 
 void UPalUtility::GetPlayerEquipmentPassiveList(const UObject* WorldContextObject, FGuid PlayerUId, TArray<FName>& outPassiveList) {
@@ -899,6 +1187,10 @@ ACharacter* UPalUtility::GetPlayerCharacterByPlayerId(const UObject* WorldContex
 
 APalPlayerCharacter* UPalUtility::GetPlayerCharacter(const UObject* WorldContextObject) {
     return NULL;
+}
+
+EPalPlayerBodyShape UPalUtility::GetPlayerBodyShape(const UObject* WorldContextObject, const FName& EquipmentBodyName) {
+    return EPalPlayerBodyShape::Normal;
 }
 
 EPalSupportedPlatformType UPalUtility::GetPlatformType(const UObject* WorldContextObject) {
@@ -982,7 +1274,16 @@ UPalCheatManager* UPalUtility::GetPalCheatManager(const UObject* WorldContextObj
 void UPalUtility::GetPalCharacters(const UObject* WorldContextObject, TArray<APalCharacter*>& OutCharacters) {
 }
 
-void UPalUtility::GetOverrideLoginPlayerUId(const UObject* WorldContextObject, FGuid& PlayerUId) {
+UObject* UPalUtility::GetOwnerOrOuter(const UObject* Object) {
+    return NULL;
+}
+
+bool UPalUtility::GetOverrideLoginPlayerUId(const UObject* WorldContextObject, FGuid& PlayerUId) {
+    return false;
+}
+
+FName UPalUtility::GetOverrideBodyType(const UObject* WorldContextObject, const FName& EquipmentBodyName) {
+    return NAME_None;
 }
 
 TArray<int32> UPalUtility::GetOverlapFoliageIndexByComponent(UPrimitiveComponent* AttackComponent, UPrimitiveComponent* FolageComponent) {
@@ -1029,11 +1330,19 @@ bool UPalUtility::GetOffFromPal(AActor* RiderActor, bool bIsSkipAnimation, bool 
     return false;
 }
 
+UPalObjectPoolManager* UPalUtility::GetObjectPoolManager(const UObject* WorldContextObject) {
+    return NULL;
+}
+
 int32 UPalUtility::GetNumPlayers(const UObject* WorldContextObject) {
     return 0;
 }
 
 UPalNPCManager* UPalUtility::GetNPCManager(const UObject* WorldContextObject) {
+    return NULL;
+}
+
+TSoftClassPtr<UPalShooterAnimeAssetBase> UPalUtility::GetNoWeaponIdleAnimationByCharacterMakeInfo(UObject* WorldContextObject, const FPalPlayerDataCharacterMakeInfo& CharacterMakeInfo) {
     return NULL;
 }
 
@@ -1049,6 +1358,10 @@ APalNetworkTransmitter* UPalUtility::GetNetworkTransmitter(const UObject* WorldC
     return NULL;
 }
 
+FString UPalUtility::GetNetMode(const UObject* WorldContextObject) {
+    return TEXT("");
+}
+
 float UPalUtility::GetNearstPlayerDistance2D(const UObject* WorldContextObject, FVector Location) {
     return 0.0f;
 }
@@ -1057,12 +1370,16 @@ APalCharacter* UPalUtility::GetNearestEnemyByLocation_FrontPlayerCamera(FVector 
     return NULL;
 }
 
-APalCharacter* UPalUtility::GetNearestEnemyByLocation(FVector Location, APalCharacter* myCharacter, float& OutMinRange) {
+APalCharacter* UPalUtility::GetNearestEnemyByLocation(FVector Location, APalCharacter* myCharacter, float& OutMinRange, FPalFindEnemyOption InOption) {
     return NULL;
 }
 
 APalMapObject* UPalUtility::GetNearestEnemyBuildObject(AActor* Character) {
     return NULL;
+}
+
+bool UPalUtility::GetNavAgentLocation(const ACharacter* InCharacter, FVector& OutLocation) {
+    return false;
 }
 
 float UPalUtility::GetMontageSectionLengthDefault(UAnimMontage* Montange) {
@@ -1073,11 +1390,34 @@ float UPalUtility::GetMontageSectionLength(UAnimMontage* Montange, FName Section
     return 0.0f;
 }
 
+FVector UPalUtility::GetMontageRootLocationByCharacter(const UAnimMontage* Montage, float TimeSec, APalCharacter* PalCharacter, FVector RootMotionScale) {
+    return FVector{};
+}
+
+FVector UPalUtility::GetMontageRootLocation(const UAnimMontage* Montage, float TimeSec) {
+    return FVector{};
+}
+
 void UPalUtility::GetMontageNotifyStates(UAnimMontage* Montange, TArray<UAnimNotifyState*>& outStates, FName SectionName) {
+}
+
+UAnimNotify* UPalUtility::GetMontageNotify(const UAnimMontage* Montage, FName NotifyName) {
+    return NULL;
+}
+
+void UPalUtility::GetMontageNotifies(const UAnimMontage* Montage, TArray<UAnimNotify*>& OutNotifies, FName NotifyName) {
 }
 
 UPalMoneyData* UPalUtility::GetMoneyDataByPlayerUID(const UObject* WorldContextObject, FGuid PlayerUId) {
     return NULL;
+}
+
+FString UPalUtility::GetMeasurePointSetName(const UObject* WorldContextObject) {
+    return TEXT("");
+}
+
+int32 UPalUtility::GetMeasuredLocationIndex(const UObject* WorldContextObject) {
+    return 0;
 }
 
 UPalMasterDataTables* UPalUtility::GetMasterDataTables(const UObject* WorldContextObject) {
@@ -1112,6 +1452,10 @@ UPalPlayerRecordData* UPalUtility::GetLocalRecordData(const UObject* WorldContex
     return NULL;
 }
 
+UPalQuestManager* UPalUtility::GetLocalQuestManager(const UObject* WorldContextObject) {
+    return NULL;
+}
+
 FGuid UPalUtility::GetLocalPlayerUID(const UObject* WorldContextObject) {
     return FGuid{};
 }
@@ -1136,6 +1480,10 @@ UPalPlayerInput* UPalUtility::GetLocalPalPlayerInput(const UObject* WorldContext
     return NULL;
 }
 
+APalPlayerController* UPalUtility::GetLocalPalPlayerController(const UObject* WorldContextObject) {
+    return NULL;
+}
+
 UPalMoneyData* UPalUtility::GetLocalMoneyData(const UObject* WorldContextObject) {
     return NULL;
 }
@@ -1144,12 +1492,31 @@ UPalPlayerInventoryData* UPalUtility::GetLocalInventoryData(const UObject* World
     return NULL;
 }
 
+TArray<FString> UPalUtility::GetLoadedPakFiles() {
+    return TArray<FString>();
+}
+
+void UPalUtility::GetLegalPalList(const UObject* WorldContextObject, const bool IncludeNoDexIdPal, TArray<FName>& OutList) {
+}
+
 UPalItemIDManager* UPalUtility::GetItemIDManager(const UObject* WorldContextObject) {
     return NULL;
 }
 
 UPalItemContainerManager* UPalUtility::GetItemContainerManager(const UObject* WorldContextObject) {
     return NULL;
+}
+
+bool UPalUtility::GetIsCharacterNeutral_ForPlayer(const UObject* WorldContextObject, APalPlayerCharacter* TargetPlayer, APalCharacter* TargetCharacter) {
+    return false;
+}
+
+bool UPalUtility::GetIsCharacterNeutral(const UObject* WorldContextObject, const FName CharacterID, const int32 LevelDiff) {
+    return false;
+}
+
+bool UPalUtility::GetIsCharacterCaptureable(const UObject* WorldContextObject, const FName CharacterID) {
+    return false;
 }
 
 UPalPlayerInventoryData* UPalUtility::GetInventoryDataByPlayerUID(const UObject* WorldContextObject, FGuid PlayerUId) {
@@ -1168,11 +1535,15 @@ bool UPalUtility::GetInitializedPlayerSaveParemter(const UObject* WorldContextOb
     return false;
 }
 
-bool UPalUtility::GetInitializedCharacterSaveParemter_NPCOtomo(const UObject* WorldContextObject, const FName CharacterID, const FName UniqueNPCID, const int32 Level, const FGuid& OwnerPlayerUId, FPalIndividualCharacterSaveParameter& outParameter) {
+bool UPalUtility::GetInitializedCharacterSaveParemter_PassiveSkillList(const UObject* WorldContextObject, const FName CharacterID, const FName UniqueNPCID, const int32 Level, const FGuid& OwnerPlayerUId, FPalIndividualCharacterSaveParameter& outParameter, bool DisableRandomPassiveSkill, TArray<FName> PassiveSkillList, bool RarePalAble) {
     return false;
 }
 
-bool UPalUtility::GetInitializedCharacterSaveParemter_DebugDefaultParamSetup(const UObject* WorldContextObject, const FName CharacterID, const FName UniqueNPCID, const int32 Level, const FGuid& OwnerPlayerUId, FPalIndividualCharacterSaveParameter& outParameter, bool DisableRandomPassiveSkilll, TArray<EPalWazaID> WazaList, TArray<FName> PassiveSkillList, int32 Rank, TArray<FPalDebugCharacterStatusRank> StatusRank, bool RarePalAble) {
+bool UPalUtility::GetInitializedCharacterSaveParemter_ParamSetup(const UObject* WorldContextObject, const FName CharacterID, const FName UniqueNPCID, const int32 Level, const int32 TalentLevel, const FGuid& OwnerPlayerUId, FPalIndividualCharacterSaveParameter& outParameter, bool DisableRandomPassiveSkill, TArray<EPalWazaID> WazaList, TArray<FName> PassiveSkillList, int32 Rank, TArray<FPalCharacterStatusRank> StatusRank, bool RarePalAble, int32 FriendshipRank) {
+    return false;
+}
+
+bool UPalUtility::GetInitializedCharacterSaveParemter_NPCOtomo(const UObject* WorldContextObject, const FName CharacterID, const FName UniqueNPCID, const int32 Level, const FGuid& OwnerPlayerUId, FPalIndividualCharacterSaveParameter& outParameter) {
     return false;
 }
 
@@ -1215,11 +1586,27 @@ FName UPalUtility::GetHairAttachAccessorySocketName(const UObject* WorldContextO
     return NAME_None;
 }
 
+UPalGroupGuildBase* UPalUtility::GetGuildByPlayerUId(const UObject* WorldContextObject, const FGuid& PlayerUId) {
+    return NULL;
+}
+
 UPalGroupManager* UPalUtility::GetGroupManager(const UObject* WorldContextObject) {
     return NULL;
 }
 
+UPalGlobalPalStorageSubsystem* UPalUtility::GetGlobalPalStorageSubsystem(const UObject* WorldContextObject) {
+    return NULL;
+}
+
 UPalGameSetting* UPalUtility::GetGameSetting(const UObject* WorldContextObject) {
+    return NULL;
+}
+
+UPalGamepadButtonImageDatabase* UPalUtility::GetGamepadButtonImageDatabase(const UObject* WorldContextObject) {
+    return NULL;
+}
+
+UPalGameDataBridge* UPalUtility::GetGameDataBridge(const UObject* WorldContextObject) {
     return NULL;
 }
 
@@ -1229,6 +1616,10 @@ TArray<FName> UPalUtility::GetGainStatusItemEffectStatus(const UObject* WorldCon
 
 UPalFunnelCharacterManager* UPalUtility::GetFunnelCharacterManager(const UObject* WorldContextObject) {
     return NULL;
+}
+
+bool UPalUtility::GetFoliageInstanceIdByISMIndex(const UObject* WorldContextObject, UPrimitiveComponent* FoliageComponent, int32 InstanceIndex, FPalFoliageInstanceId& OutInstanceId) {
+    return false;
 }
 
 FVector UPalUtility::GetFloorLocationByActor(AActor* TargetActor) {
@@ -1247,6 +1638,10 @@ FVector UPalUtility::GetFloorHitLocationByActor(AActor* TargetActor) {
     return FVector{};
 }
 
+UPalFishingSystem* UPalUtility::GetFishingSystem(const UObject* WorldContextObject) {
+    return NULL;
+}
+
 FString UPalUtility::GetFirstLine(const FString& SourceString) {
     return TEXT("");
 }
@@ -1261,6 +1656,10 @@ FVector UPalUtility::GetExclamationMarkLocation(const APalCharacter* TargetChara
 
 UPalEventNotifySystem* UPalUtility::GetEventNotifySystem(const UObject* WorldContextObject) {
     return NULL;
+}
+
+FString UPalUtility::GetEuraBaseURL(const UObject* WorldContextObject) {
+    return TEXT("");
 }
 
 TEnumAsByte<ECollisionChannel> UPalUtility::GetEngineCollisionChannelByPalTraceType(EPalTraceTypeQuery Type) {
@@ -1291,8 +1690,27 @@ EHumanBone UPalUtility::GetEHumanBoneFromBoneName(FName BoneName) {
     return EHumanBone::Pelvis;
 }
 
+void UPalUtility::GetDLSSFGSpec(int32& OutGeneratedFramesMin, int32& OutGeneratedFramesMax) {
+}
+
+UPalDistributeTickManager* UPalUtility::GetDistributeTickManager(const UObject* WorldContextObject) {
+    return NULL;
+}
+
 FString UPalUtility::GetDisplayVersion(const UObject* WorldContextObject) {
     return TEXT("");
+}
+
+int32 UPalUtility::GetDip_Safe(const UObject* WorldContextObject, EPalDipType Type) {
+    return 0;
+}
+
+UPalPlayerDataPalDimensionStorage* UPalUtility::GetDimensionStorageDataByPlayerUID(const UObject* WorldContextObject, FGuid PlayerUId) {
+    return NULL;
+}
+
+UPalDimensionLockerControlSubsystem* UPalUtility::GetDimensionLockerControlSubsystem(const UObject* WorldContextObject) {
+    return NULL;
 }
 
 FVector UPalUtility::GetDiffVelocity(AActor* A, AActor* B) {
@@ -1319,6 +1737,10 @@ FName UPalUtility::GetDebugBotBaseCampMode(const UObject* WorldContextObject) {
     return NAME_None;
 }
 
+int32 UPalUtility::GetDebugBotBaseCampBuildDelay(const UObject* WorldContextObject) {
+    return 0;
+}
+
 UPalDeathPenaltyManager* UPalUtility::GetDeathPenaltyManager(const UObject* WorldContextObject) {
     return NULL;
 }
@@ -1327,8 +1749,16 @@ UPalDeadBodyManager* UPalUtility::GetDeadBodyManager(const UObject* WorldContext
     return NULL;
 }
 
+UPalDeadBodyDespawnSubsystem* UPalUtility::GetDeadBodyDespawnSubsystem(const UObject* WorldContextObject) {
+    return NULL;
+}
+
 UPalDatabaseCharacterParameter* UPalUtility::GetDatabaseCharacterParameter(const UObject* WorldContextObject) {
     return NULL;
+}
+
+float UPalUtility::GetDamageRandomRate(const UObject* WorldContextObject) {
+    return 0.0f;
 }
 
 UPalDamagePopUpManager* UPalUtility::GetDamagePopUpManager(const UObject* WorldContextObject) {
@@ -1339,11 +1769,19 @@ EPalWorkSuitability UPalUtility::GetCurrentWorkSuitability(APalCharacter* Charac
     return EPalWorkSuitability::None;
 }
 
+ECommonInputType UPalUtility::GetCurrentInputType(const UObject* WorldContextObject) {
+    return ECommonInputType::MouseAndKeyboard;
+}
+
 UPalCoopSkillSearchSystem* UPalUtility::GetCoopSkillSearchSystem(const UObject* WorldContextObject) {
     return NULL;
 }
 
 AController* UPalUtility::GetController(const UObject* WorldContextObject, AActor* Actor) {
+    return NULL;
+}
+
+UPalCloudSaveManager* UPalUtility::GetCloudSaveManager(const UObject* WorldContextObject) {
     return NULL;
 }
 
@@ -1379,11 +1817,15 @@ FName UPalUtility::GetCharacterIDReplacedName(FName originalID) {
     return NAME_None;
 }
 
-FName UPalUtility::GetCharacterIDFromTribeID(const EPalTribeID TribeID) {
+FName UPalUtility::GetCharacterIDFromTribeID(const EPalTribeID TribeId) {
     return NAME_None;
 }
 
 FName UPalUtility::GetCharacterIDFromCharacter(const APalCharacter* Character) {
+    return NAME_None;
+}
+
+FName UPalUtility::GetCharacterDefaultRootCollisionProfile(AActor* Character) {
     return NAME_None;
 }
 
@@ -1394,7 +1836,19 @@ UPalCharacterContainerManager* UPalUtility::GetCharacterContainerManager(const U
 void UPalUtility::GetCharacterApartFromPlayer(const UObject* WorldContextObject, TArray<APalCharacter*>& OutCharacters) {
 }
 
+float UPalUtility::GetCameraMosaicInterval() {
+    return 0.0f;
+}
+
 void UPalUtility::GetCalculatedCaptureRate(const UObject* WorldContextObject, float baseRate, TArray<float>& outCalculatedRateArray) {
+}
+
+float UPalUtility::GetCachedRootRadius(const AActor* Actor) {
+    return 0.0f;
+}
+
+float UPalUtility::GetCachedHalfHeight(const AActor* Actor) {
+    return 0.0f;
 }
 
 UProjectileMovementComponent* UPalUtility::GetBulletProjectileComponent(const TSubclassOf<APalBullet>& BulletClass) {
@@ -1433,11 +1887,15 @@ UPalAudioSettingSystem* UPalUtility::GetAudioSettingSystem(const UObject* WorldC
     return NULL;
 }
 
-FVector UPalUtility::GetAttackTargetLocation(const AActor* Attacker, const AActor* TargetActor) {
+FVector UPalUtility::GetAttackTargetLocation(const AActor* Attacker, const AActor* TargetActor, bool bUseAttackerOverride) {
     return FVector{};
 }
 
 bool UPalUtility::GetAttachInformationByBodyLocation(AActor* Character, EPalBodyLocationType bodyLocationType, USceneComponent*& AttachComponent, FName& attachBoneName, FTransform& attachRelativeTransform) {
+    return false;
+}
+
+bool UPalUtility::GetAssetUserDataOfClass(const UObject* WorldContextObject, UObject* TargetObject, TSubclassOf<UAssetUserData> InUserDataClass, UAssetUserData*& OutUserData) {
     return false;
 }
 
@@ -1461,7 +1919,18 @@ FString UPalUtility::GetAPIBaseURL(const UObject* WorldContextObject) {
     return TEXT("");
 }
 
+UAnimationAsset* UPalUtility::GetAnimationAssetFromSkeletalMesh(USkeletalMeshComponent* InComponent) {
+    return NULL;
+}
+
+TArray<UPalIndividualCharacterHandle*> UPalUtility::GetAllSameGuildPlayerIndividualHandles(const UObject* WorldContextObject, const FGuid& PlayerUId, bool IsIgnoreDead) {
+    return TArray<UPalIndividualCharacterHandle*>();
+}
+
 void UPalUtility::GetAllPlayerStates(const UObject* WorldContextObject, TArray<APalPlayerState*>& OutPlayerStates) {
+}
+
+void UPalUtility::GetAllPlayers(const UObject* WorldContextObject, TArray<APalPlayerCharacter*>& OutPlayers) {
 }
 
 void UPalUtility::GetAllPlayerCharacters(const UObject* WorldContextObject, TArray<APalCharacter*>& OutPlayers) {
@@ -1493,6 +1962,9 @@ TArray<FPalKeyAction> UPalUtility::GetActionsByKey(const UObject* WorldContextOb
     return TArray<FPalKeyAction>();
 }
 
+void UPalUtility::GeneralTurnToCharacterSocket_WithMovementRotationSpeed(AActor* TurnActor, const APalCharacter* GoalDirectionActor, FName SocketName, float DeltaTime) {
+}
+
 void UPalUtility::GeneralTurnToActor_WithMovementRotationSpeed(AActor* TurnActor, const AActor* GoalDirectionActor, float DeltaTime) {
 }
 
@@ -1511,6 +1983,9 @@ void UPalUtility::GeneralTurn_WithMovementRotationSpeed(AActor* TurnActor, FVect
 void UPalUtility::GeneralTurn(AActor* TurnActor, FVector GoalDirection, float LerpSpeed, float DeltaTime) {
 }
 
+void UPalUtility::GeneralPitch(AActor* TurnActor, float GoalPitch, float LerpSpeed, float DeltaTime, float MaxPitchAbs) {
+}
+
 APalCharacter* UPalUtility::FindRiderByRidingActor(const AActor* RidingActor) {
     return NULL;
 }
@@ -1523,7 +1998,15 @@ AActor* UPalUtility::FindOwnerActor(const UObject* startObject) {
     return NULL;
 }
 
-AActor* UPalUtility::FindHomingTarget_ForPlayer(APalPlayerCharacter* Player, float MinRange, float MaxRange, float InFrontDegree) {
+APalCharacter* UPalUtility::FindNearestTargetableCharacterToReticle(APalPlayerCharacter* Player, float MaxRange, float InFrontDegree, bool bIncludeNonHostile) {
+    return NULL;
+}
+
+AActor* UPalUtility::FindHomingTarget_ForPlayer(APalPlayerCharacter* Player, float MinRange, float MaxRange, float InFrontDegree, FPalFindEnemyOption InOption) {
+    return NULL;
+}
+
+AActor* UPalUtility::FindClosestActorToReticle(APalPlayerCharacter* Player, const TArray<AActor*>& Actors) {
     return NULL;
 }
 
@@ -1543,7 +2026,16 @@ void UPalUtility::DropItem_FromEnemyDeath(const AActor* EnemyActor, const AActor
 void UPalUtility::DropCharactersCircularly_ServerInternal(const UObject* WorldContextObject, const TArray<UPalIndividualCharacterHandle*>& IndividualHandles, const FVector& Location, const FPalDropCharacterExtraParameter ExtraParameter) {
 }
 
+void UPalUtility::DropCharacterSaveParametersCircularly_ServerInternal(const UObject* WorldContextObject, const TArray<FPalDropCharacterSaveParameterInfo>& CharacterSaveParameterInfos, const FVector& Location, const FPalDropCharacterExtraParameter ExtraParameter) {
+}
+
+void UPalUtility::DropCharacterSaveParameter_ServerInternal(const UObject* WorldContextObject, const FPalInstanceID& IndividualId, const FPalIndividualCharacterSaveParameter& CharacterSaveParameter, const FVector& Location, const FPalDropCharacterExtraParameter ExtraParameter) {
+}
+
 void UPalUtility::DropCharacter_ServerInternal(const UObject* WorldContextObject, const FPalInstanceID& IndividualId, FVector DropLocation, const FGuid& RequestPlayerUId, const bool bPickableAnyone, bool CreateLocation) {
+}
+
+void UPalUtility::DisableStaticSkeletalMeshEvaluation(USkeletalMeshComponent* Mesh) {
 }
 
 FGuid UPalUtility::DialogWithParameter(const UObject* WorldContextObject, UPalDialogParameterDialog* Parameter) {
@@ -1557,6 +2049,15 @@ FGuid UPalUtility::Dialog(const UObject* WorldContextObject, const FText Message
 void UPalUtility::DestroyActorIncludingAttachedActors(AActor* Actor) {
 }
 
+void UPalUtility::DeleteServerPassword(const UObject* WorldContextObject, const FString& ServerGUID) {
+}
+
+void UPalUtility::Debug_ApplyPlayAsClientTestAreaPreset(const UObject* WorldContextObject) {
+}
+
+void UPalUtility::DeactivateNiagaraImmediate(UNiagaraComponent* NiagaraComponent) {
+}
+
 FVector UPalUtility::CutVectorByLength(FVector Vector, float Length) {
     return FVector{};
 }
@@ -1566,6 +2067,10 @@ FVector UPalUtility::CutVectorByAngle(FVector Target, FVector BaseAxis, float ma
 }
 
 void UPalUtility::CreateUNKO(APalCharacter* Character, int32 Count) {
+}
+
+UAnimMontage* UPalUtility::CreateAnimMontageByBlendSpace(UBlendSpace* BlendSpace, FName SlotNodeName, float BlendInTime, float BlendOutTime, float InPlayRate, int32 LoopCount, FVector targetPosition) {
+    return NULL;
 }
 
 TEnumAsByte<ETraceTypeQuery> UPalUtility::ConvertToTraceTypeQuery(EPalTraceTypeQuery Type) {
@@ -1596,10 +2101,24 @@ bool UPalUtility::ClipboardCopy(const FString& String) {
     return false;
 }
 
+void UPalUtility::ClearOverrideMaterials(USkeletalMeshComponent* TargetSkeletalMesh) {
+}
+
 void UPalUtility::ClearCharacterRagdoll(APalCharacter* Character) {
 }
 
 void UPalUtility::ChangeDefaultLandMovementModeForWalking(APalCharacter* Character) {
+}
+
+void UPalUtility::CapsuleOverlapActorsWithRotation(UObject* WorldContextObject, const FVector Start, const FVector End, float Radius, float HalfHeight, TEnumAsByte<ETraceTypeQuery> TraceChannel, bool bTraceComplex, const TArray<AActor*>& ActorsToIgnore, TEnumAsByte<EDrawDebugTrace::Type> DrawDebugType, TArray<AActor*>& OutActors, bool bIgnoreSelf, FLinearColor TraceColor, FLinearColor TraceHitColor, float DrawTime) {
+}
+
+bool UPalUtility::CanUseTargetWorkSuitabilityRankUp(const UObject* WorldContextObject, UPalIndividualCharacterParameter* IndividualParameter, const UPalStaticItemDataBase* Item) {
+    return false;
+}
+
+bool UPalUtility::CanUseTargetReviveItem(const UObject* WorldContextObject, const UPalIndividualCharacterParameter* IndividualParameter, const UPalStaticItemDataBase* Item) {
+    return false;
 }
 
 bool UPalUtility::CanUseTargetRankUp(const UObject* WorldContextObject, UPalIndividualCharacterParameter* IndividualParameter, const UPalStaticItemDataBase* Item) {
@@ -1610,7 +2129,15 @@ bool UPalUtility::CanUseTargetPalExpItem(const UObject* WorldContextObject, UPal
     return false;
 }
 
-bool UPalUtility::CanUseTargetMedicine(const UObject* WorldContextObject, UPalIndividualCharacterParameter* IndividualParameter, const UPalStaticItemDataBase* Item) {
+bool UPalUtility::CanUseTargetMedicine(const UObject* WorldContextObject, const UPalIndividualCharacterParameter* IndividualParameter, const UPalStaticItemDataBase* Item) {
+    return false;
+}
+
+bool UPalUtility::CanUseTargetGainFriendshipPoint(const UObject* WorldContextObject, UPalIndividualCharacterParameter* IndividualParameter, const UPalStaticItemDataBase* Item) {
+    return false;
+}
+
+bool UPalUtility::CanUsePalAwakeningItem(const UObject* WorldContextObject, UPalIndividualCharacterParameter* IndividualParameter, const UPalStaticItemDataBase* Item) {
     return false;
 }
 
@@ -1618,11 +2145,39 @@ bool UPalUtility::CanSpawnDashEffect(AActor* dashActor) {
     return false;
 }
 
+bool UPalUtility::CanSendGameInviteOnXbox(const UObject* WorldContextObject) {
+    return false;
+}
+
 bool UPalUtility::CanNooseTrap(AActor* Actor) {
     return false;
 }
 
-bool UPalUtility::CanAdjustActorToFloor(AActor* TargetActor, float UpOffset, FVector& OutLocation, bool ShortRayLength) {
+bool UPalUtility::CanFlyCharacter(const AActor* Character) {
+    return false;
+}
+
+bool UPalUtility::CanAdjustLocationToFloorFromCDO(UObject* WorldContext, TSubclassOf<AActor> InClass, FVector InLocation, float UpOffset, FVector& OutLocation, bool ShortRayLength) {
+    return false;
+}
+
+bool UPalUtility::CanAdjustActorToWaterSurfaceForWakeupFromRagdoll(AActor* TargetActor, float WaterTraceDistance, FVector& OutLocation) {
+    return false;
+}
+
+bool UPalUtility::CanAdjustActorToFloorFromPenetration(AActor* TargetActor, FVector CheckLocation, float PenetrationRecoveryTraceDistance, FVector& OutLocation) {
+    return false;
+}
+
+bool UPalUtility::CanAdjustActorToFloorAtLocation(AActor* TargetActor, FVector InLocation, float UpOffset, FVector& OutLocation, bool ShortRayLength, bool PriorityWater, bool onlyCheckWater) {
+    return false;
+}
+
+bool UPalUtility::CanAdjustActorToFloor(AActor* TargetActor, float UpOffset, FVector& OutLocation, bool ShortRayLength, bool PriorityWater, bool onlyCheckWater) {
+    return false;
+}
+
+bool UPalUtility::CanActivateTrapForPvP(AActor* HitActor, APalBuildObject* BuildObject) {
     return false;
 }
 
@@ -1641,15 +2196,19 @@ int32 UPalUtility::CalcRemainBattleTime(FDateTime TimeLimit) {
     return 0;
 }
 
+FTimespan UPalUtility::CalcRealTimeDifferenceToNow(const UObject* WorldContextObject, FDateTime OriginalDate, FTimespan Offset) {
+    return FTimespan{};
+}
+
 int32 UPalUtility::CalcNPCWeaponDamage(const APalWeaponBase* Weapon) {
     return 0;
 }
 
-int32 UPalUtility::CalcDamageCharacter(const FPalDamageInfo& DamageInfo, const AActor* Defender, const FPalCalcCharacterDamageInfo& CharacterDamageInfo) {
+int32 UPalUtility::CalcDamageCharacter(const FPalDamageInfo& DamageInfo, const AActor* Defender, const FPalCalcCharacterDamageInfo& CharacterDamageInfo, FPalCalculatedDamageInfo& OutCalculatedDamageInfo) {
     return 0;
 }
 
-int32 UPalUtility::CalcDamage(const FPalDamageInfo& DamageInfo, const AActor* Defender) {
+int32 UPalUtility::CalcDamage(const FPalDamageInfo& DamageInfo, const AActor* Defender, FPalCalculatedDamageInfo& OutCalculatedDamageInfo) {
     return 0;
 }
 
@@ -1658,6 +2217,10 @@ float UPalUtility::CalcCaptureRateByStatus(const AActor* TargetPal) {
 }
 
 FVector UPalUtility::CalcBlowVelocity(EPalBlowVelocityOwner VelocityType, const AActor* Attacker, const USceneComponent* HitComponent, FVector HitLocation, const AActor* Defender, FVector NativeVelocity) {
+    return FVector{};
+}
+
+FVector UPalUtility::CalcActorLocationByCachedLocation(const AActor* Actor) {
     return FVector{};
 }
 
@@ -1682,8 +2245,11 @@ void UPalUtility::AlertWithCallback(const UObject* WorldContextObject, const FTe
 void UPalUtility::Alert(const UObject* WorldContextObject, const FText Message) {
 }
 
-AActor* UPalUtility::AdjustActorToFloor(AActor* TargetActor, float UpOffset, bool ShortRayLength) {
+AActor* UPalUtility::AdjustActorToFloor(AActor* TargetActor, float UpOffset, bool ShortRayLength, bool PriorityWater, bool onlyCheckWater) {
     return NULL;
+}
+
+void UPalUtility::AddImpulseToSeparatedRagdollBodies(APalCharacter* TargetCharacter, FVector Impulse, float ImpulseScale, bool bApplyMassScale) {
 }
 
 void UPalUtility::AddForceWithMassScale(APalCharacter* TargetCharacter, FVector Force, FName BoneName, bool IsImplus) {

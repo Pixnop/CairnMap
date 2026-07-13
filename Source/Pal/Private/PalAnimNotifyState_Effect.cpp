@@ -2,6 +2,8 @@
 
 UPalAnimNotifyState_Effect::UPalAnimNotifyState_Effect() {
     this->ScaleWithMesh = false;
+    this->NotSpawnWhenHidden = true;
+    this->bDetachOnMontageEnd = false;
 }
 
 

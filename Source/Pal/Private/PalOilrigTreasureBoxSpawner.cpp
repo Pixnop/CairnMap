@@ -8,10 +8,16 @@ APalOilrigTreasureBoxSpawner::APalOilrigTreasureBoxSpawner(const FObjectInitiali
     this->OnlyOneEmptyBox = NULL;
 }
 
+void APalOilrigTreasureBoxSpawner::OnWorldMapObjectSpawnable_ServerInternal() {
+}
+
 void APalOilrigTreasureBoxSpawner::OnOpenTreasureBox() {
 }
 
 void APalOilrigTreasureBoxSpawner::OnFinishedSpawningMapObjectModel(FGuid InstanceId, const EPalMapObjectOperationResult Result) {
+}
+
+void APalOilrigTreasureBoxSpawner::OnFinishedSpawningMapObjectActor(APalMapObject* MapObject) {
 }
 
 bool APalOilrigTreasureBoxSpawner::IsSpawnedGoalBox() {

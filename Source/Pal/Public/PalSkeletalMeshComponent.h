@@ -11,7 +11,10 @@
 #include "PalPlayerDataCharacterMakeInfo.h"
 #include "PalSkeletalMeshComponent.generated.h"
 
+class UMaterialInstance;
+class UMaterialInstanceDynamic;
 class UPalSkeletalMeshComponent;
+class USkeletalMesh;
 
 UCLASS(Blueprintable, EditInlineNew, ClassGroup=Custom, meta=(BlueprintSpawnableComponent))
 class UPalSkeletalMeshComponent : public USkeletalMeshComponent {
@@ -39,6 +42,12 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     float TiltingInterpTime;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bEnableCCDForRootOnlyInRagdoll;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bEnableCCDForRagdoll;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FVector DefaultLocation;
@@ -73,12 +82,18 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FAppliedMakeInfoDelegate OnAppliedMakeInfo;
     
+    UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FAppliedMakeInfoDelegate OnPreAppliedMakeInfoOverrideMaterial;
+    
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FFlagContainer DisableTilt;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FFloatContainer ScaleFloatContainer;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FFlagContainer ForceRuntimeScaleDefault;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FFloatContainer PitchFloatContainer;
@@ -99,6 +114,12 @@ private:
     float CharcterMakeMorphMax;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TSoftObjectPtr<USkeletalMesh> LoadingMeshSoftPtr;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TSoftObjectPtr<UMaterialInstance> LoadingEyeMaterialSoftPtr;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FName ItemName;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
@@ -115,6 +136,12 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FPalPlayerDataCharacterMakeInfo CharacterMakeInfo;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TArray<UMaterialInstanceDynamic*> DynamicMaterialArray;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TMap<FName, UMaterialInstanceDynamic*> DynamicMaterialMap;
     
 public:
     UPalSkeletalMeshComponent(const FObjectInitializer& ObjectInitializer);
@@ -135,10 +162,16 @@ public:
     void SetRuntimeAnimRateScale(FName flagName, float RateScale);
     
     UFUNCTION(BlueprintCallable)
+    void SetLoop(const bool bLoop);
+    
+    UFUNCTION(BlueprintCallable)
+    void SetForceRuntimeScaleDefault(FName flagName, bool bIsForce);
+    
+    UFUNCTION(BlueprintCallable)
     void SetEvaluationRate(float InRate, bool bResetCurrentInterval);
     
     UFUNCTION(BlueprintCallable)
-    void SetEnableRagdollCCD(bool IsActive);
+    void SetEnableRagdollCCD(bool IsActive, bool bRootOnly);
     
     UFUNCTION(BlueprintCallable)
     void SetDisableChangeMesh(bool Disable);
@@ -148,6 +181,12 @@ public:
     
     UFUNCTION(BlueprintCallable)
     void ResetTransformToDefault();
+    
+    UFUNCTION(BlueprintCallable)
+    void ResetRagdollSettingByPreset();
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsRuntimeScaleDefault() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsDisableTilt() const;
@@ -160,6 +199,15 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     float GetEvaluationRate() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    TArray<UMaterialInstanceDynamic*> GetDynamicMaterials() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UMaterialInstanceDynamic* GetDynamicMaterialFromSlotName(const FName& InName) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UMaterialInstanceDynamic* GetDynamicMaterialFromIndex(int32 Index) const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     float GetAnimRateScale();

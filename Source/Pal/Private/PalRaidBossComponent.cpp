@@ -4,6 +4,7 @@
 UPalRaidBossComponent::UPalRaidBossComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
     this->RemainBattleTimer = 600.00f;
     this->CurrentState = EPalRaidBossBattleStateType::Standy;
+    this->InRaidArea = false;
 }
 
 
@@ -23,6 +24,18 @@ bool UPalRaidBossComponent::IsValidPlayerInCamp(APalPlayerCharacter* Player) {
     return false;
 }
 
+bool UPalRaidBossComponent::IsBattleInRaidArea() const {
+    return false;
+}
+
+FGuid UPalRaidBossComponent::GetStartRequestPlayerUID() const {
+    return FGuid{};
+}
+
+APalPlayerCharacter* UPalRaidBossComponent::GetStartRequestPlayerCharacter() const {
+    return NULL;
+}
+
 FName UPalRaidBossComponent::GetStartItemName() {
     return NAME_None;
 }
@@ -31,7 +44,7 @@ float UPalRaidBossComponent::GetRemainTimer() {
     return 0.0f;
 }
 
-FGuid UPalRaidBossComponent::GetCampID() {
+FGuid UPalRaidBossComponent::GetCampID() const {
     return FGuid{};
 }
 
@@ -39,20 +52,26 @@ APalPlayerCharacter* UPalRaidBossComponent::FindInRangePlayers(TArray<APalPlayer
     return NULL;
 }
 
+bool UPalRaidBossComponent::CanPlayBattleFinishUI() const {
+    return false;
+}
+
 void UPalRaidBossComponent::CallOnEnd_ToAll_Implementation(EPalRaidBossBattleFinishType FinishType) {
 }
 
-void UPalRaidBossComponent::AddGroupCharacter(UPalIndividualCharacterHandle* PalHandle) {
+void UPalRaidBossComponent::AddGroupCharacter(UPalIndividualCharacterHandle* PalHandle, bool IsBoss) {
 }
 
 void UPalRaidBossComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     
     DOREPLIFETIME(UPalRaidBossComponent, RaidBossPalList);
+    DOREPLIFETIME(UPalRaidBossComponent, RaidBossPalPartList);
     DOREPLIFETIME(UPalRaidBossComponent, BaseCanpID);
     DOREPLIFETIME(UPalRaidBossComponent, BaseCampLocation);
     DOREPLIFETIME(UPalRaidBossComponent, RemainBattleTimer);
     DOREPLIFETIME(UPalRaidBossComponent, StartItemName);
+    DOREPLIFETIME(UPalRaidBossComponent, InRaidArea);
 }
 
 

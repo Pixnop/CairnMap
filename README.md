@@ -1,54 +1,63 @@
-## ${\textsf{\color{lightgreen}Update to version 4.0.0+ for icon position and lag fixes!!!}}$
+# CairnMap
 
-## ${\textsf{\color{orange}PLEASE READ IF YOU USED A PREVIOUS VERSION}}$
-If you used a previous version of the mod (pre-2.0) you will see a button at the bottom of the interface that removes the old markers. **<ins>You must then wait for an autosave for it to stick.</ins>** You should now no longer have the old custom markers!
+A map collectables overlay for **Palworld 1.0+**, written as a native C++
+[UE4SS](https://github.com/UE4SS-RE/RE-UE4SS) mod. Open the world map and CairnMap
+draws every collectable as a coloured dot, with a categorised panel of toggles in
+the top-left corner.
 
-# DESCRIPTION
+It is a from-scratch rewrite inspired by miapuffia's original
+[Map Collectables Helper](https://github.com/miapuffia/MapCollectablesMod). No
+Blueprint work, no in-game marker spam: everything is rendered in the mod's own
+canvas overlay and positioned by a boss-tower-anchored affine projection.
 
-Adds checkboxes to the map to toggle:
+## Features
 
-- Show effigies
-- Include collected effigies
-- Show notes
-- Include collected notes
-- Show active dungeons (only nearby in multiplayer)
-- Show nearby chests
-- Show nearby eggs
-- Show nearby outposts
-- Show fruit trees
-- Show nearby junk piles
-- Show coal nodes
-- Show copper nodes
-- Show quartz nodes
-- Show sulfur nodes
-- Show hexolite quartz nodes
-- Show oil fields
+- **Collectables**
+  - **Effigies** (all 407, every relic type including Lamball) — collected ones are hidden automatically
+  - **Notes** (all 64) — collected ones are hidden automatically
+  - **Eggs (nearby)** — live-detected from loaded actors around you (eggs have no fixed positions in 1.0)
+- **Ores** — Coal, Copper, Quartz, Sulfur, Hexolite, Sky Ore, Tree Ore, Magma, Night Stone
+- **Resources** — Oil, Dog Coin, Lotus, Fruit Trees
+- **Points of interest** — Chests, Outposts, Junk
+- A **categorised panel** with a per-layer checkbox; toggle anything on/off live
+- **Multiplayer-friendly**: fully client-side, works on dedicated servers (nothing is sent to the server)
 
-These are shown as icons on the map
+## Installation
 
-Adds progress counter for effigies and notes
+1. Install [RE-UE4SS](https://github.com/UE4SS-RE/RE-UE4SS/releases) for Palworld.
+2. Copy the `CairnMap` folder from the release into your UE4SS `Mods` directory:
+   ```
+   Palworld/Binaries/Win64/ue4ss/Mods/CairnMap/dlls/main.dll
+   ```
+   (path may vary with your UE4SS install; drop `CairnMap/` next to the other mods)
+3. Enable it by adding this line to `Mods/mods.txt`:
+   ```
+   CairnMap : 1
+   ```
+   (an `enabled.txt` is also included as a fallback)
+4. Launch the game and open the world map.
 
-Adds buttons to teleport you to two effigies hidden at the bottom of the map (singleplayer only)
+## Notes and limitations
 
-Supports UI settings with the Mod Config Menu (UI) mod also installed
+- **Effigies / Notes** masking is permanent and per-player (read from your record data), so it is accurate on
+  dedicated servers too.
+- **Chests** are shown as static spawn points but are **not** collected-masked: field chests respawn on a timer
+  and their opened state is server-side world state, not a per-player record, so it cannot be known map-wide from
+  a client.
+- **Eggs** are placed by a random lottery and respawn, so there is no static list. The "Eggs (nearby)" layer only
+  shows eggs currently streamed in around your character; it refreshes each time you reopen the map.
 
-# WORKS ON SINGLEPLAYER AND MULTIPLAYER
+## Building
 
-Make sure your UE4SS version is **<ins>AT LEAST 3.0</ins>** to use on multiplayer
+The Windows DLL is built by GitHub Actions (`.github/workflows/build-cpp-mod.yml`) against the UE4SS v3.0.1 ABI.
+The projection core (`cpp-mod/mods/CairnMap/src/cairn_project.hpp`) is pure and unit-tested natively.
+Collectable positions are extracted offline from the game pak (`tools/`).
 
-${\textsf{\color{orange}Possibly due to anti-cheat, some icons can only be shown if nearby to the player}}$
+## Credits
 
-# INSTALLATION
+- Original mod and the idea: **miapuffia** — [MapCollectablesMod](https://github.com/miapuffia/MapCollectablesMod)
+- CairnMap rewrite: **Pixnop**
 
-1. Install UE4SS if it's not already installed. Many mods here have detailed instructions to do so.
-2. Make sure in "Pal/Binaries/Win64/Mods/mods.txt" set the line "BPModLoaderMod" to 1. For GamePass, the folder is WinGDK instead of Win64.
-3. Put "MapCollectablesMod.pak", "MapCollectablesMod.modconfig.json", and the "MapCollectablesMod.ImageOverrides" folder in "Pal/Content/Paks/LogicMods". If "LogicMods" does not exist, create it.
-4. If you experience crashes or lag spikes, in "Pal/Binaries/Win64/UE4SS-settings.ini" set the line "bUseUObjectArrayCache" to false. For GamePass, the folder is WinGDK instead of Win64.
+## License
 
-# ISSUES
-
-"Palworld sometimes crashes immediately after launching!" - This just happens sometimes and isn't a bug in the mod. Sorry.
-
-"Palworld sometimes crashes after exiting the game!" - This just happens sometimes and isn't a bug in the mod. Sorry.
-
-"I teleported and somehow got stuck!" - Get the Spectator Mode mod and you'll be able to escape.
+[MIT](LICENSE).

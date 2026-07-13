@@ -5,8 +5,10 @@
 #include "PalOptionCommonSettings.h"
 #include "PalOptionGraphicsSettings.h"
 #include "PalOptionKeyboardSettings.h"
+#include "PalOptionOnlineUserSettings.h"
 #include "PalOptionPadSettings.h"
 #include "PalOptionUISettings.h"
+#include "PalOptionVoiceChatSettings.h"
 #include "PalOptionSaveData.generated.h"
 
 USTRUCT(BlueprintType)
@@ -26,13 +28,22 @@ public:
     FPalOptionUISettings UISettings;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionOnlineUserSettings OnlineUserSettings;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOptionCommonSettings CommonSettings;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FString, FString> ServerPasswordByWorldGUID;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOptionGraphicsSettings GraphicsSettings;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOptionAudioSettings AudioSettings;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionVoiceChatSettings VoiceChatSettings;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bHasAppliedUserSetting;

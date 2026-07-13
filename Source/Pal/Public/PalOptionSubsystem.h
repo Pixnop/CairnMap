@@ -10,8 +10,11 @@
 #include "PalOptionGraphicsSettings.h"
 #include "PalOptionKeyboardSettings.h"
 #include "PalOptionLocalStaticSettings.h"
+#include "PalOptionOnlineUserSettings.h"
 #include "PalOptionPadSettings.h"
 #include "PalOptionUISettings.h"
+#include "PalOptionVoiceChatSettings.h"
+#include "PalOptionWorldSettinThresholds.h"
 #include "PalOptionWorldSettings.h"
 #include "PalOptionWorldStaticSettings.h"
 #include "PalWorldSubsystem.h"
@@ -20,6 +23,7 @@
 
 class APalPlayerCharacter;
 class UDataTable;
+class UObject;
 
 UCLASS(Blueprintable)
 class PAL_API UPalOptionSubsystem : public UPalWorldSubsystem {
@@ -29,6 +33,7 @@ public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeUISettingDelegate, const FPalOptionUISettings&, PrevSettings, const FPalOptionUISettings&, NewSettings);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeScreenRatioDelegate, float, newRatio);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangePadDelegate, const FPalOptionPadSettings&, PrevSettings, const FPalOptionPadSettings&, NewSettings);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeOnlineUserSettingsDelegate, const FPalOptionOnlineUserSettings&, PrevSettings, const FPalOptionOnlineUserSettings&, NewSettings);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeKeyConfigDelegate, const FPalKeyConfigSettings&, PrevSettings, const FPalKeyConfigSettings&, NewSettings);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeKeyboardDelegate, const FPalOptionKeyboardSettings&, PrevSettings, const FPalOptionKeyboardSettings&, NewSettings);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeGraphicsDelegate, const FPalOptionGraphicsSettings&, PrevSettings, const FPalOptionGraphicsSettings&, NewSettings);
@@ -51,6 +56,9 @@ public:
     
     UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnChangeUISettingDelegate OnChangeUISettingDelegate;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnChangeOnlineUserSettingsDelegate OnChangeOnlineUserSettingsDelegate;
     
     UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnChangeScreenRatioDelegate OnChangeScreenRatioDelegate;
@@ -78,6 +86,9 @@ protected:
     FPalOptionAudioSettings AudioSettings;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionVoiceChatSettings VoiceChatSettings;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOptionCommonSettings CommonSettings;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -91,6 +102,9 @@ protected:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FPalOptionUISettings UISettings;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionOnlineUserSettings OnlineUserSettings;
     
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -110,11 +124,23 @@ private:
     UDataTable* OptionGraphicsPresetTable;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalOptionWorldSettinThresholds WorldSettingThreshold;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<APalPlayerCharacter> PalPlayerCharacterClass;
     
 public:
     UPalOptionSubsystem();
 
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool VerifyWorldSettingThresholds(const FPalOptionWorldSettings& CheckWorldSettings) const;
+    
+    UFUNCTION(BlueprintCallable)
+    void SetVoiceChatSettings(const FPalOptionVoiceChatSettings& InVoiceChatSettings);
+    
+    UFUNCTION(BlueprintCallable)
+    void SetupForSteamDeck();
+    
     UFUNCTION(BlueprintCallable)
     void SetUISettings(const FPalOptionUISettings& InUISettings);
     
@@ -125,10 +151,16 @@ public:
     void SetOptionWorldSettings(const FPalOptionWorldSettings& InOptionWorldSettings);
     
     UFUNCTION(BlueprintCallable)
+    void SetOnlineUserSettings(const FPalOptionOnlineUserSettings& InOnlineUserSettings);
+    
+    UFUNCTION(BlueprintCallable)
     void SetKeyConfigSettings(const FPalKeyConfigSettings& InKeyConfigSettings);
     
     UFUNCTION(BlueprintCallable)
     void SetKeyboardSettings(const FPalOptionKeyboardSettings& InKeyboardSettings);
+    
+    UFUNCTION(BlueprintCallable)
+    void SetHasShownFirstLaunchUI(bool bHasShown);
     
     UFUNCTION(BlueprintCallable)
     void SetGraphicsSettings(const FPalOptionGraphicsSettings& InGraphicsSettings);
@@ -140,7 +172,16 @@ public:
     void SetAudioSettings(const FPalOptionAudioSettings& InAudioSettings);
     
     UFUNCTION(BlueprintCallable)
-    void SaveLocalSettings();
+    void RequestTemporaryVolumetricFogForLocalEffect(UObject* Requester);
+    
+    UFUNCTION(BlueprintCallable)
+    void RequestSaveLocalSettings();
+    
+    UFUNCTION(BlueprintCallable)
+    void RequestSaveLocalSaveData();
+    
+    UFUNCTION(BlueprintCallable)
+    void ReleaseTemporaryVolumetricFogForLocalEffect(UObject* Requester);
     
 private:
     UFUNCTION(BlueprintCallable)
@@ -150,6 +191,15 @@ private:
     void OnCompletedGetBanlist(const FString& ResponseBody, bool bResponseOK, int32 ResponseCode);
     
 public:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsCrossPlayAllowConnectPlatform() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FPalOptionWorldSettinThresholds GetWorldSettingThresholds() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FPalOptionVoiceChatSettings GetVoiceChatSettings() const;
+    
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalOptionUISettings GetUISettings() const;
     
@@ -169,10 +219,16 @@ public:
     FPalOptionLocalStaticSettings GetOptionLocalStaticSettings() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    FPalOptionOnlineUserSettings GetOnlineUserSettings() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalKeyConfigSettings GetKeyConfigSettings() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalOptionKeyboardSettings GetKeyboardSettings() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool GetHasShownFirstLaunchUI() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FPalOptionGraphicsSettings GetGraphicsSettings() const;

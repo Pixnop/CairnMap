@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 #include "Components/SplineComponent.h"
 #include "FloatCounter.h"
 #include "PalItemFlowInSplineInfo.h"
@@ -7,6 +8,10 @@
 #include "PalItemFlowSplineComponent.generated.h"
 
 class AActor;
+class UMaterialInstance;
+class UMaterialInstanceDynamic;
+class UMeshComponent;
+class UPalMapObjectConcreteModelBase;
 
 UCLASS(Blueprintable, ClassGroup=Custom, meta=(BlueprintSpawnableComponent))
 class UPalItemFlowSplineComponent : public USplineComponent {
@@ -36,6 +41,19 @@ public:
     
     UFUNCTION(BlueprintCallable)
     void UpdateIsFlowing(const bool bOn);
+    
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+    void OnUpdateBuildObjectVisual(const UPalMapObjectConcreteModelBase* MapObjectConcreteModel);
+    
+protected:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    static FLinearColor GetMaterialInstanceVectorParameterValue(UMaterialInstance* MaterialInstance, const FName ParameterName);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UMaterialInstance* GetBuildObjectMaterialInstanceNormal(UMeshComponent* MeshComponent, const int32 MaterialIndex) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UMaterialInstanceDynamic* GetBuildObjectMaterialInstanceDynamic(UMeshComponent* MeshComponent, const int32 MaterialIndex) const;
     
 };
 

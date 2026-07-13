@@ -1,42 +1,90 @@
 #include "PalQuestData.h"
+#include "Net/UnrealNetwork.h"
 
 UPalQuestData::UPalQuestData() {
-    this->NowQuestBlock = NULL;
+    this->QuestBlockIndex = -1;
+    this->bPlayOrderEffect = true;
+    this->bPlayCompleteEffect = true;
 }
 
-void UPalQuestData::ProgressInternal() {
+void UPalQuestData::TakeAdditionalReward_Implementation() {
 }
 
-void UPalQuestData::OnUpdatedQuestBlock(UPalQuestBlock* UpdatedBlock) {
+void UPalQuestData::OnUpdatedQuestBlock_ServerInternal(UPalQuestBlock* UpdatedBlock) {
 }
 
-void UPalQuestData::OnCompletedQuestBlock(UPalQuestBlock* CompletedBlock) {
+void UPalQuestData::OnRequestReturnBlock_ServerInternal(UPalQuestBlock* UpdatedBlock) {
 }
 
-void UPalQuestData::InitializeWithoutLoadQuestBlock(int32 BlockIndex, const FName& InQuestName) {
+void UPalQuestData::OnRep_QuestId() {
 }
 
-void UPalQuestData::Initialize(int32 BlockIndex, const FName& InQuestName) {
+void UPalQuestData::OnRep_QuestBlockIndex() {
 }
 
-void UPalQuestData::GetQuestDataName(FName& outName) {
+void UPalQuestData::OnRep_CurrentBlock() {
 }
 
-void UPalQuestData::GetQuestBlock(UPalQuestBlock*& OutBlock) {
+void UPalQuestData::OnCompletedQuestBlock_ServerInternal(UPalQuestBlock* CompletedBlock) {
 }
 
-int32 UPalQuestData::GetNowQuestBlockIndex() const {
-    return 0;
+void UPalQuestData::LoadQuestBlockForUI(const int32 Index) {
 }
 
-void UPalQuestData::GetCustomRewardGiverClass(TSoftClassPtr<UPalQuestRewardGiver>& OutClass) {
+void UPalQuestData::InitializeForUI(const FGuid& InOwnerPlayerUId, const FName& InQuestName) {
+}
+
+void UPalQuestData::GetSortedQuestBlocksForUI(TArray<UPalQuestBlock*>& OutBlocks) const {
+}
+
+void UPalQuestData::GetQuestNameText(FText& OutText) const {
+}
+
+TArray<FName> UPalQuestData::GetQuestNameMsgIdRowNames() const {
+    return TArray<FName>();
+}
+
+TArray<FName> UPalQuestData::GetQuestIdRowNames() const {
+    return TArray<FName>();
+}
+
+FName UPalQuestData::GetQuestId() const {
+    return NAME_None;
+}
+
+void UPalQuestData::GetQuestDescriptionText(FText& OutText) const {
+}
+
+TArray<FName> UPalQuestData::GetQuestDescriptionMsgIdRowNames() const {
+    return TArray<FName>();
+}
+
+void UPalQuestData::GetQuestBlocks(TArray<UPalQuestBlock*>& OutBlocks) const {
+}
+
+FGuid UPalQuestData::GetOwnerPlayerUId() const {
+    return FGuid{};
+}
+
+FPalCommonQuestRewardData UPalQuestData::GetCustomDisplayRewardData_Implementation() {
+    return FPalCommonQuestRewardData{};
 }
 
 void UPalQuestData::GetCommonRewardData(FPalCommonQuestRewardData& OutData) {
 }
 
-bool UPalQuestData::CompleteNowBlock() {
-    return false;
+void UPalQuestData::FormatQuestTitleText_Implementation(const FText& InOriginalText, FText& OutText) const {
+}
+
+void UPalQuestData::FormatQuestDescriptionText_Implementation(const FText& InOriginalText, FText& OutText) const {
+}
+
+void UPalQuestData::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    
+    DOREPLIFETIME(UPalQuestData, NowQuestBlocks);
+    DOREPLIFETIME(UPalQuestData, QuestBlockIndex);
+    DOREPLIFETIME(UPalQuestData, QuestId);
 }
 
 

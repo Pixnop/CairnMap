@@ -13,6 +13,12 @@ void UPalBaseCampModuleItemStackInfo::OnUpdatePasswordLock_ServerInternal(UPalMa
 void UPalBaseCampModuleItemStackInfo::OnUpdateItemContainer(UPalMapObjectItemContainerModule* ItemContainerModule) {
 }
 
+void UPalBaseCampModuleItemStackInfo::OnUpdateGuildSecurity_ServerInternal(UPalMapObjectGuildSecurityModule* SecurityModule, const TArray<EPalGuildRole>& NewAllowedRoles) {
+}
+
+void UPalBaseCampModuleItemStackInfo::OnRep_ItemStackRepInfoArray() {
+}
+
 void UPalBaseCampModuleItemStackInfo::OnNotAvailableConcreteModel(UPalMapObjectConcreteModelBase* ConcreteModel) {
 }
 

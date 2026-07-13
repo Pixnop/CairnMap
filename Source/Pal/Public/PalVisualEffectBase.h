@@ -53,6 +53,9 @@ public:
     void TerminatingTickVisualEffect(float DeltaTime);
     
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void RefreshVisualEffect();
+    
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void OnEndVisualEffect();
     
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
@@ -74,10 +77,16 @@ public:
     AActor* GetOwner() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    USkeletalMeshComponent* GetMonsterRideNPCMesh() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     TArray<UMaterialInstanceDynamic*> GetMainMeshMaterials() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     USkeletalMeshComponent* GetMainMesh() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    TArray<UMaterialInstanceDynamic*> GetMainAndRideNPCMeshMaterials() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     TArray<UMaterialInstanceDynamic*> GetMainAndHeadMeshMaterials() const;

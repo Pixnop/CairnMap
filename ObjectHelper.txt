@@ -18,3 +18,6 @@ Pal/Blueprint/MapObject/Object/BP_MapObject_DamagableRock0016 = Mineable? rock
 Pal/Blueprint/MapObject/Object/BP_MapObject_DamagableRock0017 = Mineable pal crystal
 Pal/Blueprint/MapObject/Object/BP_MapObject_DamagableRock0018 = Not identifiable
 Pal/Blueprint/MapObject/Object/BP_MapObject_DamagableRock0019 = Mineable hexolite quartz
+Pal/Blueprint/MapObject/Object/BP_MapObject_DamagableRock0020 = Mineable Sky Island ore (1.0)
+Pal/Blueprint/MapObject/Object/BP_MapObject_DamagableRock0021 = Mineable World Tree ore (1.0)
+Pal/Blueprint/MapObject/Object/BP_MapObject_DamagableRock0022 = Mineable magma rock (1.0)

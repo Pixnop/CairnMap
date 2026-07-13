@@ -5,6 +5,7 @@
 #include "UObject/NoExportTypes.h"
 #include "Engine/DataTable.h"
 #include "EPalBaseCampWorkerEventType.h"
+#include "EPalTribeID.h"
 #include "PalBaseCampSignificanceInfo.h"
 #include "PalBuildObjectSpawnValidationCheckInterface.h"
 #include "PalGameWorldDataSaveInterface.h"
@@ -14,8 +15,10 @@
 #include "PalBaseCampManager.generated.h"
 
 class AController;
+class APalBaseCampInvasionDetector;
 class UDataTable;
 class UPalAIActionBaseCampDefenseBase;
+class UPalAIActionCompositeBase;
 class UPalBaseCampModel;
 class UPalBaseCampWorkerEventBase;
 class UPalMapObjectModel;
@@ -25,12 +28,35 @@ UCLASS(Blueprintable, Config=Game)
 class UPalBaseCampManager : public UPalWorldSubsystem, public IPalBuildObjectSpawnValidationCheckInterface, public IPalGameWorldDataSaveInterface, public IPalSystemInitializeInterface {
     GENERATED_BODY()
 public:
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReturnBaseCampIdDelegate, const FGuid, BaseCampId);
+    
+    UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FReturnBaseCampIdDelegate OnCreateBaseCampModelInServerDelegate;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FReturnBaseCampIdDelegate OnRemoveBaseCampModelInServerDelegate;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FReturnBaseCampIdDelegate OnPreRemoveBaseCampModelInServerDelegate;
+    
 protected:
     UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
     FName WorkerEventClassDirectoryPath;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<AController> BaseCampAIControllerClass;
+    
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<EPalTribeID, TSubclassOf<AController>> BaseCampAIControllerOverridePerTribe;
+    
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<EPalTribeID, TSubclassOf<UPalAIActionCompositeBase>> BaseCampCompositeOverridePerTribe;
+    
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<EPalTribeID, int32> BaseCampWorkerLimitPerTribe;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<APalBaseCampInvasionDetector> BaseCampInvasionDetectorClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     int32 WorkerCapacityNumDefault;
@@ -53,6 +79,9 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     UDataTable* WorkerSickMasterDataTable;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UDataTable* BaseCampMissionDataTable;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     int32 WorkerEventTriggerTickMaxCount;

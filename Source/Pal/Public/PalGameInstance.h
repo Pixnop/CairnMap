@@ -3,6 +3,7 @@
 #include "Engine/GameInstance.h"
 #include "FindSessionsCallbackProxy.h"
 #include "JoinSessionResultType.h"
+#include "PalBanEntry.h"
 #include "PalOptionWorldSettings.h"
 #include "PalPlayerDataCharacterMakeInfo.h"
 #include "Templates/SubclassOf.h"
@@ -23,36 +24,49 @@ class UPalCharacterContainerManager;
 class UPalCharacterImportanceManager;
 class UPalCharacterManager;
 class UPalCharacterParameterStorageSubsystem;
+class UPalCloudSaveManager;
 class UPalCoopSkillSearchSystem;
 class UPalDamagePopUpManager;
 class UPalDataTableRowIdMapper;
 class UPalDatabaseCharacterParameter;
 class UPalDeadBodyManager;
 class UPalDeathPenaltyManager;
+class UPalDimensionLockerControlSubsystem;
 class UPalDisplaySafeAreaDebugger;
+class UPalDistributeTickManager;
 class UPalEventNotifySystem;
 class UPalExpDatabase;
+class UPalFishingSystem;
+class UPalGameDataBridge;
 class UPalGameSetting;
+class UPalGamepadButtonImageDatabase;
+class UPalGdkManager;
 class UPalGroupManager;
 class UPalHUDService;
 class UPalItemContainerManager;
 class UPalItemIDManager;
 class UPalLocationManager;
 class UPalLogManager;
+class UPalLoginManager;
 class UPalMapObjectManager;
 class UPalMasterDataTables;
 class UPalNPCManager;
 class UPalObjectCollector;
+class UPalObjectPoolManager;
 class UPalOilrigManager;
+class UPalOnlineManager;
 class UPalPassiveSkillManager;
 class UPalPersistentSoundPlayer;
 class UPalPlayerDataStorage;
 class UPalPlayerManager;
+class UPalPsnManager;
 class UPalRaidBossManager;
+class UPalRandomizerManager;
 class UPalSaveGameManager;
 class UPalShopManager;
 class UPalSkinManager;
 class UPalSupplyManager;
+class UPalTreasureMapWorldSubsystem;
 class UPalTutorialManager;
 class UPalVisualEffectDataBase;
 class UPalWazaDatabase;
@@ -65,6 +79,7 @@ class PAL_API UPalGameInstance : public UGameInstance {
     GENERATED_BODY()
 public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPawnLocalPlayerControllerChanged, APawn*, Pawn, AController*, Controller);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMemoryWarning, bool, bIsOver);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCompletedCharacterMake);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFxiedCharacterName, const FString&, Name);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFxiedCharacterMakeData, const FPalPlayerDataCharacterMakeInfo&, MakeInfo);
@@ -77,6 +92,9 @@ protected:
     FOnPawnLocalPlayerControllerChanged OnPawnLocalPlayerControllerChangedDelegates;
     
 public:
+    UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnMemoryWarning OnMemoryWarning;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bNetworkError;
     
@@ -93,13 +111,49 @@ public:
     FString InputPassword;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    TArray<FString> BanList;
+    bool bSaveServerPassword;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FString RestoredPasswordForDisplay;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FString LastConnectedServerAddress;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 LastConnectedServerPort;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FPalBanEntry> BanEntries;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSoftObjectPtr<UWorld> DefaultMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalLoginManager* LoginManager;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalGameDataBridge> GameDataBridgeClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalGameDataBridge* GameDataBridge;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalGameSetting> GameSettingClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UPalGameSetting* GameSetting;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalOnlineManager* OnlineManager;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalCloudSaveManager* CloudSaveManager;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalGdkManager* GdkManager;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalPsnManager* PsnManager;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalMasterDataTables> MasterDataTablesClass;
@@ -150,6 +204,9 @@ public:
     UPalWazaDatabase* WazaDatabase;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UPalGamepadButtonImageDatabase* GamepadButtonImageDatabase;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalBattleManager> BattleManagerClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -190,6 +247,12 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UPalAssetStreamableManager* AssetStreamableManager;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalDistributeTickManager> DistributeTickManagerClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalDistributeTickManager* DistributeTickManager;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalPassiveSkillManager> PassiveSkillManagerClass;
@@ -294,13 +357,37 @@ public:
     TSubclassOf<UPalSupplyManager> SupplyManagerClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalRandomizerManager> RandomizerManagerClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalTreasureMapWorldSubsystem> TreasureMapWorldSubsystemClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalShopManager> ShopManagerSubsystemClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalObjectPoolManager> ObjectPoolClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalFishingSystem> FishingSystemClass;
     
     UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
     int32 revisionNum;
     
     UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bUseAsyncMovement;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 MemoryWarningThresholdMB;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bShowEarlyAccessDialogOnGDK;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalDimensionLockerControlSubsystem> DimensionLockerControlSubsystemClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bSkipSplashScreen;
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FFxiedCharacterMakeData FxiedCharacterMakeDataDelegate;
@@ -352,6 +439,9 @@ public:
     void SetIsNewGame();
     
     UFUNCTION(BlueprintCallable)
+    void SetAlreadyShowModDetectionDialog();
+    
+    UFUNCTION(BlueprintCallable)
     bool SelectWorldSaveDirectoryName(const FString& WorldSaveDirectoryName);
     
     UFUNCTION(BlueprintCallable)
@@ -361,17 +451,31 @@ protected:
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void OverrideLoadMap(const TSoftObjectPtr<UWorld>& World);
     
+    UFUNCTION(BlueprintCallable)
+    void OnRestartWithoutModsDialogConfirmed(bool bResult);
+    
 private:
     UFUNCTION(BlueprintCallable)
     void OnInitializeCompleteSystem();
     
 public:
     UFUNCTION(BlueprintCallable)
+    void OnCompleteShowMultiplayRestrictionMessageDialog(bool bSuccess);
+    
+    UFUNCTION(BlueprintCallable)
+    void OnCompleteMuyltiplayRestrictedDialog(bool bResult);
+    
+    UFUNCTION(BlueprintCallable)
     void OnCompletedJoinSession(bool IsSuccess, JoinSessionResultType Type);
     
     UFUNCTION(BlueprintCallable)
     void OnCompletedFindSessions(bool bIsSuccess, const TArray<FBlueprintSessionResult>& Results, const FString& ErrorStr);
     
+protected:
+    UFUNCTION(BlueprintCallable)
+    void OnClosedModCautionWithExternalMods(bool bResult);
+    
+public:
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void LoadingFinished();
     
@@ -381,6 +485,12 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool IsNewGame() const;
     
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsLoggedin();
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsAlreadyShowModDetectionDialog() const;
+    
     UFUNCTION(BlueprintCallable)
     void GoToDefaultMap();
     
@@ -389,6 +499,21 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FString GetSelectedWorldName() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalPsnManager* GetPsnManager() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalOnlineManager* GetOnlineManager() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalGdkManager* GetGdkManager() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalGameDataBridge* GetGameDataBridge() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalCloudSaveManager* GetCloudSaveManager() const;
     
     UFUNCTION(BlueprintCallable)
     void CompleteInitCharacterMakeData();

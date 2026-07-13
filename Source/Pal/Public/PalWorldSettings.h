@@ -12,7 +12,10 @@ class UPalDungeonWorldSubsystem;
 class UPalFunnelCharacterManager;
 class UPalIncidentSystem;
 class UPalInvaderManager;
+class UPalLaunchRecoverySubsystem;
 class UPalOptionSubsystem;
+class UPalRaidBossAreaWorldSubsystem;
+class UPalStageWorldSubsystem;
 class UPalStaticMeshImposterSubsystem;
 class UPalTimeManager;
 
@@ -20,6 +23,9 @@ UCLASS(Blueprintable)
 class PAL_API APalWorldSettings : public AWorldSettings {
     GENERATED_BODY()
 public:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalStageWorldSubsystem> StageWorldSubsystemClass;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalDungeonWorldSubsystem> DungeonWorldSubsystemClass;
     
@@ -54,10 +60,19 @@ public:
     TSubclassOf<UPalArenaWorldSubsystem> ArenaWorldSubsystemClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalRaidBossAreaWorldSubsystem> RaidBossAreaWorldSubsystemClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalLaunchRecoverySubsystem> LaunchRecoverySubsystemClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalStaticMeshImposterSubsystem> StaticMeshImposterSubsystemClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bRequestCharacterMake;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bShouldCreatePostProcessHeightFog;
     
     APalWorldSettings(const FObjectInitializer& ObjectInitializer);
 

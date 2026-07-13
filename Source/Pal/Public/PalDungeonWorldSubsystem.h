@@ -8,9 +8,12 @@
 #include "PalGameWorldDataSaveInterface.h"
 #include "PalStageInstanceId.h"
 #include "PalWorldSubsystem.h"
+#include "Templates/SubclassOf.h"
 #include "PalDungeonWorldSubsystem.generated.h"
 
+class APalCapturedCage;
 class APalDungeonPointMarker;
+class UAkAudioEvent;
 class UPalDungeonInstanceModel;
 
 UCLASS(Blueprintable)
@@ -32,6 +35,15 @@ protected:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<FName, FPalDungeonDataLayerAssetSet> DataLayerAssetMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<APalCapturedCage> RewardCageClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSoftObjectPtr<UAkAudioEvent> TeleportStartSE_Enter;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSoftObjectPtr<UAkAudioEvent> TeleportStartSE_Exit;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<APalDungeonPointMarker*> PointMarkersWaitSystemInitializeInServer;

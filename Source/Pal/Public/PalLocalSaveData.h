@@ -2,20 +2,25 @@
 #include "CoreMinimal.h"
 #include "EPalPlayerInventoryType.h"
 #include "EPalTribeID.h"
+#include "PalArenaRule.h"
 #include "PalCompletedQuestSaveData.h"
 #include "PalCustomMarkerSaveData.h"
+#include "PalInstanceID.h"
+#include "PalMapObjectObjectPaintPalette.h"
 #include "PalOrderedQuestSaveData.h"
+#include "PalOtomoLoadoutData.h"
 #include "PalTutorialTriggerSaveData.h"
+#include "PalWorldMapUISaveData.h"
 #include "PalLocalSaveData.generated.h"
 
 USTRUCT(BlueprintType)
 struct FPalLocalSaveData {
     GENERATED_BODY()
 public:
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<EPalTribeID, int32> Local_ActivateOtomoCount;
     
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
     TMap<EPalTribeID, bool> Local_PalEncountFlag;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -43,7 +48,37 @@ public:
     int32 Local_PlayTime;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 Local_DoctorSurgiCount;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 Local_DoctorLastSurgiDay;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FString, int32> Local_ItemRequestCircumCountMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FName, bool> Local_NpcItemCircumCount;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FName, bool> Local_PalDisplayNPCDataTableProgress;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FName, bool> Local_NpcPalDexRewardCount;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FName, bool> Local_NpcBossDefeatRewardCount;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FName, bool> Local_NpcPalCaptureRewardCount;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<uint8> worldMapMaskTexture;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<uint8> WorldMapMaskTextureV4;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FName, FPalWorldMapUISaveData> WorldMapUISaveDataMap;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<FPalCustomMarkerSaveData> Local_CustomMarkerSaveData;
@@ -56,6 +91,48 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<FPalOrderedQuestSaveData> Local_OrderedTutorialQuestSaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalArenaRule Local_ArenaRule;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FName> Local_ItemQuickMoveExceptionIDList;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FPalOtomoLoadoutData> Local_OtomoLoadoutSaveData;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FName TrackingQuestId;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FPalInstanceID, int32> Local_MaxFriendshipPalIds;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bUnlockedBlueprintCategoryInBuildMenu;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalMapObjectObjectPaintPalette Local_MapObjectPaintPalette;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 Local_MapObjectPaintPaletteSelectedIndex;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FName> Local_FavoriteBuildObjectList;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FName> Local_UnlockedOnUIBuildObjectBlueprintList;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FName, bool> Local_HiddenLocationFlagMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<FName, bool> Local_WarpPointUnlockFlag;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool Local_ShowSkyIslandCloudOnWorldMapUI;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FName> Local_IgnoreMaskBossSpawnerNames;
     
     PAL_API FPalLocalSaveData();
 };

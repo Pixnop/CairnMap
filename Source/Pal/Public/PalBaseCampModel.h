@@ -4,11 +4,15 @@
 #include "UObject/Object.h"
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
+#include "EPalBaseCampModuleType.h"
 #include "EPalBaseCampState.h"
+#include "PalBaseCampModuleDelegateDelegate.h"
+#include "PalBaseCampModuleMulticastDelegateDelegate.h"
 #include "PalBaseCampSignificanceInfo.h"
 #include "PalDamageResult.h"
 #include "PalBaseCampModel.generated.h"
 
+class APalCharacter;
 class IPalBaseCampAssignableObjectInterface;
 class UPalBaseCampAssignableObjectInterface;
 class UPalBaseCampEnemyObserver;
@@ -31,6 +35,9 @@ public:
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FSimpleDelegate OnDisposeDelegate;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FSimpleDelegate OnAvailableDelegate;
     
 protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
@@ -66,14 +73,23 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UPalBaseCampEnemyObserver* EnemyObserver;
     
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_ModuleArray, meta=(AllowPrivateAccess=true))
     TArray<UPalBaseCampFunctionModuleBase*> ModuleArray;
+    
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<UClass*, FPalBaseCampModuleMulticastDelegate> OnReadyModuleDelegateMap;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     TArray<FGuid> PlayerUIdsExistsInsideInServer;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
     FGuid OwnerMapObjectInstanceId;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Transient, meta=(AllowPrivateAccess=true))
+    int32 BuildingNum;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TArray<APalCharacter*> HardcoreLostPals;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_Level_InGuildProperty, meta=(AllowPrivateAccess=true))
     int32 Level_InGuildProperty;
@@ -88,6 +104,12 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     float ProgressTimeSinceLastTick;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bTemporary;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bIgnoreInvader;
+    
 public:
     UPalBaseCampModel();
 
@@ -95,7 +117,7 @@ public:
 
 private:
     UFUNCTION(BlueprintCallable)
-    void UpdateLevel_ServerInternal(int32 PlayerId, int32 NewLevel);
+    void UpdateLevel_ServerInternal(const int32 RequestPlayerId, const int32 NewLevel);
     
 public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -105,6 +127,9 @@ public:
     void ReflectLevel_InGuildProperty_Internal(int32 NewLevel);
     
 private:
+    UFUNCTION(BlueprintCallable)
+    void OnRep_ModuleArray();
+    
     UFUNCTION(BlueprintCallable)
     void OnRep_Level_InGuildProperty(int32 OldLevel);
     
@@ -152,6 +177,9 @@ public:
     UPalBaseCampEnemyObserver* GetEnemyObserver() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    int32 GetBuildingNum() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FString GetBaseCampName() const;
     
     UFUNCTION(BlueprintCallable)
@@ -159,6 +187,14 @@ public:
     
     UFUNCTION(BlueprintCallable)
     bool FindNearestAssignableObject(const UPalIndividualCharacterHandle* AssignIndividualHandle, const FTransform& Origin, const float Range, const bool bFixedAssign, TScriptInterface<IPalBaseCampAssignableObjectInterface>& FoundObject);
+    
+private:
+    UFUNCTION(BlueprintCallable)
+    void DebugUpdateLevel_ServerInternal(const int32 RequestPlayerId, const int32 NewLevel);
+    
+public:
+    UFUNCTION(BlueprintCallable)
+    void CallOrRegisterOnReadyModule(const EPalBaseCampModuleType ModuleType, FPalBaseCampModuleDelegate Delegate);
     
 };
 

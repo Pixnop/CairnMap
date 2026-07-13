@@ -7,23 +7,30 @@ APalBuildObject::APalBuildObject(const FObjectInitializer& ObjectInitializer) : 
     this->InstallStrategyClass = NULL;
     this->InstallCapacitySlopeAngle = -1.00f;
     this->InstallCapacitySinkRateByHeight = -1.00f;
+    this->InstallNeighborRotationZOffset = 0.00f;
+    this->DefaultMobility = EComponentMobility::Static;
     this->VisualCtrl = CreateDefaultSubobject<UPalBuildObjectVisualControlComponent>(TEXT("VisualController"));
     this->OverlapCheckCollision = NULL;
     this->SnapCheckBoxCollision = NULL;
     this->OverlapChecker = NULL;
     this->MainMesh = NULL;
+    this->bPlayBuildCompleteFX = true;
+    this->bNotConstructConnectorInGame = false;
     this->CurrentState = EPalBuildObjectState::Init;
     this->WorldHUDDisplayRange = 0.00f;
     this->buildProgressHUDDisplayRange = 0.00f;
     this->BuildCompleteSEOverride = NULL;
     this->BuildProgressVisualRate = 0.00f;
     this->bDismantleTargetInLocal = false;
+    this->bReplaceOverlapCheck = false;
+    this->bReceivedBroadcastPaintChanged = false;
+    this->bExistsArrowInSimulatingTransform = false;
 }
 
 void APalBuildObject::PlayBuildCompleteFX_ToALL_Implementation() {
 }
 
-void APalBuildObject::OnUpdateHp(UPalMapObjectModel* DamagedModel) {
+void APalBuildObject::OnUpdateHP(UPalMapObjectModel* DamagedModel) {
 }
 
 void APalBuildObject::OnUpdateBuildWorkAmount(UPalWorkProgress* WorkProgress) {
@@ -39,6 +46,12 @@ void APalBuildObject::OnTickBuildCompleteAnimation() {
 }
 
 void APalBuildObject::OnStartTriggerInteractBuilding(AActor* OtherActor, EPalInteractiveObjectIndicatorType IndicatorType) {
+}
+
+void APalBuildObject::OnStartSimulation_Implementation() {
+}
+
+void APalBuildObject::OnSetPaintInMapObjectModel(UPalMapObjectModel* Model, UPalMapObjectModelPaint* Paint) {
 }
 
 void APalBuildObject::OnRep_CurrentState() {

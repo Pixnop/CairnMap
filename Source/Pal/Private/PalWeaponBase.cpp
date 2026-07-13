@@ -1,22 +1,36 @@
 #include "PalWeaponBase.h"
+#include "Templates/SubclassOf.h"
 
 APalWeaponBase::APalWeaponBase(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
     this->BulletDeleteTime = 0.50f;
+    this->BulletDeleteTimePVP = 0.50f;
     this->BulletDecayStartRate = 1.00f;
     this->RecoilCurve = NULL;
     this->RecoilYawRange = 0.10f;
     this->RecoilPitchTotalMax = 2.00f;
     this->RecoilDecaySpeed = 1.00f;
     this->ShotCameraShake = NULL;
+    this->ShotForceFeedbackEffect = NULL;
     this->WeaponCoopType = EWeaponCoopType::None;
     this->WeaponType = EPalWeaponType::None;
+    this->JetpackShootingOverride = EPalJetpackShootingOverride::None;
     this->IsRequiredBullet = true;
+    this->IsRequiredBulletForAltFire = false;
     this->ShootBlurMaterial = NULL;
     this->ShootBlurAlphaCurve = NULL;
     this->weaponBulletDamageReactionType = EPalDamageAnimationReactionType::Big;
     this->IsEmptyOtomoPal = false;
     this->CoolDownTime = 0.00f;
     this->IsTriggerOnlyFireWeapon = false;
+    this->IsTriggerOnlyAltFireWeapon = false;
+    this->PvPDamageRate = 1.00f;
+    this->PvPBuildingDamageRate = 1.00f;
+    this->PvPPlayerToGuildPalDamageRate = 1.00f;
+    this->IsInfinityMagazine = false;
+    this->IsOverrideAnimRateScale = false;
+    this->OverrideAnimRateScale = 1.00f;
+    this->IsOverrideTargetRayCastMaxDegree = false;
+    this->OverrideTargetRayCastMaxDegree = 30.00f;
     this->ShootBlurMaterialDynamic = NULL;
     this->ownWeaponStaticData = NULL;
     this->ownWeaponDynamicData = NULL;
@@ -68,6 +82,9 @@ bool APalWeaponBase::SeekLeftHandOpen_Implementation() const {
 void APalWeaponBase::RPCDummy_Implementation() {
 }
 
+void APalWeaponBase::ReserveSummonWeapon() {
+}
+
 void APalWeaponBase::RequestConsumeItem_ForThrowWeapon(const FName& StaticItemId, int32 ConsumeNum) {
 }
 
@@ -76,6 +93,9 @@ void APalWeaponBase::RequestConsumeItem(const FName& StaticItemId, int32 Consume
 
 bool APalWeaponBase::ReloadBullets() {
     return false;
+}
+
+void APalWeaponBase::ReleaseSummonWeapon() {
 }
 
 void APalWeaponBase::PlaySoundWithOption(const FPalDataTableRowName_SoundID& ID, const FPalSoundOptions& Arg) {
@@ -91,6 +111,10 @@ void APalWeaponBase::OnStartAim_Implementation() {
 
 
 
+
+
+void APalWeaponBase::OnPullCancel_Implementation() {
+}
 
 
 void APalWeaponBase::OnEndAim_Implementation() {
@@ -109,7 +133,18 @@ void APalWeaponBase::OnCreatedBullet_Implementation(APalBullet* Bullet) {
 void APalWeaponBase::OnAttachWeapon_Implementation(AActor* attachActor) {
 }
 
+
+
+bool APalWeaponBase::IsWeaponOwnerLocallyControlled() const {
+    return false;
+}
+
 bool APalWeaponBase::IsUseLeftHandAttach_Implementation() const {
+    return false;
+}
+
+
+bool APalWeaponBase::IsLocallyControlledWeapon() const {
     return false;
 }
 
@@ -121,11 +156,19 @@ bool APalWeaponBase::IsFullMagazine() const {
     return false;
 }
 
-bool APalWeaponBase::IsExistBulletInPlayerInventory() {
+bool APalWeaponBase::IsExistBulletInPlayerInventory() const {
+    return false;
+}
+
+bool APalWeaponBase::IsExistAltFireBulletInPlayerInventory() const {
     return false;
 }
 
 bool APalWeaponBase::IsEnableAutoAim_Implementation() const {
+    return false;
+}
+
+bool APalWeaponBase::IsEnableAltFire_Implementation() const {
     return false;
 }
 
@@ -159,6 +202,13 @@ AActor* APalWeaponBase::GetWeaponAttacker_Implementation() {
     return NULL;
 }
 
+void APalWeaponBase::GetSupportedBulletItemIds(TArray<FName>& OutIds) const {
+}
+
+TArray<FPalSpecialAttackRateInfo> APalWeaponBase::GetSpecialAttackRateInfos() const {
+    return TArray<FPalSpecialAttackRateInfo>();
+}
+
 float APalWeaponBase::GetSneakAttackRate() {
     return 0.0f;
 }
@@ -171,7 +221,8 @@ float APalWeaponBase::GetShooterComponentBlurRate() {
     return 0.0f;
 }
 
-void APalWeaponBase::GetRequiredBulletName(FName& outName) {
+int32 APalWeaponBase::GetRemainingCurrentSelectPalSphere() const {
+    return 0;
 }
 
 float APalWeaponBase::GetRemainingCoolDownTime() const {
@@ -182,7 +233,19 @@ int32 APalWeaponBase::GetRemainBulletCount_Implementation() const {
     return 0;
 }
 
+FRandomStream APalWeaponBase::GetRandomStream() const {
+    return FRandomStream{};
+}
+
 float APalWeaponBase::GetRandomFloat(float Min, float Max) {
+    return 0.0f;
+}
+
+float APalWeaponBase::GetPvPPlayerToGuildPalDamageRate_Implementation() const {
+    return 0.0f;
+}
+
+float APalWeaponBase::GetPvPBuildingDamageRate_Implementation() const {
     return 0.0f;
 }
 
@@ -190,16 +253,32 @@ float APalWeaponBase::GetParameterWithPassiveSkillEffect(float originalValue, EP
     return 0.0f;
 }
 
-APalCharacter* APalWeaponBase::GetOwnerCharacter_Implementation() {
+APalCharacter* APalWeaponBase::GetOwnerCharacter_Implementation() const {
     return NULL;
 }
 
+UPalWeaponBulletSelector* APalWeaponBase::GetOwnerBulletSelector() const {
+    return NULL;
+}
+
+
+int32 APalWeaponBase::GetNeedSpawnSummonWeaponCount() {
+    return 0;
+}
+
+int32 APalWeaponBase::GetMaxSummonCount() {
+    return 0;
+}
 
 USceneComponent* APalWeaponBase::GetMainMesh_Implementation() {
     return NULL;
 }
 
 int32 APalWeaponBase::GetMagazineSize() const {
+    return 0;
+}
+
+int32 APalWeaponBase::GetLoadoutSelectorIndex() const {
     return 0;
 }
 
@@ -211,13 +290,45 @@ FPalItemId APalWeaponBase::GetItemId() const {
     return FPalItemId{};
 }
 
+int32 APalWeaponBase::GetInventoryBulletCount() const {
+    return 0;
+}
+
 FName APalWeaponBase::GetEquipSocketName_Implementation() {
     return NAME_None;
 }
 
+float APalWeaponBase::GetDurability() const {
+    return 0.0f;
+}
+
+
+FName APalWeaponBase::GetCurrentBulletItemId() const {
+    return NAME_None;
+}
+
+TSubclassOf<APalBullet> APalWeaponBase::GetCurrentBulletClass_Implementation() const {
+    return NULL;
+}
+
+FVector APalWeaponBase::GetBulletShootRootLocation_Implementation() {
+    return FVector{};
+}
+
+float APalWeaponBase::GetBulletDeleteTime() const {
+    return 0.0f;
+}
 
 float APalWeaponBase::GetBlurModifierValue() {
     return 0.0f;
+}
+
+APalBackWeaponBase* APalWeaponBase::GetBackWeaponModel() const {
+    return NULL;
+}
+
+FName APalWeaponBase::GetAltFireActionName() const {
+    return NAME_None;
 }
 
 int32 APalWeaponBase::DecrementCurrentSelectPalSphere(int32 RequestConsumeNum, FName& UsedItemID) {
@@ -228,7 +339,28 @@ bool APalWeaponBase::DecrementBullet_Implementation() {
     return false;
 }
 
+void APalWeaponBase::DecreaseDurabilityWithValue(float Durability) {
+}
+
+void APalWeaponBase::DecreaseDurability() {
+}
+
 void APalWeaponBase::ClearWeaponSkill() {
+}
+
+void APalWeaponBase::ClearSummonWeapon() {
+}
+
+bool APalWeaponBase::CanUseAltFire_Implementation() const {
+    return false;
+}
+
+bool APalWeaponBase::CanReserveSummonWeapon() {
+    return false;
+}
+
+bool APalWeaponBase::CanDealDamageWeapon_Implementation() const {
+    return false;
 }
 
 float APalWeaponBase::CalcStability_Implementation() {
@@ -245,6 +377,9 @@ float APalWeaponBase::CalcDPS_Implementation() {
 
 float APalWeaponBase::CalcAccuracy_Implementation() {
     return 0.0f;
+}
+
+void APalWeaponBase::ApplyOverrideMaterial_ForUI() {
 }
 
 

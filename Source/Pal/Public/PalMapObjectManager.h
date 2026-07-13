@@ -3,19 +3,26 @@
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
+#include "UObject/NoExportTypes.h"
+#include "UObject/NoExportTypes.h"
 #include "Engine/EngineTypes.h"
 #include "BuildingSurfaceMaterialSet.h"
 #include "EPalMapObjectChangeMeshFXType.h"
 #include "EPalMapObjectDestroyFXType.h"
-#include "EPalMapObjectTreasureGradeType.h"
+#include "EPalMapObjectTreasureSpecialType.h"
+#include "PalBuildObjectSpawningStateInfo.h"
 #include "PalDataTableRowName_ItemData.h"
+#include "PalDataTableRowName_MapObjectData.h"
 #include "PalGameWorldDataSaveInterface.h"
 #include "PalMapObjectDamageInfo.h"
 #include "PalMapObjectInfoTickInBackground.h"
 #include "PalMapObjectModelStaticData.h"
 #include "PalMapObjectSignificanceInfo.h"
 #include "PalMapObjectStaticData.h"
+#include "PalMapObjectTreasureBoxOpenRequiredItemMapByGrade.h"
 #include "PalMapObjectVisualEffectAssets.h"
+#include "PalWorkAssignDefineIds.h"
+#include "PalWorkPositionVisualizerSettings.h"
 #include "PalWorldSubsystem.h"
 #include "Templates/SubclassOf.h"
 #include "PalMapObjectManager.generated.h"
@@ -30,9 +37,12 @@ class UPalBuildObjectSpawnValidationCheckInterface;
 class IPalMapObjectModelInterface;
 class UPalMapObjectModelInterface;
 class UAkAudioEvent;
+class UCurveVector;
 class UDataTable;
 class UNiagaraSystem;
 class UObject;
+class UPalBuildObjectPhysicsBudgetManager;
+class UPalBuildObjectSimulatingVisualMeshComponent;
 class UPalBuildOperator;
 class UPalDialogParameterBase;
 class UPalFoliagePresetDataSet;
@@ -41,8 +51,10 @@ class UPalMapObjectConcreteModelBase;
 class UPalMapObjectFoliage;
 class UPalMapObjectModel;
 class UPalMapObjectModelInitializeExtraParameterSpawnedBy;
-class UPalMapObjectSpawnRequestHandler;
+class UPalMapObjectPhysicsManager;
 class UPalMapObjectWorldDisposer;
+class UPointLightComponent;
+class UStaticMesh;
 
 UCLASS(Blueprintable, Config=Game)
 class UPalMapObjectManager : public UPalWorldSubsystem, public IPalGameWorldDataSaveInterface {
@@ -52,6 +64,7 @@ public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMapObjectModelSpawnedByDelegate, UPalMapObjectModel*, MapObjectModel, UPalMapObjectModelInitializeExtraParameterSpawnedBy*, SpawnedBy);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMapObjectModelInterfaceDelegate, TScriptInterface<IPalMapObjectModelInterface>, MapObjectModel);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMapObjectModelDynamicDelegate, UPalMapObjectModel*, MapObjectModel);
+    DECLARE_DYNAMIC_DELEGATE_OneParam(FMapObjectModelSpawnDelegate, UPalMapObjectModel*, MapObjectModel);
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FMapObjectModelWithVectorDelegate OnCreateMapObjectModelInServerDelegate;
@@ -79,7 +92,13 @@ protected:
     UDataTable* MapObjectAssignTable;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UDataTable* MapObjectDataTableForEnemyCamp;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FBuildingSurfaceMaterialSet BuildingSurfaceMaterialSet;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalWorkPositionVisualizerSettings WorkPositionVisualizerSettings;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     UPalFoliagePresetDataSet* FoliagePresetDataSet;
@@ -91,6 +110,9 @@ protected:
     int32 FoliageGridSize;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TMap<FName, FPalWorkAssignDefineIds> MapObjectIdToAssignDefineMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UPalMapObjectFoliage* Foliage;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
@@ -98,6 +120,12 @@ protected:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     UPalMapObjectWorldDisposer* WorldDisposerForServer;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalMapObjectPhysicsManager* PhysicsManagerForServer;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalBuildObjectPhysicsBudgetManager* BuildObjectPhysicsBudgetManager;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TMap<FGuid, UPalMapObjectModel*> MapObjectModelMapForServer;
@@ -112,7 +140,10 @@ protected:
     FPalMapObjectStaticData StaticData;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    FName DropItemMapObjectId;
+    TArray<FPalDataTableRowName_MapObjectData> CannotPlayerSpawnMapObjectIds;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<FName> SkipApplySaveDataMapObjectIds;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FName BuildObjectId_PalStorage;
@@ -146,6 +177,15 @@ protected:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FName BuildFXUserParamName_BoxSurfaceArea;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UNiagaraSystem* PaintEffect;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FName PaintFXUserParamName_Color;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UNiagaraSystem* PaintRemoveEffect;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     UAkAudioEvent* BuildCompleteSE;
@@ -217,6 +257,9 @@ protected:
     FVector FoliageDestroyFXExtentsDefault;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UCurveVector* FarmCropStateChangeAnimationScale;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<UPalHitEffectSlot> HitEffectSlotClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -226,14 +269,38 @@ protected:
     FPalMapObjectVisualEffectAssets VisualEffectAssets;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    TMap<EPalMapObjectTreasureGradeType, FPalDataTableRowName_ItemData> TreasureBoxOpenRequiredItemMap;
+    TSubclassOf<UPalBuildObjectSimulatingVisualMeshComponent> BuildObjectSimulatingVisualMeshComponentClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<EPalMapObjectTreasureSpecialType, FPalDataTableRowName_ItemData> TreasureBoxOpenRequiredItemMapForSpecialType;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FPalMapObjectTreasureBoxOpenRequiredItemMapByGrade TreasureBoxOpenRequiredItemMapByGrade;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TMap<EPalMapObjectTreasureSpecialType, FPalMapObjectTreasureBoxOpenRequiredItemMapByGrade> TreasureBoxOpenRequiredItemMapByGradeBySpecialType;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSoftObjectPtr<UStaticMesh> BuildAccessoryStaticMesh_RaftFloat;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSoftObjectPtr<UStaticMesh> BuildAccessoryStaticMesh_RaftFloatDiagonal;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float BuildAccessoryRaftFloatRelativeZOffset;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float BuildAccessoryRaftFloatMaxZOffsetFromWater;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<APalSnapModeFX> SnapModeFXClass;
     
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    TMap<FGuid, UPalMapObjectModel*> MapObjectModelHandlingMap;
+    TMap<FGuid, UPalMapObjectModel*> MapObjectModelSpawningHandlingMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TMap<FGuid, FPalBuildObjectSpawningStateInfo> BuildObjectSpawningStateInfos;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<APalMapObject*> LevelMapObjectsToRegister;
@@ -242,16 +309,22 @@ private:
     APalTestMapObjectRegistrationToManager* Registrator;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    TMap<FGuid, UPalMapObjectSpawnRequestHandler*> SpawnRequestHandlerMap;
-    
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     int32 InDoorCheckProcessIndex_AnyThread;
     
     UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
     int32 InDoorCheckMaxNumPerFrame_AnyThread;
     
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    TArray<APalMapObjectSpawnerBase*> SpawnedSpawners;
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 MapObjectSignificanceUpdateDivideNum;
+    
+    UPROPERTY(EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TSet<TWeakObjectPtr<APalMapObjectSpawnerBase>> SpawnedSpawners;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 MaxDelayedSpawnCallbacksPerFrame;
+    
+    UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 MaxDelayedDropItemSpawnCallbacksPerFrame;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TMap<FGuid, FPalMapObjectInfoTickInBackground> MapObjectInfoMapTickInBackground;
@@ -269,8 +342,8 @@ public:
     UPROPERTY(EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TArray<TWeakObjectPtr<UObject>> SkeletalLODComponentArrayWait;
     
-    UPROPERTY(EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    TArray<TWeakObjectPtr<UObject>> PointLightComponents;
+    UPROPERTY(EditAnywhere, Export, Transient, meta=(AllowPrivateAccess=true))
+    TArray<TWeakObjectPtr<UPointLightComponent>> PointLightComponents;
     
     UPalMapObjectManager();
 
@@ -284,14 +357,23 @@ public:
     void UnResisterSkeletalMeshComponentForLOD(UObject* InComponent);
     
     UFUNCTION(BlueprintCallable)
-    void UnResisterPointLightComponent(UObject* InComponent);
+    void UnResisterPointLightComponent(UPointLightComponent* InComponent);
     
     UFUNCTION(BlueprintCallable)
     void ResisterSkeletalMeshComponentForLOD(UObject* InComponent);
     
     UFUNCTION(BlueprintCallable)
-    void ResisterPointLightComponent(UObject* InComponent);
+    void ResisterPointLightComponent(UPointLightComponent* InComponent);
     
+    UFUNCTION(BlueprintCallable)
+    bool RequestSpawnMapObjectByTransform_Server(FName MapObjectId, FTransform Transform);
+    
+    UFUNCTION(BlueprintCallable)
+    bool RequestSpawnMapObjectByPlayer_Server(FName MapObjectId, FVector Location, FRotator Rotation, FGuid RequestPlayerUId);
+    
+    UFUNCTION(BlueprintCallable)
+    bool RequestSpawnMapObject_Server(FName MapObjectId, FVector Location, FRotator Rotation);
+
     UFUNCTION(BlueprintCallable)
     void RequestDismantleObject_OnResponseDialog(const bool bResult, UPalDialogParameterBase* DialogParameter);
     
@@ -301,10 +383,13 @@ public:
     UFUNCTION(BlueprintCallable)
     void PlayMapObjectDestroyFX(const FVector& Location, const FBoxSphereBounds& Bounds, const EPalMapObjectDestroyFXType Type);
     
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FPalWorkPositionVisualizerSettings GetWorkPositionVisualizerSettings() const;
+    
     UFUNCTION(BlueprintCallable)
     UPalMapObjectFoliage* GetFoliage() const;
     
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     UPalBuildOperator* GetBuildOperator() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)

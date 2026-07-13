@@ -8,11 +8,19 @@ UPalCharacterManager::UPalCharacterManager() {
 void UPalCharacterManager::SpawnPhantomByHandle(UPalIndividualCharacterHandle* Handle, FNetworkActorSpawnParameters SpawnParameter, UPalCharacterManager::FIndividualPhantomIDCallback spawnCallback) {
 }
 
-UPalIndividualCharacterHandle* UPalCharacterManager::SpawnNewCharacterWithInitializeParameterCallback(FPalIndividualCharacterSaveParameter initParameter, FNetworkActorSpawnParameters SpawnParameter, EPalCharacterCompleteDelegatePriority InitializeParameterCallbackPriority, FPalOnCharacterCompleteInitializeParameter InitializeParameterCallback, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
+UPalIndividualCharacterHandle* UPalCharacterManager::SpawnNewCharacterWithInitializeParameterCallback(FPalIndividualCharacterSaveParameter InitParameter, FNetworkActorSpawnParameters SpawnParameter, EPalCharacterCompleteDelegatePriority InitializeParameterCallbackPriority, FPalOnCharacterCompleteInitializeParameter InitializeParameterCallback, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
     return NULL;
 }
 
-UPalIndividualCharacterHandle* UPalCharacterManager::SpawnNewCharacter(FPalIndividualCharacterSaveParameter initParameter, FNetworkActorSpawnParameters SpawnParameter, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
+UPalIndividualCharacterHandle* UPalCharacterManager::SpawnNewCharacterWithInitializeAndIndividualParameterCallback(FPalIndividualCharacterSaveParameter InitParameter, FNetworkActorSpawnParameters SpawnParameter, EPalCharacterCompleteDelegatePriority InitializeParameterCallbackPriority, FPalOnCharacterCompleteInitializeParameter InitializeParameterCallback, UPalCharacterManager::FIndividualParameterCallback IndividualParameterCallback, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
+    return NULL;
+}
+
+UPalIndividualCharacterHandle* UPalCharacterManager::SpawnNewCharacterWithIndividualParameterCallback(FPalIndividualCharacterSaveParameter InitParameter, FNetworkActorSpawnParameters SpawnParameter, UPalCharacterManager::FIndividualParameterCallback IndividualParameterCallback, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
+    return NULL;
+}
+
+UPalIndividualCharacterHandle* UPalCharacterManager::SpawnNewCharacter(FPalIndividualCharacterSaveParameter InitParameter, FNetworkActorSpawnParameters SpawnParameter, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
     return NULL;
 }
 
@@ -53,11 +61,11 @@ void UPalCharacterManager::DespawnPhantomByHandle(UPalIndividualCharacterHandle*
 void UPalCharacterManager::DespawnCharacterByHandle(UPalIndividualCharacterHandle* Handle, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
 }
 
-UPalIndividualCharacterHandle* UPalCharacterManager::CreateIndividualByFixedID(FPalInstanceID ID, FPalIndividualCharacterSaveParameter initParameter, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
+UPalIndividualCharacterHandle* UPalCharacterManager::CreateIndividualByFixedID(FPalInstanceID ID, FPalIndividualCharacterSaveParameter InitParameter, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
     return NULL;
 }
 
-UPalIndividualCharacterHandle* UPalCharacterManager::CreateIndividual(FPalIndividualCharacterSaveParameter initParameter, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
+UPalIndividualCharacterHandle* UPalCharacterManager::CreateIndividual(FPalIndividualCharacterSaveParameter InitParameter, UPalCharacterManager::FIndividualIDCallback spawnCallback) {
     return NULL;
 }
 

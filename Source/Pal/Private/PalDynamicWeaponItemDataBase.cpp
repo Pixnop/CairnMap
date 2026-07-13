@@ -6,10 +6,12 @@ UPalDynamicWeaponItemDataBase::UPalDynamicWeaponItemDataBase() {
     this->MaxDurability = 0.00f;
     this->OldDurability = -1.00f;
     this->RemainingBullets = 0;
+    this->bIsEmptyBulletInventory = false;
     this->ForceUpdateBulletsCounter = 0;
+    this->MaxMagazineSize = 0;
 }
 
-int32 UPalDynamicWeaponItemDataBase::UseBullets(int32 useNum) {
+int32 UPalDynamicWeaponItemDataBase::UseBullets(int32 UseNum) {
     return 0;
 }
 
@@ -17,10 +19,19 @@ bool UPalDynamicWeaponItemDataBase::UseBullet() {
     return false;
 }
 
-void UPalDynamicWeaponItemDataBase::SetDurability(float NewDurability) {
+void UPalDynamicWeaponItemDataBase::SetReloadStartRemainingBullets_Local(int32 bulletsNum) {
+}
+
+void UPalDynamicWeaponItemDataBase::SetDurabilityInternal(float NewDurability) {
 }
 
 void UPalDynamicWeaponItemDataBase::SetBulletsNum(int32 bulletsNum) {
+}
+
+void UPalDynamicWeaponItemDataBase::ResetReloadStartRemainingBullets_Local() {
+}
+
+void UPalDynamicWeaponItemDataBase::OnRep_RemainingBullets() {
 }
 
 void UPalDynamicWeaponItemDataBase::OnRep_ForceUpdateBulletsCounter() {
@@ -29,11 +40,23 @@ void UPalDynamicWeaponItemDataBase::OnRep_ForceUpdateBulletsCounter() {
 void UPalDynamicWeaponItemDataBase::OnRep_Durability() {
 }
 
+bool UPalDynamicWeaponItemDataBase::IsSetReloadStartRemainingBullets_Local() const {
+    return false;
+}
+
 bool UPalDynamicWeaponItemDataBase::IsEmptyMagazine() const {
     return false;
 }
 
+bool UPalDynamicWeaponItemDataBase::IsEmptyBulletInventory() const {
+    return false;
+}
+
 int32 UPalDynamicWeaponItemDataBase::GetRemainingBulletsNum() const {
+    return 0;
+}
+
+int32 UPalDynamicWeaponItemDataBase::GetReloadStartRemainingBullets_Local() const {
     return 0;
 }
 
@@ -43,6 +66,10 @@ TArray<FName> UPalDynamicWeaponItemDataBase::GetPassiveSkillList() const {
 
 float UPalDynamicWeaponItemDataBase::GetMaxDurability() const {
     return 0.0f;
+}
+
+FName UPalDynamicWeaponItemDataBase::GetInMagazineBulletId() const {
+    return NAME_None;
 }
 
 float UPalDynamicWeaponItemDataBase::GetDurability() const {
@@ -66,8 +93,10 @@ void UPalDynamicWeaponItemDataBase::GetLifetimeReplicatedProps(TArray<FLifetimeP
     DOREPLIFETIME(UPalDynamicWeaponItemDataBase, Durability);
     DOREPLIFETIME(UPalDynamicWeaponItemDataBase, MaxDurability);
     DOREPLIFETIME(UPalDynamicWeaponItemDataBase, RemainingBullets);
+    DOREPLIFETIME(UPalDynamicWeaponItemDataBase, bIsEmptyBulletInventory);
     DOREPLIFETIME(UPalDynamicWeaponItemDataBase, PassiveSkillList);
     DOREPLIFETIME(UPalDynamicWeaponItemDataBase, ForceUpdateBulletsCounter);
+    DOREPLIFETIME(UPalDynamicWeaponItemDataBase, InMagazineBulletItemId);
 }
 
 

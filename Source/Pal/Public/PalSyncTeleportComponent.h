@@ -3,10 +3,13 @@
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
 #include "Components/ActorComponent.h"
+#include "Engine/EngineTypes.h"
+#include "EPalSyncTeleportState.h"
 #include "PalSyncTeleportRequestParameter.h"
 #include "PalSyncTeleportComponent.generated.h"
 
 class UAkAudioEvent;
+class UPalAutoSaveDisabler;
 class UPalHUDDispatchParameter_FadeWidget;
 
 UCLASS(Blueprintable, ClassGroup=Custom, meta=(BlueprintSpawnableComponent))
@@ -28,6 +31,18 @@ protected:
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     UPalHUDDispatchParameter_FadeWidget* FadeParameter;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UAkAudioEvent* SyncTeleportStartSE;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalSyncTeleportState SyncTeleportState;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FTimerHandle TeleportMutekiTimerHandle;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    UPalAutoSaveDisabler* AutoSaveDisabler;
     
 public:
     UPalSyncTeleportComponent(const FObjectInitializer& ObjectInitializer);
@@ -72,6 +87,14 @@ public:
     
     UFUNCTION(BlueprintCallable)
     FVector GetTeleportLocation() const;
+    
+private:
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+    void ForceReset_ToClient();
+    
+public:
+    UFUNCTION(BlueprintCallable)
+    void ForceReset_ServerInternal();
     
 };
 

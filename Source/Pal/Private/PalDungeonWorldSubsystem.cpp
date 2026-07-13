@@ -1,8 +1,8 @@
 #include "PalDungeonWorldSubsystem.h"
 
 UPalDungeonWorldSubsystem::UPalDungeonWorldSubsystem() {
-    this->PrerequisiteWorldSubsystemList.AddDefaulted(1);
     this->TickInterval = 0.00f;
+    this->RewardCageClass = NULL;
     this->bInitializedWithSaveData = false;
 }
 

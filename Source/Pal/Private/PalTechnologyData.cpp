@@ -46,6 +46,10 @@ bool UPalTechnologyData::IsUnlockableRecipeTechnology(const FName& technologyNam
     return false;
 }
 
+bool UPalTechnologyData::IsTowerBossRequirementSatisfied(const EPalBossType& BossType) const {
+    return false;
+}
+
 bool UPalTechnologyData::IsNewUnlockedTechnology(const FName& technologyName) {
     return false;
 }
@@ -54,7 +58,23 @@ bool UPalTechnologyData::IsNewUnlockedBuild_Radial(const FName& BuildName) const
     return false;
 }
 
+bool UPalTechnologyData::IsLabResearchRequirementSatisfied(const FName ResearchId) const {
+    return false;
+}
+
 bool UPalTechnologyData::IsExistNewUnlockedTechnology() {
+    return false;
+}
+
+bool UPalTechnologyData::IsDeniedTechnology(const FName& TechnologyId) const {
+    return false;
+}
+
+bool UPalTechnologyData::IsDeniedRecipe(const FName& RecipeID) const {
+    return false;
+}
+
+bool UPalTechnologyData::IsDeniedBuildObject(const FName& BuildObjectId) const {
     return false;
 }
 
@@ -74,7 +94,7 @@ FPalTechnologyDataTableRowBase UPalTechnologyData::GetTechlonogyBaseData(const F
     return FPalTechnologyDataTableRowBase{};
 }
 
-TArray<FName> UPalTechnologyData::GetRecipeTechnologyRowNameArray() const {
+TArray<FName> UPalTechnologyData::GetRecipeTechnologyRowNameArray(const bool DedicatedServerExcept) const {
     return TArray<FName>();
 }
 

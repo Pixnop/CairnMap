@@ -4,9 +4,12 @@
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
+#include "UObject/NoExportTypes.h"
+#include "Engine/EngineTypes.h"
 #include "Engine/EngineTypes.h"
 #include "EPalBuildObjectInstallStrategy.h"
 #include "EPalBuildObjectState.h"
+#include "EPalBuildObjectStatusHUDSlot.h"
 #include "EPalInteractiveObjectIndicatorType.h"
 #include "PalBuildObjectMeshDefaultSetting.h"
 #include "PalDamageInfo.h"
@@ -25,6 +28,7 @@ class UPalBuildObjectOverlapChecker;
 class UPalBuildObjectVisualControlComponent;
 class UPalBuildProcess;
 class UPalMapObjectModel;
+class UPalMapObjectModelPaint;
 class UPalWorkProgress;
 class UPrimitiveComponent;
 class UShapeComponent;
@@ -34,9 +38,13 @@ class PAL_API APalBuildObject : public APalMapObject {
     GENERATED_BODY()
 public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeStateDelegate, EPalBuildObjectState, State);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildCompleteAnimationFinishedDelegate);
     
     UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FOnChangeStateDelegate OnChangeState;
+    
+    UPROPERTY(BlueprintAssignable, BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FOnBuildCompleteAnimationFinishedDelegate OnBuildCompleteAnimationFinished;
     
 protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -53,6 +61,12 @@ protected:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FVector InstallLocationOffset;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float InstallNeighborRotationZOffset;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TEnumAsByte<EComponentMobility::Type> DefaultMobility;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced, Transient, meta=(AllowPrivateAccess=true))
     UPalBuildObjectVisualControlComponent* VisualCtrl;
@@ -87,14 +101,26 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FComponentReference MainMeshRef;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FVector SnapCheckCoolisionCenterOffset;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FBoxSphereBounds SnapCheckCollisionBounds;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
-    FVector MainMeshCenterOffset;
+    bool bPlayBuildCompleteFX;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bNotConstructConnectorInGame;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_CurrentState, meta=(AllowPrivateAccess=true))
     EPalBuildObjectState CurrentState;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FGuid WorldHUDId;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TMap<EPalBuildObjectStatusHUDSlot, FGuid> AdditionalWorldHUDIdMap;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FGuid buildProgressWorldHUDId;
@@ -109,7 +135,7 @@ protected:
     FVector buildProgressHUDDisplayOffset;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
-    FVector2D buildProgressHUDDisplayOffsetScreen;
+    FVector buildProgressHUDDisplayOffsetScreen;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     float buildProgressHUDDisplayRange;
@@ -126,6 +152,18 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TMap<UPrimitiveComponent*, FPalBuildObjectMeshDefaultSetting> DefaultMeshSettingMap;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bReplaceOverlapCheck;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bReceivedBroadcastPaintChanged;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bExistsArrowInSimulatingTransform;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FTransform ArrowInSimulatingRelativeTransform;
+    
 public:
     APalBuildObject(const FObjectInitializer& ObjectInitializer);
 
@@ -136,7 +174,7 @@ public:
     
 private:
     UFUNCTION(BlueprintCallable)
-    void OnUpdateHp(UPalMapObjectModel* DamagedModel);
+    void OnUpdateHP(UPalMapObjectModel* DamagedModel);
     
     UFUNCTION(BlueprintCallable)
     void OnUpdateBuildWorkAmount(UPalWorkProgress* WorkProgress);
@@ -152,6 +190,14 @@ private:
     
     UFUNCTION(BlueprintCallable)
     void OnStartTriggerInteractBuilding(AActor* OtherActor, EPalInteractiveObjectIndicatorType IndicatorType);
+    
+public:
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void OnStartSimulation();
+    
+private:
+    UFUNCTION(BlueprintCallable)
+    void OnSetPaintInMapObjectModel(UPalMapObjectModel* Model, UPalMapObjectModelPaint* Paint);
     
     UFUNCTION(BlueprintCallable)
     void OnRep_CurrentState();
@@ -173,6 +219,11 @@ private:
     UFUNCTION(BlueprintCallable)
     void OnDamage(UPalMapObjectModel* DamagedModel, const FPalDamageInfo& DamageInfo);
     
+protected:
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+    void OnChangeVisualForDismantle(const bool bDismantle);
+    
+private:
     UFUNCTION(BlueprintCallable)
     void OnBeginInteractBuilding(AActor* OtherActor, TScriptInterface<IPalInteractiveObjectComponentInterface> InteractiveObject);
     

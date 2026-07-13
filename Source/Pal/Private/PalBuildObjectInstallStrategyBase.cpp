@@ -2,8 +2,9 @@
 
 UPalBuildObjectInstallStrategyBase::UPalBuildObjectInstallStrategyBase() {
     this->TargetBuildObject = NULL;
-    this->SnapHitActorCache = NULL;
+    this->ReplaceTargetBuildObject = NULL;
     this->SnapHitBuildObjectCache = NULL;
+    this->SnapHitActorCache = NULL;
 }
 
 

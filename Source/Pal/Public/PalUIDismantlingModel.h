@@ -3,6 +3,7 @@
 #include "UObject/Object.h"
 #include "PalUIDismantlingModel.generated.h"
 
+class UPalBaseCampModel;
 class UPalItemContainer;
 
 UCLASS(Blueprintable)
@@ -15,6 +16,10 @@ protected:
     
 public:
     UPalUIDismantlingModel();
+
+    UFUNCTION(BlueprintCallable)
+    void StartPaintingMode();
+    
     UFUNCTION(BlueprintCallable)
     void Setup();
     
@@ -23,6 +28,21 @@ protected:
     void OnUpdateInventory(UPalItemContainer* Container);
     
 public:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsOutsideBaseCamp() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsInsideBaseCampForPlayer() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsInsideBaseCamp() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalBaseCampModel* GetBaseCampModelForPlayer() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UPalBaseCampModel* GetBaseCampModel(bool bIncludeForPlayer);
+    
     UFUNCTION(BlueprintCallable)
     void FinishDismantling();
     

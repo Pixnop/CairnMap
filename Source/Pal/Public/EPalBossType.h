@@ -11,6 +11,13 @@ enum class EPalBossType : uint8 {
     SnowBoss,
     DesertBoss,
     SakurajimaBoss,
+    VikingBoss,
+    SorajimaBoss,
+    KingWhaleBoss,
+    WorldTreeMiddleBoss1,
+    WorldTreeMiddleBoss2,
+    WorldTreeMiddleBoss3,
+    WorldTreeBoss,
     Max,
 };
 

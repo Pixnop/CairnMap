@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "UObject/NoExportTypes.h"
+#include "UObject/NoExportTypes.h"
 #include "EPalBiomeType.h"
 #include "EPalCharacterLocationType.h"
 #include "EPalInvaderType.h"
@@ -13,9 +14,12 @@
 #include "PalInvaderIncidentBase.generated.h"
 
 class APalAIController;
+class APalCharacter;
+class APalPlayerCharacter;
 class UDataTable;
 class UPalBaseCampModel;
 class UPalIndividualCharacterHandle;
+class UPalInvaderPathFinder;
 class UPalSquad;
 
 UCLASS(Blueprintable)
@@ -30,10 +34,16 @@ protected:
     UDataTable* InvaderDataTable;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UDataTable* InvaderRewardTable;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<APalAIController> MonsterAIControllerClass;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TSubclassOf<APalAIController> EnemyAIControllerClass;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bUseFindPaths;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     TArray<FPalInvaderSpawnCharacterParameter> InvaderMember;
@@ -41,12 +51,21 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TArray<APalAIController*> MemberController;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    TArray<APalAIController*> OtomoController;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     FName ChosenInvaderDataRowName;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    FName VisitorLeaderName;
     
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FGuid GroupGuid;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FGuid BroadcastGroupGuid;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     bool bCanExecute;
@@ -56,6 +75,15 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TMap<FPalInstanceID, FGuid> LocationMap;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsArrived;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsOrganizationGroup;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UPalInvaderPathFinder* PathFinder;
     
 public:
     UPalInvaderIncidentBase();
@@ -76,6 +104,9 @@ protected:
     void RemoveGroupCharacter(UPalIndividualCharacterHandle* RemoveIndividualHandle);
     
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void OnWaveTimeup();
+    
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void OnStartInvade();
     
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
@@ -84,10 +115,18 @@ protected:
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void OnEndInvade();
     
+    UFUNCTION(BlueprintCallable)
+    void OnCharacterInitializedForShow(APalCharacter* InCharacter);
+    
 public:
     UFUNCTION(BlueprintCallable)
     bool IsGroupCharacter(UPalIndividualCharacterHandle* IndividualHandle) const;
     
+protected:
+    UFUNCTION(BlueprintCallable)
+    void HideCharacterUntilInitialized(UPalIndividualCharacterHandle* IndividualHandle);
+    
+public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
     int32 GetVisitorNPCReturnTimeMinutes() const;
     
@@ -95,13 +134,13 @@ public:
     UPalBaseCampModel* GetTargetCampModel() const;
     
 protected:
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintPure)
+    TSubclassOf<APalAIController> GetNPCAIControllerClass(const FPalInvaderSpawnCharacterParameter& SpawnParameter) const;
+    
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     bool GetInvaderStartPoint(FVector& Result);
     
 public:
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    int32 GetInvadeReturnTimeMinutes() const;
-    
     UFUNCTION(BlueprintCallable, BlueprintPure)
     void GetChosenInvaderGroupName(FText& OutText) const;
     
@@ -113,6 +152,11 @@ private:
     UFUNCTION(BlueprintCallable)
     void GetBroadcastParameter(FPalIncidentBroadcastParameter& outParameter);
     
+protected:
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+    TArray<APalPlayerCharacter*> GetAttackerPlayers() const;
+    
+private:
     UFUNCTION(BlueprintCallable)
     int32 GetAliveInvaderNum() const;
     
@@ -121,8 +165,18 @@ public:
     void EndInvadeByTimelimit();
     
 protected:
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintPure)
+    FVector CalcSpawnLocation(const FVector& SpawnCenter, const FRotator& Rot, int32 Index);
+    
+    UFUNCTION(BlueprintCallable)
+    void AddInvaderOtomo(APalAIController* OtomoAIController);
+    
     UFUNCTION(BlueprintCallable)
     void AddGroupCharacter(UPalIndividualCharacterHandle* AddIndividualHandle, EPalCharacterLocationType LocationType);
+    
+private:
+    UFUNCTION(BlueprintCallable)
+    void AddCharacterLocation(const FPalInstanceID& IndividualId, EPalCharacterLocationType LocationType);
     
 };
 

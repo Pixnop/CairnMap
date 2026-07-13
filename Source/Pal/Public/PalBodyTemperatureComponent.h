@@ -39,17 +39,26 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FTimerHandle SlipDamageTimer;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FTimerHandle TemperatureDamageLogTimer;
+    
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_TemperatureInfo, meta=(AllowPrivateAccess=true))
     FPalTemperatureInfo TemperatureInfo;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FPalTemperatureInfo TemperatureInfo_Pre_ForClient;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, ReplicatedUsing=OnRep_Enabled, meta=(AllowPrivateAccess=true))
+    bool bEnabled;
+    
 public:
     UPalBodyTemperatureComponent(const FObjectInitializer& ObjectInitializer);
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+    UFUNCTION(BlueprintCallable)
+    void SetEnable(bool bEnable);
+    
     UFUNCTION(BlueprintCallable)
     void RemoveHeatSource(FName UniqueName);
     
@@ -64,6 +73,9 @@ private:
     void OnRep_TemperatureInfo();
     
     UFUNCTION(BlueprintCallable)
+    void OnRep_Enabled();
+    
+    UFUNCTION(BlueprintCallable)
     void OnInitializedPlayer(APalCharacter* Character);
     
     UFUNCTION(BlueprintCallable)
@@ -72,6 +84,11 @@ private:
     UFUNCTION(BlueprintCallable)
     void OnChangeHour();
     
+public:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    void GetTemperatureInfo(FPalTemperatureInfo& OutInfo) const;
+    
+private:
     UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
     void CallOnChangeTemperature(int32 Next);
     

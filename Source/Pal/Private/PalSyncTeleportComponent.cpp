@@ -3,6 +3,9 @@
 UPalSyncTeleportComponent::UPalSyncTeleportComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {
     this->DefaultStartSE = NULL;
     this->FadeParameter = NULL;
+    this->SyncTeleportStartSE = NULL;
+    this->SyncTeleportState = EPalSyncTeleportState::None;
+    this->AutoSaveDisabler = NULL;
 }
 
 void UPalSyncTeleportComponent::SyncTeleport_ToClient_Implementation(const FPalSyncTeleportRequestParameter& Parameter) {
@@ -45,6 +48,12 @@ FQuat UPalSyncTeleportComponent::GetTeleportRotation() const {
 
 FVector UPalSyncTeleportComponent::GetTeleportLocation() const {
     return FVector{};
+}
+
+void UPalSyncTeleportComponent::ForceReset_ToClient_Implementation() {
+}
+
+void UPalSyncTeleportComponent::ForceReset_ServerInternal() {
 }
 
 

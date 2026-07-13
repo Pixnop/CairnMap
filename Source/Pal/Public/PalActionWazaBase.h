@@ -13,8 +13,27 @@ class PAL_API UPalActionWazaBase : public UPalActionBase {
     GENERATED_BODY()
 public:
 protected:
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
     EPalWazaID WazaID;
+    
+public:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsDisableTickOptimization;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bCanCancelJump;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bOverrideNetUpdateFrequencyDuringWaza;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float WazaNetUpdateFrequency;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bForceNetUpdateOnWazaBegin;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bForceNetUpdateOnWazaEnd;
     
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -29,9 +48,12 @@ public:
     void StopAkSound();
     
     UFUNCTION(BlueprintCallable)
+    void SetCancelJumpEnable(const bool IsEnable);
+    
+    UFUNCTION(BlueprintCallable)
     void PlayAkSound(UAkAudioEvent* AudioEvent);
     
-    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UFUNCTION(BlueprintPure)
     EPalWazaID GetWazaID() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)

@@ -12,7 +12,7 @@ UCLASS(Blueprintable)
 class PAL_API UPalAICombatModule_RaidBoss : public UPalAICombatModule {
     GENERATED_BODY()
 public:
-private:
+protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     APalMapObject* TargetBaseCampActor;
     
@@ -21,6 +21,9 @@ private:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TWeakObjectPtr<UPalBaseCampModel> TargetCamp;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bIsRaidBossArena;
     
 public:
     UPalAICombatModule_RaidBoss();
@@ -33,6 +36,9 @@ public:
     
     UFUNCTION(BlueprintCallable)
     bool JudgeReturnCombatStartPosition();
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsRaidBossArena() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     AActor* GetBaseCampActor();

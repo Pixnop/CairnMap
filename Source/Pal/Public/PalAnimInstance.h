@@ -41,6 +41,12 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     float RotateYawInterpolation_Acceleration;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FTransform OverrideTransform;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    bool bOverrideTransform;
+    
 private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     TMap<FName, UPalBoneInfo*> BoneListFullBody;
@@ -57,21 +63,46 @@ private:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
     FFlagContainer DisableUpperOverrideFlag;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    float MoveSpeedOverride;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Transient, meta=(AllowPrivateAccess=true))
+    FFlagContainer UseUpperBodyOnlyWhileRidingFlag;
+    
 public:
     UPalAnimInstance();
+
+    UFUNCTION(BlueprintCallable)
+    void SetUseUpperBodyOnlyWhileRidingFlag(FName flagName, bool isUse);
+    
     UFUNCTION(BlueprintCallable)
     void SetUpperOverrideDisableFlag(FName flagName, bool isDisable);
     
     UFUNCTION(BlueprintCallable)
+    void SetOverrideTransform(const FTransform& InTransform);
+    
+    UFUNCTION(BlueprintCallable)
+    void SetMoveSpeedOverride(const float InMoveSpeed);
+    
+    UFUNCTION(BlueprintCallable)
+    void SetForceSprintForNPC(const bool bOn);
+    
+    UFUNCTION(BlueprintCallable)
     void SetAdditiveAnimationRate(FName flagName, float Rate);
     
+    UFUNCTION(BlueprintCallable)
+    void ResetOverrideTransform();
+    
+    UFUNCTION(BlueprintCallable)
+    void ReplaceReservedMontage(const int32 Index, FReserveMontage Montage);
+    
+    UFUNCTION(BlueprintCallable)
+    void ReplaceNextReservedMontage(FReserveMontage Montage);
+    
+    UFUNCTION(BlueprintCallable)
+    void ReplaceCurrentReservedMontage(FReserveMontage Montage);
+    
 private:
-    UFUNCTION()
-    void OnNotifyEndReceived(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload);
-    
-    UFUNCTION()
-    void OnNotifyBeginReceived(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload);
-    
     UFUNCTION(BlueprintCallable)
     void OnMontageEndedCallback(UAnimMontage* Montage, bool bInterrupted);
     
@@ -80,10 +111,25 @@ public:
     void Montage_PlayList(TArray<FReserveMontage> montageList);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool IsOverrideTransform() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    int32 GetReservedMontageIndex(UAnimMontage* Montage) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    void GetOverrideTransform(FTransform& OutTransform) const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UAnimMontage* GetNextReservedMontage() const;
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     FName GetNearBoneInSpines(FVector fromPos);
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FName GetNearBoneInFullBody(FVector fromPos);
+    
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UAnimMontage* GetCurrentReservedMontage() const;
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     float GetCurrentMontagePlayTimeToEnd();
@@ -102,6 +148,9 @@ public:
     
     UFUNCTION(BlueprintCallable, BlueprintPure)
     UPalBoneInfo* GetBoneInfo(FName BoneName);
+    
+    UFUNCTION(BlueprintCallable)
+    void ClearMoveSpeedOverride();
     
     UFUNCTION(BlueprintCallable)
     void CalcLength(FName Target, FName nextBone, float tipLength);

@@ -18,6 +18,13 @@ void UPalLogUtility::SetTextureToAdditionalDataFromHandle(const UObject* WorldCo
 void UPalLogUtility::SetTextureToAdditionalDataFromCharacterID(const UObject* WorldContextObject, FPalLogAdditionalData& targetData, const FName CharacterID) {
 }
 
+void UPalLogUtility::RemoveRaidAnyBaseCampLog(const UObject* WorldContextObject, const FGuid& logId) {
+}
+
+FText UPalLogUtility::CreateSphereRecoveryLogText(const UObject* WorldContextObject, const FPalInstanceID& IndividualId, const FPalStaticItemIdAndNum& ItemAndNum) {
+    return FText::GetEmpty();
+}
+
 void UPalLogUtility::CreateLogText(const UObject* WorldContextObject, EPalLogType logType, FText& OutText) {
 }
 
@@ -49,7 +56,11 @@ void UPalLogUtility::AddWorkerCompleteItemConvertLog(const UObject* WorldContext
 void UPalLogUtility::AddWorkerCompleteBuildLog(const UObject* WorldContextObject, const UPalIndividualCharacterHandle* workerHandle, const FName& buildedMapObjectName) {
 }
 
-void UPalLogUtility::AddSkillLog(const UObject* WorldContextObject, EPalLogType logType, const FPalLogInfo_Skill& Info) {
+FGuid UPalLogUtility::AddStartRaidAnyBaseCampLog(const UObject* WorldContextObject, const FPalStartRaidAnyBaseCampLogDisplayData& DisplayData) {
+    return FGuid{};
+}
+
+void UPalLogUtility::AddSkillLog(const UObject* WorldContextObject, EPalLogType LogType, const FPalLogInfo_Skill& Info) {
 }
 
 void UPalLogUtility::AddMealLog(const UObject* WorldContextObject, const FPalMealLogDisplayData& DisplayData) {
@@ -59,6 +70,12 @@ void UPalLogUtility::AddItemsGetLog(const UObject* WorldContextObject, const TAr
 }
 
 void UPalLogUtility::AddItemGetLog(const UObject* WorldContextObject, const FPalStaticItemIdAndNum& ItemIDAndNum) {
+}
+
+void UPalLogUtility::AddGuildLabCompleteLog(const UObject* WorldContextObject, const FPalGuildLabCompleteLogDisplayData& DisplayData) {
+}
+
+void UPalLogUtility::AddFriendshipRankupLog(const UObject* WorldContextObject, UPalIndividualCharacterParameter* IndividualParameter, int32 NewRank, bool bFirstRankup) {
 }
 
 void UPalLogUtility::AddDropPalLog(const UObject* WorldContextObject, const FPalLogInfo_DropPal& LogInfo) {

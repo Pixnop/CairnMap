@@ -4,6 +4,8 @@
 #include "EPalActionType.h"
 #include "EPalElementType.h"
 #include "EPalGenusCategoryType.h"
+#include "EPalSizeType.h"
+#include "EPalTribeID.h"
 #include "EPalWorkSuitability.h"
 #include "EPalWorkType.h"
 #include "PalMapObjectAssignData.generated.h"
@@ -28,6 +30,18 @@ public:
     bool bPlayerWorkable;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bBaseCampWorkerWorkable;
+    
+    UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+    TArray<EPalTribeID> WorkableTribeIDs;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalSizeType WorkableSizeMin;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalSizeType WorkableSizeMax;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     EPalWorkType WorkType;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -38,6 +52,33 @@ public:
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     float AffectSanityValue;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    float AffectFullStomachValue;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalWorkSuitability MultiWorkSuitability1;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalWorkType MultiWorkType1;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalActionType MultiWorkActionType1;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 MultiRequiredRank1;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalWorkSuitability MultiWorkSuitability2;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalWorkType MultiWorkType2;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    EPalActionType MultiWorkActionType2;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 MultiRequiredRank2;
     
     PAL_API FPalMapObjectAssignData();
 };

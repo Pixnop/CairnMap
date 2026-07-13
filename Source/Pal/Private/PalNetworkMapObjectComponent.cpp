@@ -6,6 +6,9 @@ UPalNetworkMapObjectComponent::UPalNetworkMapObjectComponent(const FObjectInitia
 void UPalNetworkMapObjectComponent::RequestRepair_ToServer_Implementation(const FGuid& InstanceId) {
 }
 
+void UPalNetworkMapObjectComponent::RequestPaint_ToServer_Implementation(const FGuid& InstanceId, const FPalBuildObjectPaintData& PaintData) {
+}
+
 void UPalNetworkMapObjectComponent::RequestDismantleObject_ToServer_Implementation(const FGuid& InstanceId) {
 }
 
@@ -61,6 +64,12 @@ void UPalNetworkMapObjectComponent::RequestConcreteModel_FPalNetArchive(const FG
 }
 
 void UPalNetworkMapObjectComponent::RequestConcreteModel_bool(const FGuid& ConcreteModelInstanceId, const FName FunctionName, bool Value) {
+}
+
+void UPalNetworkMapObjectComponent::RequestChangeCustomNameByLocalPlayer(const FGuid& InstanceId, const FString& NewCustomName) {
+}
+
+void UPalNetworkMapObjectComponent::RequestChangeCustomName_ToServer_Implementation(const FGuid& InstanceId, const FString& NewCustomName) {
 }
 
 void UPalNetworkMapObjectComponent::RequestBuildCancel_ToServer_Implementation(const FGuid& InstanceId) {
@@ -174,10 +183,25 @@ void UPalNetworkMapObjectComponent::NotifyConcreteModel_Multicast_FPalNetArchive
 void UPalNetworkMapObjectComponent::NotifyConcreteModel_Multicast_bool_Implementation(const FGuid& ConcreteModelInstanceId, const FName FunctionName, bool Value) {
 }
 
+void UPalNetworkMapObjectComponent::Dev_RequestDismantleMapObject_ToServer_Implementation(const FGuid& InstanceId) {
+}
+
 void UPalNetworkMapObjectComponent::Dev_ReceiveMapObjectsTickIntervalInBackground_ToClient_Implementation(const TArray<FPalNetworkMapObjectTickIntervalInBackgroundInfo>& TickIntervalInfoArray) {
 }
 
+void UPalNetworkMapObjectComponent::Dev_ReceiveDismantleMapObjectResult_ToClient_Implementation(const FString& ResultMessage) {
+}
+
 void UPalNetworkMapObjectComponent::Dev_FetchMapObjectsTickIntervalInBackground_ToServer_Implementation() {
+}
+
+void UPalNetworkMapObjectComponent::BroadcastStartTeamMissionLog_ToServer_Implementation(const FGuid& ConcreteModelInstanceId) {
+}
+
+void UPalNetworkMapObjectComponent::AddStartTeamMissionLog_ToServer_Implementation() {
+}
+
+void UPalNetworkMapObjectComponent::AddCompleteTeamMissionLog_ToClient_Implementation(const FName& MissionId) {
 }
 
 

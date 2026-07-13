@@ -3,7 +3,10 @@
 #include "CommonTextBlock.h"
 #include "Engine/DataTable.h"
 #include "PalOptionUISettings.h"
+#include "Templates/SubclassOf.h"
 #include "PalTextBlockBase.generated.h"
+
+class UPalTextScrollStyle;
 
 UCLASS(Blueprintable)
 class PAL_API UPalTextBlockBase : public UCommonTextBlock {
@@ -19,8 +22,25 @@ public:
     bool IsAutoAdjustScale;
     
     UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    int32 FontSizeOverride_VeryLarge;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool IgnoreFontSizeSetting;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
     int32 MaxWidth;
     
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool JustificationVerticalCenter;
+    
+private:
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    bool bIsScrollingEnabled_Verticle;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(AllowPrivateAccess=true))
+    TSubclassOf<UPalTextScrollStyle> ScrollStyle_Verticle;
+    
+public:
     UPalTextBlockBase();
     UFUNCTION(BlueprintCallable)
     void UpdateRowName(const FName RowName);
@@ -31,6 +51,13 @@ public:
 protected:
     UFUNCTION(BlueprintCallable)
     void SetText_GDKInternal(bool IsSuccess, const FString& OutString);
+    
+public:
+    UFUNCTION(BlueprintCallable)
+    void SetScrollingEnabled_Verticle(bool bInIsScrollingEnabled);
+    
+    UFUNCTION(BlueprintCallable)
+    void ResetScrollState_Verticle();
     
 private:
     UFUNCTION(BlueprintCallable)

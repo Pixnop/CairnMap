@@ -19,6 +19,12 @@ UPalDatabaseCharacterParameter::UPalDatabaseCharacterParameter() {
     this->PalCombiUniqueDataTable = NULL;
     this->PalTalentUpItemDataTable = NULL;
     this->NPCOtomoWazaDataTable = NULL;
+    this->NPCBossIconDataTable = NULL;
+    this->PalGainWorkSuitabilityRankItemDataTable = NULL;
+    this->FriendshipRankTable = NULL;
+    this->ArenaRankingNPCIconDataTable = NULL;
+    this->ArenaUnusableItemDataTable = NULL;
+    this->PalAwakeningItemElementTable = NULL;
     this->PettingPressetInstance = NULL;
     this->CombiMonsterParameter = NULL;
 }
@@ -30,7 +36,15 @@ bool UPalDatabaseCharacterParameter::SetupSaveParameter(const FName CharacterID,
     return false;
 }
 
+bool UPalDatabaseCharacterParameter::IsArenaUnusableItem(FName ItemId) const {
+    return false;
+}
+
 int32 UPalDatabaseCharacterParameter::HigherLevelOtomoFromTrainer(const UPalIndividualCharacterParameter* IndividualCharacterParameter) const {
+    return 0;
+}
+
+int32 UPalDatabaseCharacterParameter::GetZukanIndex(FName RowName) {
     return 0;
 }
 
@@ -105,7 +119,8 @@ UPalPettingPresset* UPalDatabaseCharacterParameter::GetPettingPreset() {
 void UPalDatabaseCharacterParameter::GetPassiveSkill(FName RowName, TArray<FName>& PassiveSkill) {
 }
 
-void UPalDatabaseCharacterParameter::GetPartnerSkillMsgID(const FName& CharacterID, FName& OutMsgID) {
+EPalElementType UPalDatabaseCharacterParameter::GetPalAwakeningItemElement(FName ItemId) const {
+    return EPalElementType::None;
 }
 
 EPalOrganizationType UPalDatabaseCharacterParameter::GetOrganizationType(FName RowName) {
@@ -116,12 +131,23 @@ bool UPalDatabaseCharacterParameter::GetNocturnal(FName RowName) {
     return false;
 }
 
+int32 UPalDatabaseCharacterParameter::GetMinFriendshipRank() const {
+    return 0;
+}
+
 int32 UPalDatabaseCharacterParameter::GetMeleeAttackBySaveParameter(const FPalIndividualCharacterSaveParameter& SaveParameter) {
     return 0;
 }
 
 int32 UPalDatabaseCharacterParameter::GetMeleeAttack(UPalIndividualCharacterParameter* IndividualParameter) {
     return 0;
+}
+
+int32 UPalDatabaseCharacterParameter::GetMaxFriendshipRank() const {
+    return 0;
+}
+
+void UPalDatabaseCharacterParameter::GetLocalizedUniqueNPCName(const FName& UniqueNPCID, FText& OutText) {
 }
 
 void UPalDatabaseCharacterParameter::GetLocalizedCharacterName(const FName& CharacterID, FText& OutText) {
@@ -135,11 +161,19 @@ bool UPalDatabaseCharacterParameter::GetIsRaidBoss(FName RowName) {
     return false;
 }
 
+bool UPalDatabaseCharacterParameter::GetIsPredatorBoss(FName RowName) {
+    return false;
+}
+
 bool UPalDatabaseCharacterParameter::GetIsPal(FName RowName) {
     return false;
 }
 
-bool UPalDatabaseCharacterParameter::GetIsBoss(FName RowName) {
+bool UPalDatabaseCharacterParameter::GetIsLegend(FName RowName) const {
+    return false;
+}
+
+bool UPalDatabaseCharacterParameter::GetIsBoss(FName RowName) const {
     return false;
 }
 
@@ -159,15 +193,27 @@ EPalGenusCategoryType UPalDatabaseCharacterParameter::GetGenusCategory(FName Row
     return EPalGenusCategoryType::None;
 }
 
+bool UPalDatabaseCharacterParameter::GetFriendshipRequiredPointByRank(int32 FriendshipRank, int32& OutRequiredPoint) const {
+    return false;
+}
+
+int32 UPalDatabaseCharacterParameter::GetFriendshipRank(int32 FriendshipPoint) const {
+    return 0;
+}
+
 int32 UPalDatabaseCharacterParameter::GetFoodAmount(FName RowName) {
     return 0;
+}
+
+FName UPalDatabaseCharacterParameter::GetFirstDefeatRewardItemID(const FName& CharacterID) const {
+    return NAME_None;
 }
 
 float UPalDatabaseCharacterParameter::GetExpRatio(FName RowName) {
     return 0.0f;
 }
 
-void UPalDatabaseCharacterParameter::GetElementType(FName RowName, EPalElementType& Element1, EPalElementType& Element2) {
+void UPalDatabaseCharacterParameter::GetElementType(FName RowName, EPalElementType& Element1, EPalElementType& Element2) const {
 }
 
 bool UPalDatabaseCharacterParameter::GetDropItemData(const FName& CharacterID, const int32 Level, FPalDropItemDatabaseRow& OutData) {
@@ -178,7 +224,7 @@ int32 UPalDatabaseCharacterParameter::GetDefenseBySaveParameter(const FPalIndivi
     return 0;
 }
 
-int32 UPalDatabaseCharacterParameter::GetDefense(const UPalIndividualCharacterParameter* IndividualParameter) {
+int32 UPalDatabaseCharacterParameter::GetDefense(const UPalIndividualCharacterParameter* IndividualParameter) const {
     return 0;
 }
 
@@ -190,7 +236,7 @@ int32 UPalDatabaseCharacterParameter::GetCraftSpeedBySaveParameter(const FPalInd
     return 0;
 }
 
-int32 UPalDatabaseCharacterParameter::GetCraftSpeed(UPalIndividualCharacterParameter* IndividualParameter) {
+int32 UPalDatabaseCharacterParameter::GetCraftSpeed(const UPalIndividualCharacterParameter* IndividualParameter) const {
     return 0;
 }
 
@@ -218,12 +264,23 @@ FName UPalDatabaseCharacterParameter::GetBPClassName(FName RowName) {
     return NAME_None;
 }
 
-TSoftClassPtr<APalCharacter> UPalDatabaseCharacterParameter::GetBPClass(FName RowName) {
+TSoftClassPtr<APalCharacter> UPalDatabaseCharacterParameter::GetBPClass(FName RowName, bool ShowError) {
     return NULL;
+}
+
+TSoftObjectPtr<UTexture2D> UPalDatabaseCharacterParameter::GetBossNPCIconTexture(const FName& SpawnerID) const {
+    return NULL;
+}
+
+void UPalDatabaseCharacterParameter::GetBestWorkSuitability(FName RowName, EPalWorkSuitability& BestWorkSuitability) {
 }
 
 EPalBattleBGMType UPalDatabaseCharacterParameter::GetBattleBGM(FName RowName) {
     return EPalBattleBGMType::None;
+}
+
+TSoftObjectPtr<UTexture2D> UPalDatabaseCharacterParameter::GetArenaRankingNPCIcon(const FName& RankingNPCId) const {
+    return NULL;
 }
 
 bool UPalDatabaseCharacterParameter::FindTalentUpItem(FName ItemName, FPalTalentUpItemDataRow& OutData) const {
@@ -232,6 +289,10 @@ bool UPalDatabaseCharacterParameter::FindTalentUpItem(FName ItemName, FPalTalent
 
 bool UPalDatabaseCharacterParameter::FindPalSizeParameter(EPalSizeType CharacterSize, FPalSizeParameterDataRow& RowData) const {
     return false;
+}
+
+float UPalDatabaseCharacterParameter::CalcFriendshipProgress(int32 FriendshipPoint) const {
+    return 0.0f;
 }
 
 int32 UPalDatabaseCharacterParameter::CalcCorrectedLevel(const int32 TrainerLevel, const int32 TargetCharacterLevel, const UObject* WorldContextObject) const {

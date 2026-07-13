@@ -7,10 +7,14 @@ enum class EPalMapObjectDisposeOptionType : uint8 {
     NoDropItems,
     NotAutoPickup,
     OpenTreasureBox,
-    Immediately,
+    ImmediatelyInGameThread,
     NotNotifyOwnerSpawnerLevelObject,
     ByUnloadStage,
     DropBuildMaterials,
     RequireRespawnImmediately,
+    Replace,
+    BuildCancel,
+    NotPlayDestroyFX,
+    ConnectivityCollapse,
 };
 
