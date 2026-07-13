@@ -75,6 +75,7 @@ jobs:
           $inc += "/Ithird/ImGuiColorTextEdit"
           $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/include"
           $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/include/Unreal/Core"
+          $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/include/Unreal"
           $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/generated_include"
           $inc += "/Ithird/zydis/include"
           $inc += "/Ithird/zydis/dependencies/zycore/include"
