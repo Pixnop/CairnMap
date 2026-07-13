@@ -15,6 +15,9 @@
 #include <Unreal/UFunction.hpp>
 #include <Unreal/UObject.hpp>
 #include <Unreal/UObjectGlobals.hpp>
+#include <Unreal/UScriptStruct.hpp>
+#include <Unreal/UStruct.hpp>
+#include <Unreal/CoreUObject/UObject/UnrealType.hpp>
 
 #include "cairn_data.hpp"
 #include "cairn_project.hpp"
@@ -174,6 +177,155 @@ namespace CairnMap
             return true;
         }
     } // namespace Engine
+
+
+    // ------------------------------------------------------- P1.5 probe (temp)
+    // One-shot dump: location points + record-data obtain flags, to ground the
+    // effigy/note collected-state design (docs/P1.5-effigies.md).
+    namespace Probe
+    {
+        inline auto dump_guid(const uint32_t* g) -> std::wstring
+        {
+            wchar_t buf[40];
+            swprintf(buf, 40, L"%08X-%08X-%08X-%08X", g[0], g[1], g[2], g[3]);
+            return buf;
+        }
+
+        inline auto run() -> void
+        {
+            using namespace Engine;
+            // --- location points
+            std::vector<UObject*> pts;
+            UObjectGlobals::FindAllOf(STR("PalLocationPointStatic"), pts);
+            Output::send<LogLevel::Default>(STR("[CairnProbe] PalLocationPointStatic: {}\n"), pts.size());
+            int shown = 0;
+            for (auto* lp : pts)
+            {
+                if (!lp || shown >= 6)
+                {
+                    break;
+                }
+                auto* loc = lp->GetValuePtrByPropertyNameInChain<double>(STR("Location"));
+                auto* id = lp->GetValuePtrByPropertyNameInChain<uint32_t>(STR("ID"));
+                struct
+                {
+                    uint8_t ReturnValue{};
+                } type_params;
+                call(lp, L"GetType", type_params);
+                if (loc && id)
+                {
+                    Output::send<LogLevel::Default>(STR("[CairnProbe] pt type={} pos=({:.0f},{:.0f},{:.0f}) id={}\n"),
+                                                    type_params.ReturnValue, loc[0], loc[1], loc[2], dump_guid(id));
+                    ++shown;
+                }
+            }
+            // histogram of types
+            int histo[64] = {};
+            for (auto* lp : pts)
+            {
+                struct
+                {
+                    uint8_t ReturnValue{};
+                } tp;
+                if (lp && call(lp, L"GetType", tp) && tp.ReturnValue < 64)
+                {
+                    ++histo[tp.ReturnValue];
+                }
+            }
+            for (int t = 0; t < 64; ++t)
+            {
+                if (histo[t] > 0)
+                {
+                    Output::send<LogLevel::Default>(STR("[CairnProbe] type {} x{}\n"), t, histo[t]);
+                }
+            }
+
+            // --- record data obtain flags
+            auto* util_cdo =
+                UObjectGlobals::StaticFindObject(nullptr, nullptr, STR("/Script/Pal.Default__PalUtility"));
+            auto* world_ctx = UObjectGlobals::FindFirstOf(STR("PalPlayerController"));
+            if (!util_cdo || !world_ctx)
+            {
+                Output::send<LogLevel::Default>(STR("[CairnProbe] no util/ctx\n"));
+                return;
+            }
+            struct
+            {
+                UObject* WorldContextObject{};
+                UObject* ReturnValue{};
+            } rec_params{world_ctx, nullptr};
+            if (!Engine::call(util_cdo, L"GetLocalRecordData", rec_params) || !rec_params.ReturnValue)
+            {
+                Output::send<LogLevel::Default>(STR("[CairnProbe] GetLocalRecordData failed\n"));
+                return;
+            }
+            UObject* record = rec_params.ReturnValue;
+
+            // resolve Items offset + element layout via reflection, once
+            auto* wrapper_struct = UObjectGlobals::StaticFindObject<UStruct*>(
+                nullptr, nullptr, STR("/Script/Pal.PalPlayerRecordDataRepInfoArrayThreadSafe_BoolVal"));
+            auto* item_struct = UObjectGlobals::StaticFindObject<UStruct*>(
+                nullptr, nullptr, STR("/Script/Pal.PalPlayerRecordDataRepInfoThreadSafe_BoolVal"));
+            if (!wrapper_struct || !item_struct)
+            {
+                Output::send<LogLevel::Default>(STR("[CairnProbe] flag structs not found\n"));
+                return;
+            }
+            int32_t items_off = -1, key_off = -1, val_off = -1;
+            for (FProperty* prop : wrapper_struct->ForEachProperty())
+            {
+                if (prop->GetName() == STR("Items"))
+                {
+                    items_off = prop->GetOffset_Internal();
+                }
+            }
+            for (FProperty* prop : item_struct->ForEachProperty())
+            {
+                if (prop->GetName() == STR("Key"))
+                {
+                    key_off = prop->GetOffset_Internal();
+                }
+                if (prop->GetName() == STR("Value"))
+                {
+                    val_off = prop->GetOffset_Internal();
+                }
+            }
+            const int32_t item_size = item_struct->GetStructureSize();
+            Output::send<LogLevel::Default>(STR("[CairnProbe] offsets: items={} key={} value={} itemsize={}\n"),
+                                            items_off, key_off, val_off, item_size);
+            if (items_off < 0 || key_off < 0 || val_off < 0)
+            {
+                return;
+            }
+            const wchar_t* flag_names[] = {STR("RelicObtainForInstanceFlag_CapturePower"),
+                                           STR("RelicObtainForInstanceFlag_HungerReduction"),
+                                           STR("NoteObtainForInstanceFlag")};
+            for (const auto* fname : flag_names)
+            {
+                auto* wrapper = record->GetValuePtrByPropertyNameInChain<uint8_t>(fname);
+                if (!wrapper)
+                {
+                    Output::send<LogLevel::Default>(STR("[CairnProbe] {}: prop missing\n"), fname);
+                    continue;
+                }
+                struct RawArray
+                {
+                    uint8_t* data;
+                    int32_t num;
+                    int32_t max;
+                };
+                const auto* arr = reinterpret_cast<const RawArray*>(wrapper + items_off);
+                Output::send<LogLevel::Default>(STR("[CairnProbe] {}: {} entrees\n"), fname, arr->num);
+                for (int32_t i = 0; i < arr->num && i < 4; ++i)
+                {
+                    const uint8_t* item = arr->data + static_cast<size_t>(i) * item_size;
+                    const auto* key = reinterpret_cast<const FName*>(item + key_off);
+                    const bool value = *(item + val_off) != 0;
+                    Output::send<LogLevel::Default>(STR("[CairnProbe]   key={} val={}\n"), key->ToString(), value);
+                }
+            }
+        }
+    } // namespace Probe
 
     // ---------------------------------------------------------------- the mod
     class Mod final : public RC::CppUserModBase
@@ -479,6 +631,7 @@ namespace CairnMap
                     STR("[CairnMap] calibrated: seed {:.1f}px refine {:.2f}px ({} anchors)\n"),
                     m_calibration->seed_residual_px, m_calibration->refine_residual_px,
                     m_calibration->matched_statues);
+                Probe::run();   // P1.5 temp: remove after grounding
             }
 
             if (!ensure_layer_canvas(map_body_canvas, mask))
