@@ -1,0 +1,49 @@
+name: build-cpp-mod
+# (build: any push touching cpp-mod/** or this file triggers the run)
+
+on:
+  push:
+    paths:
+      - "cpp-mod/**"
+      - ".github/workflows/build-cpp-mod.yml"
+  workflow_dispatch:
+
+env:
+  # Must match the UE4SS build shipped to the game (ABI compatibility).
+  UE4SS_REPO: Okaetsu/RE-UE4SS
+  UE4SS_SHA: c2ac246447a8bcd92541070cb474044e7a2bbbe6
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone RE-UE4SS (pinned)
+        shell: bash
+        run: |
+          git clone https://github.com/${UE4SS_REPO}.git cpp-mod/RE-UE4SS
+          git -C cpp-mod/RE-UE4SS checkout ${UE4SS_SHA}
+          git -C cpp-mod/RE-UE4SS submodule update --init --recursive
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -S cpp-mod -B cpp-mod/build \
+            -DCMAKE_BUILD_TYPE=Game__Shipping__Win64
+
+      - name: Build mod
+        shell: bash
+        run: cmake --build cpp-mod/build --target CairnMap --config Game__Shipping__Win64
+
+      - name: Collect artifact
+        shell: bash
+        run: |
+          mkdir -p dist/CairnMap/dlls
+          find cpp-mod/build -name "CairnMap.dll" -exec cp {} dist/CairnMap/dlls/main.dll \;
+          ls -la dist/CairnMap/dlls/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CairnMap-dll
+          path: dist/
