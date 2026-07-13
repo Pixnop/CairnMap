@@ -97,6 +97,11 @@ namespace CairnMap
         {
             double MinX{}, MinY{}, MaxX{}, MaxY{};   // FAnchors
         };
+        struct ParamsSetBrushFromTexture
+        {
+            UObject* Texture{};
+            bool bMatchSize{};
+        };
 
         enum : uint8_t
         {
@@ -398,13 +403,22 @@ namespace CairnMap
         UObject* m_layer_canvas = nullptr;                 // our own CanvasPanel
         UObject* m_layer_slot = nullptr;                   // its canvas slot
         uint8_t m_mask_geom[64] = {};                      // last-seen mask LayoutData
-        std::vector<UObject*> m_dots;                      // pooled UImage widgets
+        struct Dot
+        {
+            UObject* widget;
+            UObject* slot;
+            const wchar_t* icon;   // nullptr = plain dot
+            bool icon_applied;
+            double base_size;
+        };
+        std::vector<Dot> m_dots;                           // pooled dot widgets
         struct GuidDot
         {
-            UObject* dot;
+            size_t dot_index;
             const Data::GuidPoint* pt;
         };
         std::vector<GuidDot> m_guid_dots;                  // effigy/note dots for refresh
+        double m_applied_zoom = 1.0;
         std::optional<Project::Calibration> m_calibration;
         bool m_placed = false;
         bool m_collapsed = true;
@@ -596,6 +610,64 @@ namespace CairnMap
             Engine::call(m_layer_slot, L"SetAlignment", align);
         }
 
+        // one dot: pooled construction, canvas attach, styling. Returns index or SIZE_MAX.
+        auto emit_dot(UClass* image_class, double px, double py, const Engine::FLinearColor_& color,
+                      const wchar_t* icon, double base_size, bool visible) -> size_t
+        {
+            UObject* dot = nullptr;
+            if (m_emit_cursor < m_dots.size())
+            {
+                dot = m_dots[m_emit_cursor].widget;
+            }
+            else
+            {
+                FStaticConstructObjectParameters params{image_class, m_layer_canvas};
+                dot = UObjectGlobals::StaticConstructObject(params);
+                if (!dot)
+                {
+                    return SIZE_MAX;
+                }
+                Style::make_round(dot);
+                m_dots.push_back({dot, nullptr, nullptr, false, base_size});
+            }
+            Dot& entry = m_dots[m_emit_cursor];
+            entry.icon = icon;
+            entry.base_size = base_size;
+
+            Engine::ParamsAddChildToCanvas add{dot, nullptr};
+            if (!Engine::call(m_layer_canvas, L"AddChildToCanvas", add) || !add.ReturnValue)
+            {
+                return SIZE_MAX;
+            }
+            entry.slot = add.ReturnValue;
+            if (entry.icon && !entry.icon_applied)
+            {
+                if (auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, entry.icon))
+                {
+                    Engine::ParamsSetBrushFromTexture brush{tex, false};
+                    Engine::call(dot, L"SetBrushFromTexture", brush);
+                    entry.icon_applied = true;
+                }
+            }
+            const Engine::FLinearColor_ white{1.0f, 1.0f, 1.0f, 1.0f};
+            Engine::ParamsSetColorAndOpacity col{entry.icon_applied ? white : color};
+            Engine::call(dot, L"SetColorAndOpacity", col);
+            Engine::ParamsSetVisibility vis{visible ? Engine::Vis_HitTestInvisible : Engine::Vis_Collapsed};
+            Engine::call(dot, L"SetVisibility", vis);
+            Engine::ParamsSetAutoSize aut{false};
+            Engine::call(entry.slot, L"SetAutoSize", aut);
+            Engine::ParamsSetAlignment align{{0.5, 0.5}};
+            Engine::call(entry.slot, L"SetAlignment", align);
+            const double sz = entry.base_size / m_applied_zoom;
+            Engine::ParamsSetSize size{{sz, sz}};
+            Engine::call(entry.slot, L"SetSize", size);
+            Engine::ParamsSetPosition setpos{{px, py}};
+            Engine::call(entry.slot, L"SetPosition", setpos);
+            return m_emit_cursor++;
+        }
+
+        size_t m_emit_cursor = 0;
+
         auto place_dots() -> void
         {
             auto* image_class =
@@ -604,7 +676,7 @@ namespace CairnMap
             {
                 return;
             }
-            size_t dot_index = 0;
+            m_emit_cursor = 0;
             size_t placed = 0;
             for (const auto& layer : Data::kLayers)
             {
@@ -621,42 +693,10 @@ namespace CairnMap
                     {
                         continue;
                     }
-                    UObject* dot = nullptr;
-                    if (dot_index < m_dots.size())
+                    if (emit_dot(image_class, pos.x, pos.y, color, layer.icon, 14.0, true) != SIZE_MAX)
                     {
-                        dot = m_dots[dot_index];
+                        ++placed;
                     }
-                    else
-                    {
-                        FStaticConstructObjectParameters params{image_class, m_layer_canvas};
-                        dot = UObjectGlobals::StaticConstructObject(params);
-                        if (!dot)
-                        {
-                            continue;
-                        }
-                        Style::make_round(dot);
-                        m_dots.push_back(dot);
-                    }
-                    ++dot_index;
-
-                    Engine::ParamsAddChildToCanvas add{dot, nullptr};
-                    if (!Engine::call(m_layer_canvas, L"AddChildToCanvas", add) || !add.ReturnValue)
-                    {
-                        continue;
-                    }
-                    Engine::ParamsSetColorAndOpacity col{color};
-                    Engine::call(dot, L"SetColorAndOpacity", col);
-                    Engine::ParamsSetVisibility vis{Engine::Vis_HitTestInvisible};
-                    Engine::call(dot, L"SetVisibility", vis);
-                    Engine::ParamsSetAutoSize aut{false};
-                    Engine::call(add.ReturnValue, L"SetAutoSize", aut);
-                    Engine::ParamsSetAlignment align{{0.5, 0.5}};
-                    Engine::call(add.ReturnValue, L"SetAlignment", align);
-                    Engine::ParamsSetSize size{{10.0, 10.0}};
-                    Engine::call(add.ReturnValue, L"SetSize", size);
-                    Engine::ParamsSetPosition setpos{{pos.x, pos.y}};
-                    Engine::call(add.ReturnValue, L"SetPosition", setpos);
-                    ++placed;
                 }
             }
             // effigies & notes, filtered by the live collected set
@@ -664,7 +704,8 @@ namespace CairnMap
             const bool have_flags = Collected::gather(collected);
             size_t hidden = 0;
             auto place_guid_layer = [&](const Data::GuidPoint* pts, size_t count,
-                                        const Engine::FLinearColor_& color) {
+                                        const Engine::FLinearColor_& color, const wchar_t* icon,
+                                        double base_size) {
                 for (size_t i = 0; i < count; ++i)
                 {
                     const bool is_collected =
@@ -678,53 +719,24 @@ namespace CairnMap
                     {
                         continue;
                     }
-                    UObject* dot = nullptr;
-                    if (dot_index < m_dots.size())
+                    const size_t idx =
+                        emit_dot(image_class, pos.x, pos.y, color, icon, base_size, !is_collected);
+                    if (idx != SIZE_MAX)
                     {
-                        dot = m_dots[dot_index];
+                        m_guid_dots.push_back({idx, &pts[i]});
+                        ++placed;
                     }
-                    else
-                    {
-                        FStaticConstructObjectParameters params{image_class, m_layer_canvas};
-                        dot = UObjectGlobals::StaticConstructObject(params);
-                        if (!dot)
-                        {
-                            continue;
-                        }
-                        Style::make_round(dot);
-                        m_dots.push_back(dot);
-                    }
-                    ++dot_index;
-                    Engine::ParamsAddChildToCanvas add{dot, nullptr};
-                    if (!Engine::call(m_layer_canvas, L"AddChildToCanvas", add) || !add.ReturnValue)
-                    {
-                        continue;
-                    }
-                    Engine::ParamsSetColorAndOpacity col{color};
-                    Engine::call(dot, L"SetColorAndOpacity", col);
-                    Engine::ParamsSetVisibility vis{
-                        is_collected ? Engine::Vis_Collapsed : Engine::Vis_HitTestInvisible};
-                    Engine::call(dot, L"SetVisibility", vis);
-                    Engine::ParamsSetAutoSize aut{false};
-                    Engine::call(add.ReturnValue, L"SetAutoSize", aut);
-                    Engine::ParamsSetAlignment align{{0.5, 0.5}};
-                    Engine::call(add.ReturnValue, L"SetAlignment", align);
-                    Engine::ParamsSetSize size{{12.0, 12.0}};
-                    Engine::call(add.ReturnValue, L"SetSize", size);
-                    Engine::ParamsSetPosition setpos{{pos.x, pos.y}};
-                    Engine::call(add.ReturnValue, L"SetPosition", setpos);
-                    m_guid_dots.push_back({dot, &pts[i]});
-                    ++placed;
                 }
             };
-            place_guid_layer(Data::kEffigies, std::size(Data::kEffigies),
-                             {0.35f, 1.0f, 0.20f, 1.0f});
-            place_guid_layer(Data::kNotes, std::size(Data::kNotes), {0.20f, 0.88f, 1.0f, 1.0f});
+            place_guid_layer(Data::kEffigies, std::size(Data::kEffigies), {0.35f, 1.0f, 0.20f, 1.0f},
+                             Data::kEffigyIcon, 20.0);
+            place_guid_layer(Data::kNotes, std::size(Data::kNotes), {0.20f, 0.88f, 1.0f, 1.0f},
+                             nullptr, 14.0);
             // collapse any leftover pooled dots beyond this pass
-            for (size_t i = dot_index; i < m_dots.size(); ++i)
+            for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
             {
                 Engine::ParamsSetVisibility vis{Engine::Vis_Collapsed};
-                Engine::call(m_dots[i], L"SetVisibility", vis);
+                Engine::call(m_dots[i].widget, L"SetVisibility", vis);
             }
             Output::send<LogLevel::Default>(STR("[CairnMap] {} dots placed, {} collected hidden (pool {})\n"),
                                             placed, hidden, m_dots.size());
@@ -752,9 +764,86 @@ namespace CairnMap
                 hidden += is_collected ? 1 : 0;
                 Engine::ParamsSetVisibility vis{
                     is_collected ? Engine::Vis_Collapsed : Engine::Vis_HitTestInvisible};
-                Engine::call(gd.dot, L"SetVisibility", vis);
+                Engine::call(m_dots[gd.dot_index].widget, L"SetVisibility", vis);
             }
+            apply_missing_icons();
             Output::send<LogLevel::Default>(STR("[CairnMap] collected refresh: {} hidden\n"), hidden);
+        }
+
+        // retry lazy icon textures (game loads them as the player encounters items)
+        auto apply_missing_icons() -> void
+        {
+            size_t applied = 0;
+            for (auto& d : m_dots)
+            {
+                if (!d.icon || d.icon_applied || !d.widget)
+                {
+                    continue;
+                }
+                auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, d.icon);
+                if (!tex)
+                {
+                    continue;
+                }
+                Engine::ParamsSetBrushFromTexture brush{tex, false};
+                Engine::call(d.widget, L"SetBrushFromTexture", brush);
+                Engine::ParamsSetColorAndOpacity col{{1.0f, 1.0f, 1.0f, 1.0f}};
+                Engine::call(d.widget, L"SetColorAndOpacity", col);
+                d.icon_applied = true;
+                ++applied;
+            }
+            if (applied > 0)
+            {
+                Output::send<LogLevel::Default>(STR("[CairnMap] {} icons applied\n"), applied);
+            }
+        }
+
+        // cumulative render scale up the widget chain = current map zoom
+        auto current_zoom(UObject* mask) -> double
+        {
+            double zoom = 1.0;
+            UObject* w = mask;
+            for (int i = 0; i < 6 && w; ++i)
+            {
+                if (auto* xf = w->GetValuePtrByPropertyNameInChain<double>(STR("RenderTransform")))
+                {
+                    const double sx = xf[2];   // Translation(2d), then Scale.X
+                    if (sx > 0.01 && sx < 100.0)
+                    {
+                        zoom *= sx;
+                    }
+                }
+                struct
+                {
+                    UObject* ReturnValue{};
+                } parent{};
+                if (!Engine::call(w, L"GetParent", parent))
+                {
+                    break;
+                }
+                w = parent.ReturnValue;
+            }
+            return zoom;
+        }
+
+        auto sync_dot_scale(UObject* mask) -> void
+        {
+            const double zoom = current_zoom(mask);
+            if (zoom <= 0.0 || std::abs(zoom - m_applied_zoom) / m_applied_zoom < 0.15)
+            {
+                return;
+            }
+            m_applied_zoom = zoom;
+            for (const auto& d : m_dots)
+            {
+                if (!d.slot)
+                {
+                    continue;
+                }
+                const double sz = d.base_size / zoom;
+                Engine::ParamsSetSize size{{sz, sz}};
+                Engine::call(d.slot, L"SetSize", size);
+            }
         }
 
         auto tick() -> void
@@ -783,6 +872,8 @@ namespace CairnMap
                 m_layer_slot = nullptr;
                 m_dots.clear();
                 m_guid_dots.clear();
+                m_emit_cursor = 0;
+                m_applied_zoom = 1.0;
                 m_calibration.reset();
                 m_placed = false;
                 m_collapsed = true;
@@ -823,6 +914,10 @@ namespace CairnMap
                 return;
             }
             sync_layer_geometry(mask);   // follow zoom / layout changes
+            if (m_placed && !m_collapsed)
+            {
+                sync_dot_scale(mask);    // keep dots readable across zoom levels
+            }
             if (!m_placed)
             {
                 place_dots();

@@ -12,21 +12,23 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 DATA = os.path.join(REPO, "Content/Mods/MapCollectablesMod/Data")
 OUT = os.path.join(REPO, "cpp-mod/mods/CairnMap/src/cairn_data.hpp")
 
-# key, json file, RGBA color, default enabled
+ICON = "/Game/Others/InventoryItemIcon/Texture/{0}.{0}"
+# key, json file, RGBA color, default enabled, in-game icon texture (or None)
 LAYERS = [
-    ("Coal",       "CoalLocations.json",         (0x20, 0x20, 0x20, 0xFF), True),
-    ("Copper",     "CopperLocations.json",       (0xD9, 0x77, 0x2B, 0xFF), True),
-    ("Quartz",     "QuartzLocations.json",       (0xE8, 0xE8, 0xF8, 0xFF), True),
-    ("Sulfur",     "SulfurLocations.json",       (0xD9, 0xC8, 0x2B, 0xFF), True),
-    ("Hexolite",   "HexoliteLocations.json",     (0x39, 0xD1, 0xD1, 0xFF), True),
-    ("Oil",        "OilLocations.json",          (0x14, 0x0A, 0x0A, 0xFF), True),
-    ("SkyOre",     "SkyIslandOreLocations.json", (0x40, 0xD9, 0xFF, 0xFF), True),
-    ("TreeOre",    "WorldTreeOreLocations.json", (0x4D, 0xFF, 0x66, 0xFF), True),
-    ("Magma",      "MagmaRockLocations.json",    (0xFF, 0x59, 0x1A, 0xFF), True),
-    ("NightStone", "NightStoneLocations.json",   (0xA6, 0x66, 0xFF, 0xFF), True),
-    ("DogCoin",    "DogCoinLocations.json",      (0xFF, 0xD9, 0x33, 0xD9), True),
-    ("Lotus",      None,                         (0xFF, 0x73, 0xCC, 0xD9), True),
+    ("Coal",       "CoalLocations.json",         (0x20, 0x20, 0x20, 0xFF), True, "T_itemicon_Material_Coal"),
+    ("Copper",     "CopperLocations.json",       (0xD9, 0x77, 0x2B, 0xFF), True, "T_itemicon_Material_CopperOre"),
+    ("Quartz",     "QuartzLocations.json",       (0xE8, 0xE8, 0xF8, 0xFF), True, "T_itemicon_Material_Quartz"),
+    ("Sulfur",     "SulfurLocations.json",       (0xD9, 0xC8, 0x2B, 0xFF), True, "T_itemicon_Material_Sulfur"),
+    ("Hexolite",   "HexoliteLocations.json",     (0x39, 0xD1, 0xD1, 0xFF), True, None),
+    ("Oil",        "OilLocations.json",          (0x14, 0x0A, 0x0A, 0xFF), True, "T_itemicon_Material_CrudeOil"),
+    ("SkyOre",     "SkyIslandOreLocations.json", (0x40, 0xD9, 0xFF, 0xFF), True, "T_itemicon_Material_SkyIslandOre"),
+    ("TreeOre",    "WorldTreeOreLocations.json", (0x4D, 0xFF, 0x66, 0xFF), True, "T_itemicon_Material_WorldTreeOre"),
+    ("Magma",      "MagmaRockLocations.json",    (0xFF, 0x59, 0x1A, 0xFF), True, "T_itemicon_Material_Lava_Ancient"),
+    ("NightStone", "NightStoneLocations.json",   (0xA6, 0x66, 0xFF, 0xFF), True, "T_itemicon_Material_NightStone"),
+    ("DogCoin",    "DogCoinLocations.json",      (0xFF, 0xD9, 0x33, 0xD9), True, "T_itemicon_Material_DogCoin"),
+    ("Lotus",      None,                         (0xFF, 0x73, 0xCC, 0xD9), True, "T_itemicon_Food_Lotus_hp_01"),
 ]
+EFFIGY_ICON = "T_itemicon_Relic"
 BOSSES = [(-266563, 174506), (-361695, -112009), (81363, 90183), (29975, 413325),
           (-321596, 209085), (-778216, -36026), (-889805, -435828), (-29428, -115900)]
 
@@ -76,7 +78,8 @@ def main():
     out.append("")
     out.append("namespace CairnMap::Data {")
     out.append("struct Point { int32_t x, y; };")
-    out.append("struct Layer { const wchar_t* key; uint8_t r, g, b, a; const Point* points; size_t count; bool default_on; };")
+    out.append("struct Layer { const wchar_t* key; uint8_t r, g, b, a; const Point* points; size_t count; bool default_on; const wchar_t* icon; };")
+    out.append("struct GuidPoint { uint32_t guid[4]; int32_t x, y; };")
     out.append("")
 
     def emit(name, pts):
@@ -86,12 +89,23 @@ def main():
     emit("BossTowers", BOSSES)
     emit("Statues", statues)
     layer_rows = []
-    for key, fname, (r, g, b, a), on in LAYERS:
+    for key, fname, (r, g, b, a), on, icon in LAYERS:
         pts = load_lotus(scratch) if fname is None else load_points(fname)
         emit(key, pts)
+        icon_lit = f'L"{ICON.format(icon)}"' if icon else "nullptr"
         layer_rows.append(
-            f'    {{L"{key}", {r}, {g}, {b}, {a}, k{key}, {len(pts)}, {"true" if on else "false"}}},')
+            f'    {{L"{key}", {r}, {g}, {b}, {a}, k{key}, {len(pts)}, {"true" if on else "false"}, {icon_lit}}},')
         print(f"{key:12s} {len(pts):5d} points")
+    # effigies & notes (GUID + position, extraits des cellules L15)
+    guids = json.load(open(os.path.join(scratch, "relic_guids.json")))
+    def emit_guid(name, rows):
+        body = ",".join("{{0x%s,0x%s,0x%s,0x%s},%d,%d}" %
+                        (r[0][0:8], r[0][8:16], r[0][16:24], r[0][24:32], r[1], r[2]) for r in rows)
+        out.append(f"inline constexpr GuidPoint k{name}[] = {{{body}}};")
+    emit_guid("Effigies", guids["Relic"])
+    emit_guid("Notes", guids["Note"])
+    out.append(f'inline constexpr const wchar_t* kEffigyIcon = L"{ICON.format(EFFIGY_ICON)}";')
+    print(f"effigies {len(guids['Relic'])}, notes {len(guids['Note'])}")
     out.append("")
     out.append("inline constexpr Layer kLayers[] = {")
     out.extend(layer_rows)
