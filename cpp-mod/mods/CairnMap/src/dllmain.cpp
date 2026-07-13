@@ -865,6 +865,7 @@ namespace CairnMap
         // Build a short-name -> loaded-texture index from all resident Texture2D
         // objects (FindObject-by-path is unreliable here; the preloader keeps the
         // textures resident, so enumeration is the robust way to reach them).
+        bool m_tex_dumped = false;
         auto rebuild_texture_index() -> void
         {
             std::vector<UObject*> texs;
@@ -875,8 +876,14 @@ namespace CairnMap
                 if (t)
                 {
                     m_tex_index[t->GetName()] = t;
+                    if (!m_tex_dumped && t->GetName().find(L"Coal") != std::wstring::npos)
+                    {
+                        Output::send<LogLevel::Default>(STR("[CairnTex] name='{}' full='{}'\n"),
+                                                        t->GetName(), t->GetFullName());
+                    }
                 }
             }
+            m_tex_dumped = true;
             m_tex_index_size = texs.size();
         }
 
