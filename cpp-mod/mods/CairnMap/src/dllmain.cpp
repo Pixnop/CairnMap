@@ -894,9 +894,22 @@ namespace CairnMap
                 return nullptr;
             }
             auto it = m_tex_index.find(icon);
-            if (it != m_tex_index.end())
+            if (it != m_tex_index.end() && it->second)
             {
                 return it->second;
+            }
+            // FindAllOf misses preloader-loaded item icons; resolve by full path
+            // (all our icons live in one folder, kept resident by the Lua holder).
+            std::wstring full = std::wstring(L"/Game/Others/InventoryItemIcon/Texture/") + icon + L"." + icon;
+            UObject* t = UObjectGlobals::StaticFindObject<UObject*>(nullptr, nullptr, full.c_str());
+            if (!t)
+            {
+                t = UObjectGlobals::FindObject(nullptr, nullptr, full.c_str(), false);
+            }
+            if (t)
+            {
+                m_tex_index[icon] = t;
+                return t;
             }
             return nullptr;
         }
