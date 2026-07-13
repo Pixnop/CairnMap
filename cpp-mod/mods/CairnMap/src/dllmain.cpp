@@ -349,6 +349,36 @@ namespace CairnMap
             accent(f_chkpress);
         }
 
+        // shrink a TextBlock's font (FSlateFontInfo.Size) via reflection
+        inline auto set_font_size(UObject* text_widget, int32_t size) -> void
+        {
+            static int32_t size_off = -1;
+            if (size_off < 0)
+            {
+                auto* fi = UObjectGlobals::StaticFindObject<UStruct*>(nullptr, nullptr,
+                                                                     STR("/Script/SlateCore.SlateFontInfo"));
+                if (fi)
+                {
+                    for (FProperty* p : fi->ForEachProperty())
+                    {
+                        if (p->GetName() == STR("Size"))
+                        {
+                            size_off = p->GetOffset_Internal();
+                        }
+                    }
+                }
+            }
+            if (size_off < 0)
+            {
+                return;
+            }
+            auto* font = text_widget->GetValuePtrByPropertyNameInChain<uint8_t>(STR("Font"));
+            if (font)
+            {
+                *reinterpret_cast<int32_t*>(font + size_off) = size;
+            }
+        }
+
         inline auto make_image(UObject* image_widget) -> void
         {
             static Offsets off;
@@ -992,6 +1022,7 @@ namespace CairnMap
         // Runs across ticks so placement stays instant and icons pop in smoothly.
         size_t m_icon_scan = 0;
         bool m_icons_ready = false;
+        int m_icon_diag_ticks = 0;
         auto paint_icons_batch(size_t budget) -> void
         {
             if (!g_icons_enabled || m_dots.empty())
@@ -1005,13 +1036,28 @@ namespace CairnMap
             {
                 rebuild_texture_index();
                 bool all = true;
+                int resolved = 0, want = 0;
                 for (const auto& l : Data::kLayers)
                 {
-                    if (l.icon && !layer_texture(l.icon))
+                    if (l.icon)
                     {
-                        all = false;
-                        break;
+                        ++want;
+                        if (layer_texture(l.icon))
+                        {
+                            ++resolved;
+                        }
+                        else
+                        {
+                            all = false;
+                        }
                     }
+                }
+                if (m_icon_diag_ticks < 3)
+                {
+                    ++m_icon_diag_ticks;
+                    Output::send<LogLevel::Default>(
+                        STR("[CairnMap] icon index: {} textures, {}/{} layer icons resolved\n"),
+                        m_tex_index_size, resolved, want);
                 }
                 if (all && (layer_texture(Data::kEffigyIcon) && layer_texture(Data::kNoteIcon)))
                 {
@@ -1162,9 +1208,9 @@ namespace CairnMap
             }
             // top-left, fixed size
             const auto rows = panel_layers();
-            const double row_h = 30.0;
-            const double width = 210.0;
-            const double height = row_h * static_cast<double>(rows.size()) + 12.0;
+            const double row_h = 20.0;
+            const double width = 175.0;
+            const double height = row_h * static_cast<double>(rows.size()) + 10.0;
             {
                 Engine::ParamsSetAnchors anch{0, 0, 0, 0};
                 Engine::call(add.ReturnValue, L"SetAnchors", anch);
@@ -1218,7 +1264,7 @@ namespace CairnMap
                     Style::make_checkbox(cb, li.r, li.g, li.b);
                     Engine::ParamsSetVisibility v{Engine::Vis_Visible};
                     Engine::call(cb, L"SetVisibility", v);
-                    add_to_panel(cb, 6, y, 18, 18);
+                    add_to_panel(cb, 6, y + 2, 14, 14);
                     // set checked state directly (SetIsChecked via ProcessEvent
                     // proved unreliable on the styled checkbox) + via function
                     if (auto* st = cb->GetValuePtrByPropertyNameInChain<uint8_t>(STR("CheckedState")))
@@ -1235,11 +1281,12 @@ namespace CairnMap
                 {
                     Engine::ParamsSetText st{FText(li.label)};
                     Engine::call(txt, L"SetText", st);
+                    Style::set_font_size(txt, 11);
                     Engine::ParamsSetColorAndOpacity tc{{li.r, li.g, li.b, 1.0f}};
                     Engine::call(txt, L"SetColorAndOpacity", tc);
                     Engine::ParamsSetVisibility v{Engine::Vis_HitTestInvisible};
                     Engine::call(txt, L"SetVisibility", v);
-                    add_to_panel(txt, 28, y, 150, 18);
+                    add_to_panel(txt, 26, y + 2, 160, 16);
                 }
                 y += row_h;
             }
