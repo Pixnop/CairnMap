@@ -5,7 +5,9 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstring>
+#include <unordered_map>
 #include <unordered_set>
 #include <optional>
 #include <string>
@@ -642,7 +644,7 @@ namespace CairnMap
             entry.slot = add.ReturnValue;
             if (entry.icon && !entry.icon_applied)
             {
-                if (auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, entry.icon))
+                if (auto* tex = layer_texture(entry.icon))
                 {
                     Engine::ParamsSetBrushFromTexture brush{tex, false};
                     Engine::call(dot, L"SetBrushFromTexture", brush);
@@ -658,7 +660,7 @@ namespace CairnMap
             Engine::call(entry.slot, L"SetAutoSize", aut);
             Engine::ParamsSetAlignment align{{0.5, 0.5}};
             Engine::call(entry.slot, L"SetAlignment", align);
-            const double sz = entry.base_size / m_applied_zoom;
+            const double sz = std::clamp(entry.base_size / std::sqrt(m_applied_zoom), 9.0, 26.0);
             Engine::ParamsSetSize size{{sz, sz}};
             Engine::call(entry.slot, L"SetSize", size);
             Engine::ParamsSetPosition setpos{{px, py}};
@@ -667,6 +669,23 @@ namespace CairnMap
         }
 
         size_t m_emit_cursor = 0;
+        std::unordered_map<const wchar_t*, UObject*> m_texture_cache;
+
+        auto layer_texture(const wchar_t* icon) -> UObject*
+        {
+            if (!icon)
+            {
+                return nullptr;
+            }
+            auto it = m_texture_cache.find(icon);
+            if (it != m_texture_cache.end() && it->second)
+            {
+                return it->second;
+            }
+            auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, icon);
+            m_texture_cache[icon] = tex;
+            return tex;
+        }
 
         auto place_dots() -> void
         {
@@ -773,6 +792,8 @@ namespace CairnMap
         // retry lazy icon textures (game loads them as the player encounters items)
         auto apply_missing_icons() -> void
         {
+            // drop negative cache entries: the game may have loaded them since
+            std::erase_if(m_texture_cache, [](const auto& kv) { return kv.second == nullptr; });
             size_t applied = 0;
             for (auto& d : m_dots)
             {
@@ -780,7 +801,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, d.icon);
+                auto* tex = layer_texture(d.icon);
                 if (!tex)
                 {
                     continue;
@@ -840,7 +861,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                const double sz = d.base_size / zoom;
+                const double sz = std::clamp(d.base_size / std::sqrt(zoom), 9.0, 26.0);
                 Engine::ParamsSetSize size{{sz, sz}};
                 Engine::call(d.slot, L"SetSize", size);
             }
