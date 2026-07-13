@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <DynamicOutput/Output.hpp>
@@ -603,10 +604,13 @@ namespace CairnMap
             }
             return v;
         }
+        // A collectable dot whose visibility depends on the live obtained set.
+        // key = 32-hex instance GUID (effigies) or NoteRowName (notes); both are
+        // matched against Collected::gather()'s union of obtained keys.
         struct GuidDot
         {
             size_t dot_index;
-            const Data::GuidPoint* pt;
+            std::wstring key;
         };
         std::vector<GuidDot> m_guid_dots;                  // effigy/note dots for refresh
         double m_applied_zoom = 1.0;
@@ -953,24 +957,26 @@ namespace CairnMap
                     samples);
                 Output::send<LogLevel::Default>(
                     STR("[CairnFlag] our eff[0]={} note[0]={}\n"),
-                    Collected::guid_key(Data::kEffigies[0].guid),
-                    Collected::guid_key(Data::kNotes[0].guid));
+                    Collected::guid_key(Data::kEffigies[0].guid), std::wstring(Data::kNotes[0].row));
             }
             size_t hidden = 0;
-            auto place_guid_layer = [&](const Data::GuidPoint* pts, size_t count,
-                                        const Engine::FLinearColor_& color, const wchar_t* icon,
-                                        double base_size, int layer_id) -> size_t {
+            // Generic collectable placement: key_fn(i) yields the obtained-set key
+            // (instance GUID for effigies, NoteRowName for notes).
+            auto place_collectables = [&](size_t count, auto coord_fn, auto key_fn,
+                                          const Engine::FLinearColor_& color, const wchar_t* icon,
+                                          double base_size, int layer_id) -> size_t {
                 size_t layer_hidden = 0;
                 for (size_t i = 0; i < count; ++i)
                 {
-                    const bool is_collected =
-                        have_flags && collected.contains(Collected::guid_key(pts[i].guid));
+                    std::wstring key = key_fn(i);
+                    const bool is_collected = have_flags && collected.contains(key);
                     if (is_collected)
                     {
                         ++hidden;
                         ++layer_hidden;
                     }
-                    const auto pos = m_calibration->transform.apply(pts[i].x, pts[i].y);
+                    const auto xy = coord_fn(i);
+                    const auto pos = m_calibration->transform.apply(xy.first, xy.second);
                     if (pos.x < -2000 || pos.x > 6000 || pos.y < -2000 || pos.y > 6000)
                     {
                         continue;
@@ -979,18 +985,22 @@ namespace CairnMap
                         emit_dot(image_class, pos.x, pos.y, color, icon, base_size, !is_collected, layer_id);
                     if (idx != SIZE_MAX)
                     {
-                        m_guid_dots.push_back({idx, &pts[i]});
+                        m_guid_dots.push_back({idx, std::move(key)});
                         ++placed;
                     }
                 }
                 return layer_hidden;
             };
-            const size_t eff_hidden =
-                place_guid_layer(Data::kEffigies, std::size(Data::kEffigies), {0.35f, 1.0f, 0.20f, 1.0f},
-                                 Data::kEffigyIcon, 20.0, kEffigyLayer);
-            const size_t note_hidden =
-                place_guid_layer(Data::kNotes, std::size(Data::kNotes), {0.20f, 0.88f, 1.0f, 1.0f},
-                                 Data::kNoteIcon, 20.0, kNoteLayer);
+            const size_t eff_hidden = place_collectables(
+                std::size(Data::kEffigies),
+                [](size_t i) { return std::pair<int, int>{Data::kEffigies[i].x, Data::kEffigies[i].y}; },
+                [](size_t i) { return Collected::guid_key(Data::kEffigies[i].guid); },
+                {0.35f, 1.0f, 0.20f, 1.0f}, Data::kEffigyIcon, 20.0, kEffigyLayer);
+            const size_t note_hidden = place_collectables(
+                std::size(Data::kNotes),
+                [](size_t i) { return std::pair<int, int>{Data::kNotes[i].x, Data::kNotes[i].y}; },
+                [](size_t i) { return std::wstring(Data::kNotes[i].row); },
+                {0.20f, 0.88f, 1.0f, 1.0f}, Data::kNoteIcon, 20.0, kNoteLayer);
             Output::send<LogLevel::Default>(
                 STR("[CairnFlag] hidden effigies={}/{} notes={}/{}\n"), eff_hidden,
                 std::size(Data::kEffigies), note_hidden, std::size(Data::kNotes));
@@ -1041,7 +1051,7 @@ namespace CairnMap
             size_t hidden = 0;
             for (const auto& gd : m_guid_dots)
             {
-                const bool is_collected = collected.contains(Collected::guid_key(gd.pt->guid));
+                const bool is_collected = collected.contains(gd.key);
                 hidden += is_collected ? 1 : 0;
                 m_dots[gd.dot_index].base_hidden = is_collected;
             }
