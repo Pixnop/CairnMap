@@ -387,6 +387,12 @@ namespace CairnMap
         std::wstring m_canvas_full_name;
         UObject* m_layer_canvas = nullptr;                 // our own CanvasPanel
         std::vector<UObject*> m_dots;                      // pooled UImage widgets
+        struct GuidDot
+        {
+            UObject* dot;
+            const Data::GuidPoint* pt;
+        };
+        std::vector<GuidDot> m_guid_dots;                  // effigy/note dots for refresh
         std::optional<Project::Calibration> m_calibration;
         bool m_placed = false;
         bool m_collapsed = true;
@@ -628,10 +634,11 @@ namespace CairnMap
                                         const Engine::FLinearColor_& color) {
                 for (size_t i = 0; i < count; ++i)
                 {
-                    if (have_flags && collected.contains(Collected::guid_key(pts[i].guid)))
+                    const bool is_collected =
+                        have_flags && collected.contains(Collected::guid_key(pts[i].guid));
+                    if (is_collected)
                     {
                         ++hidden;
-                        continue;
                     }
                     const auto pos = m_calibration->transform.apply(pts[i].x, pts[i].y);
                     if (pos.x < -2000 || pos.x > 6000 || pos.y < -2000 || pos.y > 6000)
@@ -662,7 +669,8 @@ namespace CairnMap
                     }
                     Engine::ParamsSetColorAndOpacity col{color};
                     Engine::call(dot, L"SetColorAndOpacity", col);
-                    Engine::ParamsSetVisibility vis{Engine::Vis_HitTestInvisible};
+                    Engine::ParamsSetVisibility vis{
+                        is_collected ? Engine::Vis_Collapsed : Engine::Vis_HitTestInvisible};
                     Engine::call(dot, L"SetVisibility", vis);
                     Engine::ParamsSetAutoSize aut{false};
                     Engine::call(add.ReturnValue, L"SetAutoSize", aut);
@@ -672,6 +680,7 @@ namespace CairnMap
                     Engine::call(add.ReturnValue, L"SetSize", size);
                     Engine::ParamsSetPosition setpos{{pos.x, pos.y}};
                     Engine::call(add.ReturnValue, L"SetPosition", setpos);
+                    m_guid_dots.push_back({dot, &pts[i]});
                     ++placed;
                 }
             };
@@ -688,6 +697,31 @@ namespace CairnMap
                                             placed, hidden, m_dots.size());
             m_placed = true;
             m_collapsed = false;
+        }
+
+        // ⚠ never re-parent pooled widgets on refresh: 5k AddChild churn per
+        // open crashed both the Lua prototype and the first P1.5 build.
+        auto refresh_collected() -> void
+        {
+            if (m_guid_dots.empty())
+            {
+                return;
+            }
+            std::unordered_set<std::wstring> collected;
+            if (!Collected::gather(collected))
+            {
+                return;
+            }
+            size_t hidden = 0;
+            for (const auto& gd : m_guid_dots)
+            {
+                const bool is_collected = collected.contains(Collected::guid_key(gd.pt->guid));
+                hidden += is_collected ? 1 : 0;
+                Engine::ParamsSetVisibility vis{
+                    is_collected ? Engine::Vis_Collapsed : Engine::Vis_HitTestInvisible};
+                Engine::call(gd.dot, L"SetVisibility", vis);
+            }
+            Output::send<LogLevel::Default>(STR("[CairnMap] collected refresh: {} hidden\n"), hidden);
         }
 
         auto tick() -> void
@@ -714,6 +748,7 @@ namespace CairnMap
                 m_canvas_full_name = full_name;
                 m_layer_canvas = nullptr;
                 m_dots.clear();
+                m_guid_dots.clear();
                 m_calibration.reset();
                 m_placed = false;
                 m_collapsed = true;
@@ -762,7 +797,7 @@ namespace CairnMap
                 Engine::ParamsSetVisibility vis{Engine::Vis_SelfHitTestInvisible};
                 Engine::call(m_layer_canvas, L"SetVisibility", vis);
                 m_collapsed = false;
-                place_dots();   // refresh collected filtering on each map open
+                refresh_collected();   // visibility-only diff, no re-parenting
             }
         }
     };
