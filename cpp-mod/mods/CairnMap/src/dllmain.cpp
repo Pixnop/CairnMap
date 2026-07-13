@@ -898,19 +898,6 @@ namespace CairnMap
             {
                 return it->second;
             }
-            // FindAllOf misses preloader-loaded item icons; resolve by full path
-            // (all our icons live in one folder, kept resident by the Lua holder).
-            std::wstring full = std::wstring(L"/Game/Others/InventoryItemIcon/Texture/") + icon + L"." + icon;
-            UObject* t = UObjectGlobals::StaticFindObject<UObject*>(nullptr, nullptr, full.c_str());
-            if (!t)
-            {
-                t = UObjectGlobals::FindObject(nullptr, nullptr, full.c_str(), false);
-            }
-            if (t)
-            {
-                m_tex_index[icon] = t;
-                return t;
-            }
             return nullptr;
         }
 
@@ -1043,6 +1030,7 @@ namespace CairnMap
         size_t m_icon_scan = 0;
         bool m_icons_ready = false;
         int m_icon_diag_ticks = 0;
+        int m_icon_rebuilds = 0;
         auto paint_icons_batch(size_t budget) -> void
         {
             if (!g_icons_enabled || m_dots.empty())
@@ -1052,8 +1040,9 @@ namespace CairnMap
             // rebuild the texture index until all layer icons resolve: the
             // preloader may make them resident after the first build (stale
             // index otherwise never picks them up).
-            if (!m_icons_ready)
+            if (!m_icons_ready && m_icon_rebuilds < 8)
             {
+                ++m_icon_rebuilds;
                 rebuild_texture_index();
                 bool all = true;
                 int resolved = 0, want = 0;
@@ -1384,6 +1373,7 @@ namespace CairnMap
                 m_icon_scan = 0;
                 m_tex_index.clear();
                 m_icons_ready = false;
+                m_icon_rebuilds = 0;
                 m_calibration.reset();
                 m_placed = false;
                 m_collapsed = true;
