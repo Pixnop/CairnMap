@@ -633,7 +633,7 @@ namespace CairnMap
                 m_dots.push_back({dot, nullptr, nullptr, false, base_size});
             }
             Dot& entry = m_dots[m_emit_cursor];
-            entry.icon = icon;
+            entry.icon = g_icons_enabled ? icon : nullptr;   // icons: separate measured pass
             entry.base_size = base_size;
 
             Engine::ParamsAddChildToCanvas add{dot, nullptr};
@@ -669,6 +669,7 @@ namespace CairnMap
         }
 
         size_t m_emit_cursor = 0;
+        static constexpr bool g_icons_enabled = false;   // fast colored-dot baseline
         std::unordered_map<const wchar_t*, UObject*> m_texture_cache;
 
         auto layer_texture(const wchar_t* icon) -> UObject*
@@ -697,6 +698,7 @@ namespace CairnMap
             }
             m_emit_cursor = 0;
             size_t placed = 0;
+            const auto t0 = std::chrono::steady_clock::now();
             for (const auto& layer : Data::kLayers)
             {
                 if (!layer.default_on)
@@ -757,8 +759,11 @@ namespace CairnMap
                 Engine::ParamsSetVisibility vis{Engine::Vis_Collapsed};
                 Engine::call(m_dots[i].widget, L"SetVisibility", vis);
             }
-            Output::send<LogLevel::Default>(STR("[CairnMap] {} dots placed, {} collected hidden (pool {})\n"),
-                                            placed, hidden, m_dots.size());
+            const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                std::chrono::steady_clock::now() - t0).count();
+            Output::send<LogLevel::Default>(
+                STR("[CairnMap] {} dots placed, {} collected hidden (pool {}) in {}ms\n"),
+                placed, hidden, m_dots.size(), ms);
             m_placed = true;
             m_collapsed = false;
         }
@@ -792,6 +797,10 @@ namespace CairnMap
         // retry lazy icon textures (game loads them as the player encounters items)
         auto apply_missing_icons() -> void
         {
+            if (!g_icons_enabled)
+            {
+                return;
+            }
             // drop negative cache entries: the game may have loaded them since
             std::erase_if(m_texture_cache, [](const auto& kv) { return kv.second == nullptr; });
             size_t applied = 0;
