@@ -663,6 +663,7 @@ namespace CairnMap
 
         size_t m_emit_cursor = 0;
         static constexpr bool g_icons_enabled = true;    // icons painted in background batches
+        static inline UObject* const kAnyPackage = reinterpret_cast<UObject*>(static_cast<intptr_t>(-1));
         std::unordered_map<const wchar_t*, UObject*> m_texture_cache;
 
         auto layer_texture(const wchar_t* icon) -> UObject*
@@ -676,7 +677,7 @@ namespace CairnMap
             {
                 return it->second;
             }
-            auto* tex = UObjectGlobals::StaticFindObject(nullptr, UObjectGlobals::ANY_PACKAGE, icon);
+            auto* tex = UObjectGlobals::StaticFindObject<UObject*>(nullptr, kAnyPackage, icon);
             m_texture_cache[icon] = tex;
             return tex;
         }
@@ -804,7 +805,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                auto* tex = UObjectGlobals::StaticFindObject(nullptr, UObjectGlobals::ANY_PACKAGE, layer.icon);
+                auto* tex = UObjectGlobals::StaticFindObject<UObject*>(nullptr, kAnyPackage, layer.icon);
                 Output::send<LogLevel::Default>(STR("[CairnDiag] {}: tex={}\n"), layer.key,
                                                 tex ? STR("FOUND") : STR("MISSING"));
             }
@@ -813,7 +814,7 @@ namespace CairnMap
             {
                 if (d.icon && d.widget)
                 {
-                    auto* tex = UObjectGlobals::StaticFindObject(nullptr, UObjectGlobals::ANY_PACKAGE, d.icon);
+                    auto* tex = UObjectGlobals::StaticFindObject<UObject*>(nullptr, kAnyPackage, d.icon);
                     if (tex)
                     {
                         Engine::ParamsSetBrushFromTexture brush{tex, false};
