@@ -857,7 +857,7 @@ namespace CairnMap
         }
 
         size_t m_emit_cursor = 0;
-        static constexpr bool g_icons_enabled = true;    // icons painted in background batches
+        static constexpr bool g_icons_enabled = false;   // item icons unreachable from C++ (Lua object-space barrier); colored dots
 
         std::unordered_map<std::wstring, UObject*> m_tex_index;
         size_t m_tex_index_size = 0;
