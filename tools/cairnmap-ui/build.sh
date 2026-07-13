@@ -25,7 +25,7 @@ RESP="$PWD/Saved/pak_response.txt"
 : > "$RESP"
 while IFS= read -r -d '' f; do
     rel="${f#"$COOKED"/}"
-    echo "\"$f\" \"../../../Pal/Content/CairnMap/$rel\"" >> "$RESP"
+    echo "\"$f\" \"../../../Pal/Content/$rel\"" >> "$RESP"
 done < <(find "$COOKED" -type f \( -name '*.uasset' -o -name '*.uexp' -o -name '*.ubulk' \) -print0)
 "$UNREALPAK" "$PWD/Saved/CairnMapUI_P.pak" -create="$RESP" -compress
 echo "OK: $PWD/Saved/CairnMapUI_P.pak"
