@@ -848,7 +848,7 @@ namespace CairnMap
             Engine::call(entry.slot, L"SetAutoSize", aut);
             Engine::ParamsSetAlignment align{{0.5, 0.5}};
             Engine::call(entry.slot, L"SetAlignment", align);
-            const double sz = std::clamp(entry.base_size / m_applied_zoom, 7.0, 40.0);
+            const double sz = std::clamp(entry.base_size / m_applied_zoom, 4.0, 40.0);
             Engine::ParamsSetSize size{{sz, sz}};
             Engine::call(entry.slot, L"SetSize", size);
             Engine::ParamsSetPosition setpos{{px, py}};
@@ -1142,7 +1142,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                const double sz = std::clamp(d.base_size / zoom, 7.0, 40.0);
+                const double sz = std::clamp(d.base_size / zoom, 4.0, 40.0);
                 Engine::ParamsSetSize size{{sz, sz}};
                 Engine::call(d.slot, L"SetSize", size);
             }
@@ -1303,9 +1303,18 @@ namespace CairnMap
             Output::send<LogLevel::Default>(STR("[CairnMap] panel built ({} rows)\n"), m_panel_rows.size());
         }
 
+        int m_cb_probe = 0;
         // Poll checkbox states; on change, update toggle + layer visibility.
         auto poll_panel() -> void
         {
+            if (m_cb_probe < 8 && !m_panel_rows.empty() && m_panel_rows[0].checkbox)
+            {
+                ++m_cb_probe;
+                Engine::ParamsIsChecked p{};
+                Engine::call(m_panel_rows[0].checkbox, L"IsChecked", p);
+                Output::send<LogLevel::Default>(STR("[CairnCB] tick {} checkbox0 checked={}\n"), m_cb_probe,
+                                                p.ReturnValue ? 1 : 0);
+            }
             bool changed = false;
             for (auto& row : m_panel_rows)
             {
@@ -1380,6 +1389,7 @@ namespace CairnMap
                 m_panel_canvas = nullptr;   // died with the tree
                 m_panel_rows.clear();
                 m_panel_first_poll = true;
+                m_cb_probe = 0;
             }
 
             if (!m_calibration)
