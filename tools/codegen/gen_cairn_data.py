@@ -19,7 +19,7 @@ LAYERS = [
     ("Copper",     "CopperLocations.json",       (0xD9, 0x77, 0x2B, 0xFF), True, "T_itemicon_Material_CopperOre"),
     ("Quartz",     "QuartzLocations.json",       (0xE8, 0xE8, 0xF8, 0xFF), True, "T_itemicon_Material_Quartz"),
     ("Sulfur",     "SulfurLocations.json",       (0xD9, 0xC8, 0x2B, 0xFF), True, "T_itemicon_Material_Sulfur"),
-    ("Hexolite",   "HexoliteLocations.json",     (0x39, 0xD1, 0xD1, 0xFF), True, None),
+    ("Hexolite",   "HexoliteLocations.json",     (0x39, 0xD1, 0xD1, 0xFF), True, "T_itemicon_Material_Sapphire"),
     ("Oil",        "OilLocations.json",          (0x14, 0x0A, 0x0A, 0xFF), True, "T_itemicon_Material_CrudeOil"),
     ("SkyOre",     "SkyIslandOreLocations.json", (0x40, 0xD9, 0xFF, 0xFF), True, "T_itemicon_Material_SkyIslandOre"),
     ("TreeOre",    "WorldTreeOreLocations.json", (0x4D, 0xFF, 0x66, 0xFF), True, "T_itemicon_Material_WorldTreeOre"),
@@ -29,6 +29,7 @@ LAYERS = [
     ("Lotus",      None,                         (0xFF, 0x73, 0xCC, 0xD9), True, "T_itemicon_Food_Lotus_hp_01"),
 ]
 EFFIGY_ICON = "T_itemicon_Relic"
+NOTE_ICON = "T_itemicon_Consume_TechnologyBook_G1"
 BOSSES = [(-266563, 174506), (-361695, -112009), (81363, 90183), (29975, 413325),
           (-321596, 209085), (-778216, -36026), (-889805, -435828), (-29428, -115900)]
 
@@ -105,6 +106,7 @@ def main():
     emit_guid("Effigies", guids["Relic"])
     emit_guid("Notes", guids["Note"])
     out.append(f'inline constexpr const wchar_t* kEffigyIcon = L"{EFFIGY_ICON}";')
+    out.append(f'inline constexpr const wchar_t* kNoteIcon = L"{NOTE_ICON}";')
     print(f"effigies {len(guids['Relic'])}, notes {len(guids['Note'])}")
     out.append("")
     out.append("inline constexpr Layer kLayers[] = {")

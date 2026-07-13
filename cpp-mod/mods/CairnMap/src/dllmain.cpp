@@ -778,7 +778,7 @@ namespace CairnMap
             place_guid_layer(Data::kEffigies, std::size(Data::kEffigies), {0.35f, 1.0f, 0.20f, 1.0f},
                              Data::kEffigyIcon, 20.0);
             place_guid_layer(Data::kNotes, std::size(Data::kNotes), {0.20f, 0.88f, 1.0f, 1.0f},
-                             nullptr, 14.0);
+                             Data::kNoteIcon, 20.0);
             // collapse any leftover pooled dots beyond this pass
             for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
             {
