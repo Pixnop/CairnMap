@@ -546,6 +546,7 @@ namespace CairnMap
             bool last_checked;
         };
         std::vector<PanelRow> m_panel_rows;
+        bool m_panel_first_poll = true;
 
         auto is_layer_on(int layer_id) const -> bool
         {
@@ -1111,8 +1112,8 @@ namespace CairnMap
             }
             // top-left, fixed size
             const auto rows = panel_layers();
-            const double row_h = 22.0;
-            const double width = 190.0;
+            const double row_h = 30.0;
+            const double width = 210.0;
             const double height = row_h * static_cast<double>(rows.size()) + 12.0;
             {
                 Engine::ParamsSetAnchors anch{0, 0, 0, 0};
@@ -1163,11 +1164,17 @@ namespace CairnMap
                 if (cb)
                 {
                     Style::make_checkbox(cb, li.r, li.g, li.b);
-                    Engine::ParamsSetIsChecked chk{is_layer_on(li.id)};
-                    Engine::call(cb, L"SetIsChecked", chk);
                     Engine::ParamsSetVisibility v{Engine::Vis_Visible};
                     Engine::call(cb, L"SetVisibility", v);
-                    add_to_panel(cb, 6, y, 16, 16);
+                    add_to_panel(cb, 6, y, 18, 18);
+                    // set checked state directly (SetIsChecked via ProcessEvent
+                    // proved unreliable on the styled checkbox) + via function
+                    if (auto* st = cb->GetValuePtrByPropertyNameInChain<uint8_t>(STR("CheckedState")))
+                    {
+                        *st = is_layer_on(li.id) ? 1 : 0;   // ECheckBoxState::Checked
+                    }
+                    Engine::ParamsSetIsChecked chk{is_layer_on(li.id)};
+                    Engine::call(cb, L"SetIsChecked", chk);
                     m_panel_rows.push_back({cb, li.id, is_layer_on(li.id)});
                 }
                 FStaticConstructObjectParameters tp{txt_class, m_panel_canvas};
@@ -1203,12 +1210,22 @@ namespace CairnMap
                 {
                     continue;
                 }
+                if (m_panel_first_poll)
+                {
+                    // adopt reality without hiding anything; keep default-on
+                    row.last_checked = p.ReturnValue;
+                    continue;
+                }
                 if (p.ReturnValue != row.last_checked)
                 {
                     row.last_checked = p.ReturnValue;
                     m_layer_on[row.layer_id] = p.ReturnValue;
                     changed = true;
                 }
+            }
+            if (m_panel_first_poll)
+            {
+                m_panel_first_poll = false;
             }
             if (changed)
             {
@@ -1252,6 +1269,7 @@ namespace CairnMap
                 m_collapsed = true;
                 m_panel_canvas = nullptr;   // died with the tree
                 m_panel_rows.clear();
+                m_panel_first_poll = true;
             }
 
             if (!m_calibration)
