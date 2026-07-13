@@ -1,4 +1,8 @@
-# CairnMap
+<p align="center">
+  <img src="docs/logo.png" alt="CairnMap" width="180">
+</p>
+
+<h1 align="center">CairnMap</h1>
 
 A map collectables overlay for **Palworld 1.0+**, written as a native C++
 [UE4SS](https://github.com/UE4SS-RE/RE-UE4SS) mod. Open the world map and CairnMap
