@@ -118,6 +118,14 @@ namespace CairnMap
         {
             FText InText{};
         };
+        struct FVector_
+        {
+            double X{}, Y{}, Z{};
+        };
+        struct ParamsGetActorLocation
+        {
+            FVector_ ReturnValue{};
+        };
 
         enum : uint8_t
         {
@@ -159,6 +167,20 @@ namespace CairnMap
         inline auto widget_name(UObject* w) -> std::wstring
         {
             return w ? w->GetName() : std::wstring{};
+        }
+
+        // World-space actor location via K2_GetActorLocation (FVector return).
+        inline auto actor_location(UObject* actor, double& x, double& y, double& z) -> bool
+        {
+            ParamsGetActorLocation p{};
+            if (!call(actor, L"K2_GetActorLocation", p))
+            {
+                return false;
+            }
+            x = p.ReturnValue.X;
+            y = p.ReturnValue.Y;
+            z = p.ReturnValue.Z;
+            return true;
         }
 
         inline auto class_name(UObject* w) -> std::wstring
@@ -619,6 +641,7 @@ namespace CairnMap
         bool m_collapsed = true;
         int m_log_budget = 20;
         bool m_flag_probe_done = false;
+        bool m_loot_probe_done = false;
 
       public:
         Mod()
@@ -1004,6 +1027,40 @@ namespace CairnMap
             Output::send<LogLevel::Default>(
                 STR("[CairnFlag] hidden effigies={}/{} notes={}/{}\n"), eff_hidden,
                 std::size(Data::kEffigies), note_hidden, std::size(Data::kNotes));
+            // one-shot loot probe: how many chest/egg loot actors are loaded near
+            // the player, can we read their world position, and where is the player?
+            // (No widget changes here; read-only, game thread. Informs the live
+            // nearby-masking design before we touch rendering.)
+            if (!m_loot_probe_done)
+            {
+                m_loot_probe_done = true;
+                std::vector<UObject*> boxes, eggs;
+                UObjectGlobals::FindAllOf(STR("PalMapObjectTreasureBox"), boxes);
+                UObjectGlobals::FindAllOf(STR("PalMapObjectPalEgg"), eggs);
+                double px = 0, py = 0, pz = 0;
+                bool have_player = false;
+                if (auto* pc = UObjectGlobals::FindFirstOf(STR("PalPlayerCharacter")))
+                {
+                    have_player = Engine::actor_location(pc, px, py, pz);
+                }
+                Output::send<LogLevel::Default>(
+                    STR("[CairnLoot] boxes={} eggs={} player=({},{},{}) have_player={}\n"),
+                    boxes.size(), eggs.size(), (int)px, (int)py, (int)pz, have_player);
+                int shown = 0;
+                for (auto* b : boxes)
+                {
+                    double bx = 0, by = 0, bz = 0;
+                    if (b && Engine::actor_location(b, bx, by, bz) && (bx != 0 || by != 0))
+                    {
+                        Output::send<LogLevel::Default>(STR("[CairnLoot] box[{}] world=({},{})\n"),
+                                                        shown, (int)bx, (int)by);
+                        if (++shown >= 3)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
             // collapse any leftover pooled dots beyond this pass
             for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
             {
