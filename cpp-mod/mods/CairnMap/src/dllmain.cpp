@@ -3,7 +3,9 @@
 // the boss-tower-anchored projection (cairn_project.hpp, unit-tested natively).
 // ABI target: UE4SS v3.0.1 (Okaetsu experimental-palworld, c2ac246, MSVC).
 
+#include <algorithm>
 #include <chrono>
+#include <cstring>
 #include <unordered_set>
 #include <optional>
 #include <string>
@@ -86,6 +88,14 @@ namespace CairnMap
         struct ParamsSetZOrder
         {
             int32_t InZOrder{};
+        };
+        struct ParamsSetOffsets
+        {
+            float Left{}, Top{}, Right{}, Bottom{};   // FMargin
+        };
+        struct ParamsSetAnchors
+        {
+            double MinX{}, MinY{}, MaxX{}, MaxY{};   // FAnchors
         };
 
         enum : uint8_t
@@ -386,6 +396,8 @@ namespace CairnMap
         // per-map-body state (SPEC 2.4): pool keyed by the live canvas
         std::wstring m_canvas_full_name;
         UObject* m_layer_canvas = nullptr;                 // our own CanvasPanel
+        UObject* m_layer_slot = nullptr;                   // its canvas slot
+        uint8_t m_mask_geom[64] = {};                      // last-seen mask LayoutData
         std::vector<UObject*> m_dots;                      // pooled UImage widgets
         struct GuidDot
         {
@@ -544,23 +556,44 @@ namespace CairnMap
                 m_layer_canvas = nullptr;
                 return false;
             }
-            // mirror the mask canvas geometry so our overlay aligns 1:1
-            auto** mask_slot = mask->GetValuePtrByPropertyNameInChain<UObject*>(STR("Slot"));
-            auto* mask_layout = (mask_slot && *mask_slot)
-                                    ? (*mask_slot)->GetValuePtrByPropertyNameInChain<float>(STR("LayoutData"))
-                                    : nullptr;
-            auto* our_layout = add.ReturnValue->GetValuePtrByPropertyNameInChain<float>(STR("LayoutData"));
-            if (mask_layout && our_layout)
-            {
-                for (int i = 0; i < 16; ++i)   // FMargin(4f)+FAnchors(4d)+FVector2D(2d) raw block
-                {
-                    our_layout[i] = mask_layout[i];
-                }
-            }
+            m_layer_slot = add.ReturnValue;
             Engine::ParamsSetZOrder z{100};
-            Engine::call(add.ReturnValue, L"SetZOrder", z);
+            Engine::call(m_layer_slot, L"SetZOrder", z);
+            std::fill(std::begin(m_mask_geom), std::end(m_mask_geom), 0);
+            sync_layer_geometry(mask);   // proper Set* calls: they invalidate Slate
             Output::send<LogLevel::Default>(STR("[CairnMap] layer canvas created\n"));
             return true;
+        }
+
+        // Mirror the game's mask-canvas slot geometry (zoom/layout changes)
+        // using the proper slot setters so Slate invalidates immediately.
+        auto sync_layer_geometry(UObject* mask) -> void
+        {
+            if (!m_layer_slot)
+            {
+                return;
+            }
+            auto** mask_slot = mask->GetValuePtrByPropertyNameInChain<UObject*>(STR("Slot"));
+            auto* layout = (mask_slot && *mask_slot)
+                               ? (*mask_slot)->GetValuePtrByPropertyNameInChain<uint8_t>(STR("LayoutData"))
+                               : nullptr;
+            if (!layout)
+            {
+                return;
+            }
+            if (std::memcmp(m_mask_geom, layout, sizeof(m_mask_geom)) == 0)
+            {
+                return;
+            }
+            std::memcpy(m_mask_geom, layout, sizeof(m_mask_geom));
+            const auto* margins = reinterpret_cast<const float*>(layout);        // FMargin
+            const auto* anchors = reinterpret_cast<const double*>(layout + 16);  // FAnchors + alignment
+            Engine::ParamsSetOffsets offs{margins[0], margins[1], margins[2], margins[3]};
+            Engine::call(m_layer_slot, L"SetOffsets", offs);
+            Engine::ParamsSetAnchors anch{anchors[0], anchors[1], anchors[2], anchors[3]};
+            Engine::call(m_layer_slot, L"SetAnchors", anch);
+            Engine::ParamsSetAlignment align{{anchors[4], anchors[5]}};
+            Engine::call(m_layer_slot, L"SetAlignment", align);
         }
 
         auto place_dots() -> void
@@ -747,6 +780,7 @@ namespace CairnMap
                 // new map body instance: old widgets died with the previous tree
                 m_canvas_full_name = full_name;
                 m_layer_canvas = nullptr;
+                m_layer_slot = nullptr;
                 m_dots.clear();
                 m_guid_dots.clear();
                 m_calibration.reset();
@@ -788,6 +822,7 @@ namespace CairnMap
             {
                 return;
             }
+            sync_layer_geometry(mask);   // follow zoom / layout changes
             if (!m_placed)
             {
                 place_dots();
