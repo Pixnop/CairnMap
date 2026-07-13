@@ -653,7 +653,7 @@ namespace CairnMap
             Engine::call(entry.slot, L"SetAutoSize", aut);
             Engine::ParamsSetAlignment align{{0.5, 0.5}};
             Engine::call(entry.slot, L"SetAlignment", align);
-            const double sz = std::clamp(entry.base_size / std::sqrt(m_applied_zoom), 6.0, 26.0);
+            const double sz = std::clamp(entry.base_size / std::sqrt(m_applied_zoom), 2.5, 26.0);
             Engine::ParamsSetSize size{{sz, sz}};
             Engine::call(entry.slot, L"SetSize", size);
             Engine::ParamsSetPosition setpos{{px, py}};
@@ -790,12 +790,48 @@ namespace CairnMap
         // Paint at most `budget` pending icon textures per call (non-blocking).
         // Runs across ticks so placement stays instant and icons pop in smoothly.
         size_t m_icon_scan = 0;
+        bool m_icon_diag_done = false;
+        auto icon_diagnostic() -> void
+        {
+            if (m_icon_diag_done)
+            {
+                return;
+            }
+            m_icon_diag_done = true;
+            for (const auto& layer : Data::kLayers)
+            {
+                if (!layer.icon)
+                {
+                    continue;
+                }
+                auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, layer.icon);
+                Output::send<LogLevel::Default>(STR("[CairnDiag] {}: tex={}\n"), layer.key,
+                                                tex ? STR("FOUND") : STR("MISSING"));
+            }
+            // test SetBrushFromTexture wiring on the first icon dot
+            for (auto& d : m_dots)
+            {
+                if (d.icon && d.widget)
+                {
+                    auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, d.icon);
+                    if (tex)
+                    {
+                        Engine::ParamsSetBrushFromTexture brush{tex, false};
+                        const bool ok = Engine::call(d.widget, L"SetBrushFromTexture", brush);
+                        Output::send<LogLevel::Default>(STR("[CairnDiag] SetBrushFromTexture call ok={}\n"),
+                                                        ok);
+                    }
+                    break;
+                }
+            }
+        }
         auto paint_icons_batch(size_t budget) -> void
         {
             if (!g_icons_enabled || m_dots.empty())
             {
                 return;
             }
+            icon_diagnostic();
             std::erase_if(m_texture_cache, [](const auto& kv) { return kv.second == nullptr; });
             size_t painted = 0, scanned = 0;
             const size_t n = m_dots.size();
@@ -864,7 +900,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                const double sz = std::clamp(d.base_size / std::sqrt(zoom), 6.0, 26.0);
+                const double sz = std::clamp(d.base_size / std::sqrt(zoom), 2.5, 26.0);
                 Engine::ParamsSetSize size{{sz, sz}};
                 Engine::call(d.slot, L"SetSize", size);
             }
@@ -899,6 +935,7 @@ namespace CairnMap
                 m_emit_cursor = 0;
                 m_applied_zoom = 1.0;
                 m_icon_scan = 0;
+                m_icon_diag_done = false;
                 m_calibration.reset();
                 m_placed = false;
                 m_collapsed = true;
