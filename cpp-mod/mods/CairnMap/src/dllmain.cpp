@@ -1221,10 +1221,20 @@ namespace CairnMap
                     row.last_checked = p.ReturnValue;
                     m_layer_on[row.layer_id] = p.ReturnValue;
                     changed = true;
+                    Output::send<LogLevel::Default>(STR("[CairnPanel] layer {} -> {}\n"), row.layer_id,
+                                                    p.ReturnValue ? 1 : 0);
                 }
             }
             if (m_panel_first_poll)
             {
+                // one-time raw dump of every checkbox reading to confirm clicks track
+                for (auto& row : m_panel_rows)
+                {
+                    Engine::ParamsIsChecked p{};
+                    Engine::call(row.checkbox, L"IsChecked", p);
+                    Output::send<LogLevel::Default>(STR("[CairnPanel] init layer {} checked={}\n"),
+                                                    row.layer_id, p.ReturnValue ? 1 : 0);
+                }
                 m_panel_first_poll = false;
             }
             if (changed)
