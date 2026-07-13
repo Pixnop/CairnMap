@@ -848,7 +848,7 @@ namespace CairnMap
             Engine::call(entry.slot, L"SetAutoSize", aut);
             Engine::ParamsSetAlignment align{{0.5, 0.5}};
             Engine::call(entry.slot, L"SetAlignment", align);
-            const double sz = std::clamp(entry.base_size / m_applied_zoom, 3.0, 64.0);
+            const double sz = std::clamp(entry.base_size / m_applied_zoom, 7.0, 40.0);
             Engine::ParamsSetSize size{{sz, sz}};
             Engine::call(entry.slot, L"SetSize", size);
             Engine::ParamsSetPosition setpos{{px, py}};
@@ -1142,7 +1142,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                const double sz = std::clamp(d.base_size / zoom, 3.0, 64.0);
+                const double sz = std::clamp(d.base_size / zoom, 7.0, 40.0);
                 Engine::ParamsSetSize size{{sz, sz}};
                 Engine::call(d.slot, L"SetSize", size);
             }
