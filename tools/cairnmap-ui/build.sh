@@ -14,7 +14,7 @@ echo "== 1/3 assets (python) =="
     -unattended -nopause -nosplash -nullrhi -stdout
 
 echo "== 2/3 cook (Windows target) =="
-"$EDITOR_CMD" "$PROJECT" -run=cook -targetplatform=${COOK_TARGET:-Linux} \
+"$EDITOR_CMD" "$PROJECT" -run=cook -targetplatform=${COOK_TARGET:-Linux} -unversioned \
     -unattended -nopause -nosplash -nullrhi -stdout
 
 echo "== 3/3 pak =="
