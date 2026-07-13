@@ -677,7 +677,6 @@ namespace CairnMap
 
         size_t m_emit_cursor = 0;
         static constexpr bool g_icons_enabled = true;    // icons painted in background batches
-        static inline UObject* const kAnyPackage = reinterpret_cast<UObject*>(static_cast<intptr_t>(-1));
 
         std::unordered_map<std::wstring, UObject*> m_tex_index;
         size_t m_tex_index_size = 0;
@@ -823,51 +822,12 @@ namespace CairnMap
         // Paint at most `budget` pending icon textures per call (non-blocking).
         // Runs across ticks so placement stays instant and icons pop in smoothly.
         size_t m_icon_scan = 0;
-        bool m_icon_diag_done = false;
-        auto icon_diagnostic() -> void
-        {
-            if (m_icon_diag_done)
-            {
-                return;
-            }
-            m_icon_diag_done = true;
-            rebuild_texture_index();
-            Output::send<LogLevel::Default>(STR("[CairnDiag] {} Texture2D resident\n"), m_tex_index_size);
-            }
-            for (const auto& layer : Data::kLayers)
-            {
-                if (!layer.icon)
-                {
-                    continue;
-                }
-                auto* tex = layer_texture(layer.icon);
-                Output::send<LogLevel::Default>(STR("[CairnDiag] {}: tex={}\n"), layer.key,
-                                                tex ? STR("FOUND") : STR("MISSING"));
-            }
-            // test SetBrushFromTexture wiring on the first icon dot
-            for (auto& d : m_dots)
-            {
-                if (d.icon && d.widget)
-                {
-                    auto* tex = layer_texture(d.icon);
-                    if (tex)
-                    {
-                        Engine::ParamsSetBrushFromTexture brush{tex, false};
-                        const bool ok = Engine::call(d.widget, L"SetBrushFromTexture", brush);
-                        Output::send<LogLevel::Default>(STR("[CairnDiag] SetBrushFromTexture call ok={}\n"),
-                                                        ok);
-                    }
-                    break;
-                }
-            }
-        }
         auto paint_icons_batch(size_t budget) -> void
         {
             if (!g_icons_enabled || m_dots.empty())
             {
                 return;
             }
-            icon_diagnostic();
             if (m_tex_index.empty())
             {
                 rebuild_texture_index();
@@ -975,7 +935,6 @@ namespace CairnMap
                 m_emit_cursor = 0;
                 m_applied_zoom = 1.0;
                 m_icon_scan = 0;
-                m_icon_diag_done = false;
                 m_tex_index.clear();
                 m_calibration.reset();
                 m_placed = false;
