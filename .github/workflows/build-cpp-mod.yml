@@ -39,6 +39,7 @@ jobs:
           git clone --depth 1 --branch v1.2.0 https://github.com/UE4SS-RE/ImGuiColorTextEdit.git third/ImGuiColorTextEdit
           # UEPseudo (private) public vendored copy, 2026-07-03 — one week before our pinned UE4SS
           git clone --depth 1 https://github.com/FottenSC/HorseMod.git third/HorseMod
+          git clone --depth 1 --branch v4.1.1 --recurse-submodules https://github.com/zyantific/zydis.git third/zydis
 
       - name: Fetch shipped UE4SS.dll
         shell: bash
@@ -75,8 +76,10 @@ jobs:
           $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/include"
           $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/include/Unreal/Core"
           $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/generated_include"
+          $inc += "/Ithird/zydis/include"
+          $inc += "/Ithird/zydis/dependencies/zycore/include"
           mkdir out
-          cl /nologo /LD /std:c++latest /EHsc /MD /utf-8 /DNDEBUG /DFMT_HEADER_ONLY=1 /DUE_BUILD_SHIPPING=1 /DUBT_COMPILED_PLATFORM=Windows /DPLATFORM_WINDOWS=1 /D_WIN32_WINNT=0x0A00 /DWINVER=0x0A00 /DUNICODE /D_UNICODE `
+          cl /nologo /LD /std:c++latest /EHsc /MD /utf-8 /DNDEBUG /DFMT_HEADER_ONLY=1 /DUE_BUILD_SHIPPING=1 /DUBT_COMPILED_PLATFORM=Windows /DPLATFORM_WINDOWS=1 /D_WIN32_WINNT=0x0A00 /DWINVER=0x0A00 /DZYDIS_STATIC_BUILD /DZYCORE_STATIC_BUILD /DUNICODE /D_UNICODE `
              $inc cpp-mod/mods/CairnMap/src/dllmain.cpp `
              /Feout/main.dll /link UE4SS.lib
           Get-Item out/main.dll
