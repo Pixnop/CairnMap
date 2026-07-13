@@ -15,6 +15,7 @@
 
 #include <DynamicOutput/Output.hpp>
 #include <Mod/CppUserModBase.hpp>
+#include <Unreal/FText.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
@@ -103,6 +104,18 @@ namespace CairnMap
         {
             UObject* Texture{};
             bool bMatchSize{};
+        };
+        struct ParamsSetIsChecked
+        {
+            bool InIsChecked{};
+        };
+        struct ParamsIsChecked
+        {
+            bool ReturnValue{};
+        };
+        struct ParamsSetText
+        {
+            FText InText{};
         };
 
         enum : uint8_t
@@ -204,7 +217,7 @@ namespace CairnMap
     {
         struct Offsets
         {
-            int32_t draw_as = -1, outline = -1, radii = -1, rounding = -1;
+            int32_t draw_as = -1, outline = -1, radii = -1, rounding = -1, tint = -1;
             bool resolved = false;
         };
 
@@ -232,6 +245,10 @@ namespace CairnMap
                 {
                     off.outline = prop->GetOffset_Internal();
                 }
+                if (prop->GetName() == STR("TintColor"))
+                {
+                    off.tint = prop->GetOffset_Internal();
+                }
             }
             for (FProperty* prop : outline_struct->ForEachProperty())
             {
@@ -246,6 +263,90 @@ namespace CairnMap
             }
             off.resolved = off.draw_as >= 0 && off.outline >= 0 && off.radii >= 0 && off.rounding >= 0;
             return off.resolved;
+        }
+
+        // paint a raw FSlateBrush block as a tinted rounded box
+        inline auto paint_brush(uint8_t* brush, const Offsets& off, float r, float g, float b, float a,
+                                double radius) -> void
+        {
+            brush[off.draw_as] = 4;   // RoundedBox
+            uint8_t* outline = brush + off.outline;
+            outline[off.rounding] = 0;   // FixedRadius
+            auto* radii = reinterpret_cast<double*>(outline + off.radii);
+            radii[0] = radii[1] = radii[2] = radii[3] = radius;
+            if (off.tint >= 0)
+            {
+                // FSlateColor: FLinearColor SpecifiedColor leads the struct
+                auto* col = reinterpret_cast<float*>(brush + off.tint);
+                col[0] = r;
+                col[1] = g;
+                col[2] = b;
+                col[3] = a;
+            }
+        }
+
+        // Style a runtime CheckBox so it is visible AND clickable in a shipped
+        // game (default brushes are stripped -> 0px invisible). Unchecked = dark
+        // box, checked = accent box; hovered/pressed mirror them.
+        inline auto make_checkbox(UObject* cb, float ar, float ag, float ab) -> void
+        {
+            static Offsets off;
+            if (!resolve(off) || off.tint < 0)
+            {
+                return;
+            }
+            static int32_t style_off = -1;
+            static int32_t f_unchecked = -1, f_unhover = -1, f_unpress = -1;
+            static int32_t f_checked = -1, f_chkhover = -1, f_chkpress = -1;
+            if (style_off < 0)
+            {
+                if (auto* cb_class = cb->GetClassPrivate())
+                {
+                    for (FProperty* p : cb_class->ForEachPropertyInChain())
+                    {
+                        if (p->GetName() == STR("WidgetStyle"))
+                        {
+                            style_off = p->GetOffset_Internal();
+                        }
+                    }
+                }
+                auto* cbs = UObjectGlobals::StaticFindObject<UStruct*>(nullptr, nullptr,
+                                                                       STR("/Script/SlateCore.CheckBoxStyle"));
+                if (cbs)
+                {
+                    for (FProperty* p : cbs->ForEachProperty())
+                    {
+                        const auto n = p->GetName();
+                        if (n == STR("UncheckedImage")) f_unchecked = p->GetOffset_Internal();
+                        else if (n == STR("UncheckedHoveredImage")) f_unhover = p->GetOffset_Internal();
+                        else if (n == STR("UncheckedPressedImage")) f_unpress = p->GetOffset_Internal();
+                        else if (n == STR("CheckedImage")) f_checked = p->GetOffset_Internal();
+                        else if (n == STR("CheckedHoveredImage")) f_chkhover = p->GetOffset_Internal();
+                        else if (n == STR("CheckedPressedImage")) f_chkpress = p->GetOffset_Internal();
+                    }
+                }
+            }
+            if (style_off < 0 || f_unchecked < 0 || f_checked < 0)
+            {
+                return;
+            }
+            auto* style = cb->GetValuePtrByPropertyNameInChain<uint8_t>(STR("WidgetStyle"));
+            if (!style)
+            {
+                return;
+            }
+            auto dark = [&](int32_t f) {
+                if (f >= 0) paint_brush(style + f, off, 0.12f, 0.12f, 0.14f, 1.0f, 3.0);
+            };
+            auto accent = [&](int32_t f) {
+                if (f >= 0) paint_brush(style + f, off, ar, ag, ab, 1.0f, 3.0);
+            };
+            dark(f_unchecked);
+            dark(f_unhover);
+            dark(f_unpress);
+            accent(f_checked);
+            accent(f_chkhover);
+            accent(f_chkpress);
         }
 
         inline auto make_image(UObject* image_widget) -> void
@@ -419,6 +520,9 @@ namespace CairnMap
         UObject* m_layer_canvas = nullptr;                 // our own CanvasPanel
         UObject* m_layer_slot = nullptr;                   // its canvas slot
         uint8_t m_mask_geom[64] = {};                      // last-seen mask LayoutData
+        // layer ids: 0..N-1 = Data::kLayers index; 1000 = effigies, 1001 = notes
+        static constexpr int kEffigyLayer = 1000;
+        static constexpr int kNoteLayer = 1001;
         struct Dot
         {
             UObject* widget;
@@ -426,8 +530,48 @@ namespace CairnMap
             const wchar_t* icon;   // nullptr = plain dot
             bool icon_applied;
             double base_size;
+            int layer_id;
+            bool base_hidden;   // collected effigy/note: hidden regardless of toggle
         };
         std::vector<Dot> m_dots;                           // pooled dot widgets
+        std::unordered_map<int, bool> m_layer_on;          // toggle state per layer id
+
+        // interface panel (P2): screen-fixed rows with native checkboxes
+        UObject* m_panel_canvas = nullptr;
+        std::wstring m_panel_root_name;
+        struct PanelRow
+        {
+            UObject* checkbox;
+            int layer_id;
+            bool last_checked;
+        };
+        std::vector<PanelRow> m_panel_rows;
+
+        auto is_layer_on(int layer_id) const -> bool
+        {
+            auto it = m_layer_on.find(layer_id);
+            return it == m_layer_on.end() ? true : it->second;
+        }
+
+        // layer_id -> display label / accent color
+        struct LayerInfo
+        {
+            int id;
+            const wchar_t* label;
+            float r, g, b;
+        };
+        auto panel_layers() -> std::vector<LayerInfo>
+        {
+            std::vector<LayerInfo> v;
+            v.push_back({kEffigyLayer, L"Effigies", 0.35f, 1.0f, 0.20f});
+            v.push_back({kNoteLayer, L"Notes", 0.20f, 0.88f, 1.0f});
+            int i = 0;
+            for (const auto& l : Data::kLayers)
+            {
+                v.push_back({i++, l.key, l.r / 255.0f, l.g / 255.0f, l.b / 255.0f});
+            }
+            return v;
+        }
         struct GuidDot
         {
             size_t dot_index;
@@ -481,11 +625,13 @@ namespace CairnMap
             }
         }
 
-        // Find the visible map body's Canvas_MapBody + Canvas_ForIcon_Mask.
-        auto find_map(UObject*& out_map_body_canvas, UObject*& out_mask_canvas) -> bool
+        // Find the visible map body's root (screen-fixed canvas) + Canvas_MapBody
+        // (pans/zooms) + Canvas_ForIcon_Mask.
+        auto find_map(UObject*& out_root, UObject*& out_map_body_canvas, UObject*& out_mask_canvas) -> bool
         {
             std::vector<UObject*> bodies;
             UObjectGlobals::FindAllOf(STR("WBP_Map_Body_C"), bodies);
+            UObject* best_root = nullptr;
             UObject* best_mask = nullptr;
             UObject* best_body_canvas = nullptr;
             int best_pins = 0;
@@ -531,8 +677,10 @@ namespace CairnMap
                     best_pins = pins + 1;
                     best_mask = mask;
                     best_body_canvas = body_canvas;
+                    best_root = *root;
                 }
             }
+            out_root = best_root;
             out_map_body_canvas = best_body_canvas;
             out_mask_canvas = best_mask;
             return best_mask != nullptr;
@@ -628,7 +776,7 @@ namespace CairnMap
 
         // one dot: pooled construction, canvas attach, styling. Returns index or SIZE_MAX.
         auto emit_dot(UClass* image_class, double px, double py, const Engine::FLinearColor_& color,
-                      const wchar_t* icon, double base_size, bool visible) -> size_t
+                      const wchar_t* icon, double base_size, bool visible, int layer_id) -> size_t
         {
             UObject* dot = nullptr;
             if (m_emit_cursor < m_dots.size())
@@ -644,11 +792,13 @@ namespace CairnMap
                     return SIZE_MAX;
                 }
                 Style::make_round(dot);
-                m_dots.push_back({dot, nullptr, nullptr, false, base_size});
+                m_dots.push_back({dot, nullptr, nullptr, false, base_size, layer_id, false});
             }
             Dot& entry = m_dots[m_emit_cursor];
             entry.icon = g_icons_enabled ? icon : nullptr;
             entry.base_size = base_size;
+            entry.layer_id = layer_id;
+            entry.base_hidden = !visible;
 
             Engine::ParamsAddChildToCanvas add{dot, nullptr};
             if (!Engine::call(m_layer_canvas, L"AddChildToCanvas", add) || !add.ReturnValue)
@@ -724,8 +874,10 @@ namespace CairnMap
             m_emit_cursor = 0;
             size_t placed = 0;
             const auto t0 = std::chrono::steady_clock::now();
+            int layer_index = 0;
             for (const auto& layer : Data::kLayers)
             {
+                const int this_layer = layer_index++;
                 if (!layer.default_on)
                 {
                     continue;
@@ -739,7 +891,8 @@ namespace CairnMap
                     {
                         continue;
                     }
-                    if (emit_dot(image_class, pos.x, pos.y, color, layer.icon, 14.0, true) != SIZE_MAX)
+                    if (emit_dot(image_class, pos.x, pos.y, color, layer.icon, 14.0, true, this_layer) !=
+                        SIZE_MAX)
                     {
                         ++placed;
                     }
@@ -751,7 +904,7 @@ namespace CairnMap
             size_t hidden = 0;
             auto place_guid_layer = [&](const Data::GuidPoint* pts, size_t count,
                                         const Engine::FLinearColor_& color, const wchar_t* icon,
-                                        double base_size) {
+                                        double base_size, int layer_id) {
                 for (size_t i = 0; i < count; ++i)
                 {
                     const bool is_collected =
@@ -766,7 +919,7 @@ namespace CairnMap
                         continue;
                     }
                     const size_t idx =
-                        emit_dot(image_class, pos.x, pos.y, color, icon, base_size, !is_collected);
+                        emit_dot(image_class, pos.x, pos.y, color, icon, base_size, !is_collected, layer_id);
                     if (idx != SIZE_MAX)
                     {
                         m_guid_dots.push_back({idx, &pts[i]});
@@ -775,9 +928,9 @@ namespace CairnMap
                 }
             };
             place_guid_layer(Data::kEffigies, std::size(Data::kEffigies), {0.35f, 1.0f, 0.20f, 1.0f},
-                             Data::kEffigyIcon, 20.0);
+                             Data::kEffigyIcon, 20.0, kEffigyLayer);
             place_guid_layer(Data::kNotes, std::size(Data::kNotes), {0.20f, 0.88f, 1.0f, 1.0f},
-                             Data::kNoteIcon, 20.0);
+                             Data::kNoteIcon, 20.0, kNoteLayer);
             // collapse any leftover pooled dots beyond this pass
             for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
             {
@@ -791,6 +944,22 @@ namespace CairnMap
                 placed, hidden, m_dots.size(), ms);
             m_placed = true;
             m_collapsed = false;
+        }
+
+        // Visibility = layer toggled on AND not collected. Cheap per-tick-safe
+        // diff (only SetVisibility, never re-parent).
+        auto apply_layer_visibility() -> void
+        {
+            for (const auto& d : m_dots)
+            {
+                if (!d.slot)
+                {
+                    continue;
+                }
+                const bool show = is_layer_on(d.layer_id) && !d.base_hidden;
+                Engine::ParamsSetVisibility vis{show ? Engine::Vis_HitTestInvisible : Engine::Vis_Collapsed};
+                Engine::call(d.widget, L"SetVisibility", vis);
+            }
         }
 
         // ⚠ never re-parent pooled widgets on refresh: 5k AddChild churn per
@@ -811,10 +980,9 @@ namespace CairnMap
             {
                 const bool is_collected = collected.contains(Collected::guid_key(gd.pt->guid));
                 hidden += is_collected ? 1 : 0;
-                Engine::ParamsSetVisibility vis{
-                    is_collected ? Engine::Vis_Collapsed : Engine::Vis_HitTestInvisible};
-                Engine::call(m_dots[gd.dot_index].widget, L"SetVisibility", vis);
+                m_dots[gd.dot_index].base_hidden = is_collected;
             }
+            apply_layer_visibility();
             Output::send<LogLevel::Default>(STR("[CairnMap] collected refresh: {} hidden\n"), hidden);
         }
 
@@ -906,11 +1074,154 @@ namespace CairnMap
             }
         }
 
+        // Build the interface panel once per map instance, in the screen-fixed
+        // root canvas (not the panning map canvas). Rows: [checkbox][dot][label].
+        auto build_panel(UObject* root) -> void
+        {
+            if (m_panel_canvas || !root)
+            {
+                return;
+            }
+            auto* canvas_class =
+                UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/UMG.CanvasPanel"));
+            auto* image_class =
+                UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/UMG.Image"));
+            auto* cb_class =
+                UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/UMG.CheckBox"));
+            auto* txt_class =
+                UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/UMG.TextBlock"));
+            if (!canvas_class || !image_class || !cb_class || !txt_class)
+            {
+                return;
+            }
+            // panel container
+            {
+                FStaticConstructObjectParameters params{canvas_class, root};
+                m_panel_canvas = UObjectGlobals::StaticConstructObject(params);
+            }
+            if (!m_panel_canvas)
+            {
+                return;
+            }
+            Engine::ParamsAddChildToCanvas add{m_panel_canvas, nullptr};
+            if (!Engine::call(root, L"AddChildToCanvas", add) || !add.ReturnValue)
+            {
+                m_panel_canvas = nullptr;
+                return;
+            }
+            // top-left, fixed size
+            const auto rows = panel_layers();
+            const double row_h = 22.0;
+            const double width = 190.0;
+            const double height = row_h * static_cast<double>(rows.size()) + 12.0;
+            {
+                Engine::ParamsSetAnchors anch{0, 0, 0, 0};
+                Engine::call(add.ReturnValue, L"SetAnchors", anch);
+                Engine::ParamsSetAlignment align{{0.0, 0.0}};
+                Engine::call(add.ReturnValue, L"SetAlignment", align);
+                Engine::ParamsSetOffsets offs{24.0f, 90.0f, static_cast<float>(width),
+                                              static_cast<float>(height)};
+                Engine::call(add.ReturnValue, L"SetOffsets", offs);
+            }
+            // background
+            auto add_to_panel = [&](UObject* w, double x, double y, double w_, double h_) -> UObject* {
+                Engine::ParamsAddChildToCanvas a{w, nullptr};
+                if (!Engine::call(m_panel_canvas, L"AddChildToCanvas", a) || !a.ReturnValue)
+                {
+                    return nullptr;
+                }
+                Engine::ParamsSetAlignment al{{0.0, 0.0}};
+                Engine::call(a.ReturnValue, L"SetAlignment", al);
+                Engine::ParamsSetAutoSize aut{false};
+                Engine::call(a.ReturnValue, L"SetAutoSize", aut);
+                Engine::ParamsSetSize sz{{w_, h_}};
+                Engine::call(a.ReturnValue, L"SetSize", sz);
+                Engine::ParamsSetPosition p{{x, y}};
+                Engine::call(a.ReturnValue, L"SetPosition", p);
+                return a.ReturnValue;
+            };
+            {
+                FStaticConstructObjectParameters params{image_class, m_panel_canvas};
+                UObject* bg = UObjectGlobals::StaticConstructObject(params);
+                if (bg)
+                {
+                    Style::make_round(bg);
+                    Engine::ParamsSetColorAndOpacity c{{0.02f, 0.02f, 0.04f, 0.78f}};
+                    Engine::call(bg, L"SetColorAndOpacity", c);
+                    Engine::ParamsSetVisibility v{Engine::Vis_HitTestInvisible};
+                    Engine::call(bg, L"SetVisibility", v);
+                    add_to_panel(bg, 0, 0, width, height);
+                }
+            }
+            // rows
+            m_panel_rows.clear();
+            double y = 6.0;
+            for (const auto& li : rows)
+            {
+                FStaticConstructObjectParameters cbp{cb_class, m_panel_canvas};
+                UObject* cb = UObjectGlobals::StaticConstructObject(cbp);
+                if (cb)
+                {
+                    Style::make_checkbox(cb, li.r, li.g, li.b);
+                    Engine::ParamsSetIsChecked chk{is_layer_on(li.id)};
+                    Engine::call(cb, L"SetIsChecked", chk);
+                    Engine::ParamsSetVisibility v{Engine::Vis_Visible};
+                    Engine::call(cb, L"SetVisibility", v);
+                    add_to_panel(cb, 6, y, 16, 16);
+                    m_panel_rows.push_back({cb, li.id, is_layer_on(li.id)});
+                }
+                FStaticConstructObjectParameters tp{txt_class, m_panel_canvas};
+                UObject* txt = UObjectGlobals::StaticConstructObject(tp);
+                if (txt)
+                {
+                    Engine::ParamsSetText st{FText(li.label)};
+                    Engine::call(txt, L"SetText", st);
+                    Engine::ParamsSetColorAndOpacity tc{{li.r, li.g, li.b, 1.0f}};
+                    Engine::call(txt, L"SetColorAndOpacity", tc);
+                    Engine::ParamsSetVisibility v{Engine::Vis_HitTestInvisible};
+                    Engine::call(txt, L"SetVisibility", v);
+                    add_to_panel(txt, 28, y, 150, 18);
+                }
+                y += row_h;
+            }
+            m_panel_root_name = root->GetFullName();
+            Output::send<LogLevel::Default>(STR("[CairnMap] panel built ({} rows)\n"), m_panel_rows.size());
+        }
+
+        // Poll checkbox states; on change, update toggle + layer visibility.
+        auto poll_panel() -> void
+        {
+            bool changed = false;
+            for (auto& row : m_panel_rows)
+            {
+                if (!row.checkbox)
+                {
+                    continue;
+                }
+                Engine::ParamsIsChecked p{};
+                if (!Engine::call(row.checkbox, L"IsChecked", p))
+                {
+                    continue;
+                }
+                if (p.ReturnValue != row.last_checked)
+                {
+                    row.last_checked = p.ReturnValue;
+                    m_layer_on[row.layer_id] = p.ReturnValue;
+                    changed = true;
+                }
+            }
+            if (changed)
+            {
+                apply_layer_visibility();
+            }
+        }
+
         auto tick() -> void
         {
+            UObject* root = nullptr;
             UObject* map_body_canvas = nullptr;
             UObject* mask = nullptr;
-            if (!find_map(map_body_canvas, mask))
+            if (!find_map(root, map_body_canvas, mask))
             {
                 // map closed: collapse our overlay once (widgets stay pooled)
                 if (m_layer_canvas && !m_collapsed)
@@ -939,6 +1250,8 @@ namespace CairnMap
                 m_calibration.reset();
                 m_placed = false;
                 m_collapsed = true;
+                m_panel_canvas = nullptr;   // died with the tree
+                m_panel_rows.clear();
             }
 
             if (!m_calibration)
@@ -984,6 +1297,7 @@ namespace CairnMap
             if (!m_placed)
             {
                 place_dots();
+                apply_layer_visibility();   // honor toggles from the start
             }
             else if (m_collapsed)
             {
@@ -992,6 +1306,10 @@ namespace CairnMap
                 m_collapsed = false;
                 refresh_collected();   // visibility-only diff, no re-parenting
             }
+
+            // interface panel: build once, then poll toggles each tick
+            build_panel(root);
+            poll_panel();
         }
     };
 } // namespace CairnMap
