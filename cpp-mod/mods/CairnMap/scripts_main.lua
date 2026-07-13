@@ -9,6 +9,7 @@ local TEX = {
     "T_itemicon_Material_NightStone", "T_itemicon_Material_DogCoin",
     "T_itemicon_Food_Lotus_hp_01", "T_itemicon_Relic",
     "T_itemicon_Material_Sapphire", "T_itemicon_Consume_TechnologyBook_G1",
+    "T_itemicon_Consume_TreasureBoxKey01", "T_itemicon_Food_BaconEggs",
 }
 local function pass()
     ExecuteInGameThread(function()
