@@ -819,6 +819,24 @@ namespace CairnMap
             m_icon_diag_done = true;
             rebuild_texture_index();
             Output::send<LogLevel::Default>(STR("[CairnDiag] {} Texture2D resident\n"), m_tex_index_size);
+            {
+                std::vector<UObject*> texs;
+                UObjectGlobals::FindAllOf(STR("Texture2D"), texs);
+                int shown = 0;
+                for (auto* t : texs)
+                {
+                    if (!t)
+                        continue;
+                    const std::wstring nm = t->GetName();
+                    if ((nm.find(L"Coal") != std::wstring::npos ||
+                         nm.find(L"itemicon") != std::wstring::npos) &&
+                        shown < 8)
+                    {
+                        Output::send<LogLevel::Default>(STR("[CairnDiag] sample name: '{}'\n"), nm);
+                        ++shown;
+                    }
+                }
+            }
             for (const auto& layer : Data::kLayers)
             {
                 if (!layer.icon)
