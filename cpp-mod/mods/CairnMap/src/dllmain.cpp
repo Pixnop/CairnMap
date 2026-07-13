@@ -951,26 +951,15 @@ namespace CairnMap
         // diff (only SetVisibility, never re-parent).
         auto apply_layer_visibility() -> void
         {
-            std::unordered_map<int, int> shown, total;
             for (const auto& d : m_dots)
             {
                 if (!d.slot)
                 {
                     continue;
                 }
-                total[d.layer_id]++;
                 const bool show = is_layer_on(d.layer_id) && !d.base_hidden;
-                if (show)
-                {
-                    shown[d.layer_id]++;
-                }
                 Engine::ParamsSetVisibility vis{show ? Engine::Vis_HitTestInvisible : Engine::Vis_Collapsed};
                 Engine::call(d.widget, L"SetVisibility", vis);
-            }
-            for (auto& [lid, tot] : total)
-            {
-                Output::send<LogLevel::Default>(STR("[CairnVis] layer {} : {}/{} shown (on={})\n"), lid,
-                                                shown[lid], tot, is_layer_on(lid) ? 1 : 0);
             }
         }
 
@@ -1002,15 +991,33 @@ namespace CairnMap
         // Paint at most `budget` pending icon textures per call (non-blocking).
         // Runs across ticks so placement stays instant and icons pop in smoothly.
         size_t m_icon_scan = 0;
+        bool m_icons_ready = false;
         auto paint_icons_batch(size_t budget) -> void
         {
             if (!g_icons_enabled || m_dots.empty())
             {
                 return;
             }
-            if (m_tex_index.empty())
+            // rebuild the texture index until all layer icons resolve: the
+            // preloader may make them resident after the first build (stale
+            // index otherwise never picks them up).
+            if (!m_icons_ready)
             {
                 rebuild_texture_index();
+                bool all = true;
+                for (const auto& l : Data::kLayers)
+                {
+                    if (l.icon && !layer_texture(l.icon))
+                    {
+                        all = false;
+                        break;
+                    }
+                }
+                if (all && (layer_texture(Data::kEffigyIcon) && layer_texture(Data::kNoteIcon)))
+                {
+                    m_icons_ready = true;
+                    Output::send<LogLevel::Default>(STR("[CairnMap] all icon textures indexed\n"));
+                }
             }
             size_t painted = 0, scanned = 0;
             const size_t n = m_dots.size();
@@ -1232,20 +1239,10 @@ namespace CairnMap
                     row.last_checked = p.ReturnValue;
                     m_layer_on[row.layer_id] = p.ReturnValue;
                     changed = true;
-                    Output::send<LogLevel::Default>(STR("[CairnPanel] layer {} -> {}\n"), row.layer_id,
-                                                    p.ReturnValue ? 1 : 0);
                 }
             }
             if (m_panel_first_poll)
             {
-                // one-time raw dump of every checkbox reading to confirm clicks track
-                for (auto& row : m_panel_rows)
-                {
-                    Engine::ParamsIsChecked p{};
-                    Engine::call(row.checkbox, L"IsChecked", p);
-                    Output::send<LogLevel::Default>(STR("[CairnPanel] init layer {} checked={}\n"),
-                                                    row.layer_id, p.ReturnValue ? 1 : 0);
-                }
                 m_panel_first_poll = false;
             }
             if (changed)
@@ -1285,6 +1282,7 @@ namespace CairnMap
                 m_applied_zoom = 1.0;
                 m_icon_scan = 0;
                 m_tex_index.clear();
+                m_icons_ready = false;
                 m_calibration.reset();
                 m_placed = false;
                 m_collapsed = true;
