@@ -248,6 +248,20 @@ namespace CairnMap
             return off.resolved;
         }
 
+        inline auto make_image(UObject* image_widget) -> void
+        {
+            static Offsets off;
+            if (!resolve(off))
+            {
+                return;
+            }
+            auto* brush = image_widget->GetValuePtrByPropertyNameInChain<uint8_t>(STR("Brush"));
+            if (brush)
+            {
+                brush[off.draw_as] = 0;   // ESlateBrushDrawType::Image (full frame, no crop)
+            }
+        }
+
         inline auto make_round(UObject* image_widget) -> void
         {
             static Offsets off;
@@ -653,7 +667,7 @@ namespace CairnMap
             Engine::call(entry.slot, L"SetAutoSize", aut);
             Engine::ParamsSetAlignment align{{0.5, 0.5}};
             Engine::call(entry.slot, L"SetAlignment", align);
-            const double sz = std::clamp(entry.base_size / std::sqrt(m_applied_zoom), 2.5, 26.0);
+            const double sz = std::clamp(entry.base_size / m_applied_zoom, 3.0, 64.0);
             Engine::ParamsSetSize size{{sz, sz}};
             Engine::call(entry.slot, L"SetSize", size);
             Engine::ParamsSetPosition setpos{{px, py}};
@@ -819,23 +833,6 @@ namespace CairnMap
             m_icon_diag_done = true;
             rebuild_texture_index();
             Output::send<LogLevel::Default>(STR("[CairnDiag] {} Texture2D resident\n"), m_tex_index_size);
-            {
-                std::vector<UObject*> texs;
-                UObjectGlobals::FindAllOf(STR("Texture2D"), texs);
-                int shown = 0;
-                for (auto* t : texs)
-                {
-                    if (!t)
-                        continue;
-                    const std::wstring nm = t->GetName();
-                    if ((nm.find(L"Coal") != std::wstring::npos ||
-                         nm.find(L"itemicon") != std::wstring::npos) &&
-                        shown < 8)
-                    {
-                        Output::send<LogLevel::Default>(STR("[CairnDiag] sample name: '{}'\n"), nm);
-                        ++shown;
-                    }
-                }
             }
             for (const auto& layer : Data::kLayers)
             {
@@ -893,6 +890,7 @@ namespace CairnMap
                 }
                 Engine::ParamsSetBrushFromTexture brush{tex, false};
                 Engine::call(d.widget, L"SetBrushFromTexture", brush);
+                Style::make_image(d.widget);   // full icon, no circular crop
                 Engine::ParamsSetColorAndOpacity col{{1.0f, 1.0f, 1.0f, 1.0f}};
                 Engine::call(d.widget, L"SetColorAndOpacity", col);
                 d.icon_applied = true;
@@ -931,7 +929,7 @@ namespace CairnMap
         auto sync_dot_scale(UObject* mask) -> void
         {
             const double zoom = current_zoom(mask);
-            if (zoom <= 0.0 || std::abs(zoom - m_applied_zoom) / m_applied_zoom < 0.15)
+            if (zoom <= 0.0 || std::abs(zoom - m_applied_zoom) / m_applied_zoom < 0.05)
             {
                 return;
             }
@@ -942,7 +940,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                const double sz = std::clamp(d.base_size / std::sqrt(zoom), 2.5, 26.0);
+                const double sz = std::clamp(d.base_size / zoom, 3.0, 64.0);
                 Engine::ParamsSetSize size{{sz, sz}};
                 Engine::call(d.slot, L"SetSize", size);
             }
