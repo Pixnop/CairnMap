@@ -27,6 +27,6 @@ while IFS= read -r -d '' f; do
     rel="${f#"$COOKED"/}"
     echo "\"$f\" \"../../../Pal/Content/$rel\"" >> "$RESP"
 done < <(find "$COOKED" -type f \( -name '*.uasset' -o -name '*.uexp' -o -name '*.ubulk' \) -print0)
-"$UNREALPAK" "$PWD/Saved/CairnMapUI_P.pak" -create="$RESP" -compress
+"$UNREALPAK" "$PWD/Saved/CairnMapUI_P.pak" -create="$RESP"
 echo "OK: $PWD/Saved/CairnMapUI_P.pak"
 echo "Installer dans: Palworld/Pal/Content/Paks/~mods/"
