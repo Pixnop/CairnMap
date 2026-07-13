@@ -664,7 +664,27 @@ namespace CairnMap
         size_t m_emit_cursor = 0;
         static constexpr bool g_icons_enabled = true;    // icons painted in background batches
         static inline UObject* const kAnyPackage = reinterpret_cast<UObject*>(static_cast<intptr_t>(-1));
-        std::unordered_map<const wchar_t*, UObject*> m_texture_cache;
+
+        std::unordered_map<std::wstring, UObject*> m_tex_index;
+        size_t m_tex_index_size = 0;
+
+        // Build a short-name -> loaded-texture index from all resident Texture2D
+        // objects (FindObject-by-path is unreliable here; the preloader keeps the
+        // textures resident, so enumeration is the robust way to reach them).
+        auto rebuild_texture_index() -> void
+        {
+            std::vector<UObject*> texs;
+            UObjectGlobals::FindAllOf(STR("Texture2D"), texs);
+            m_tex_index.clear();
+            for (auto* t : texs)
+            {
+                if (t)
+                {
+                    m_tex_index[t->GetName()] = t;
+                }
+            }
+            m_tex_index_size = texs.size();
+        }
 
         auto layer_texture(const wchar_t* icon) -> UObject*
         {
@@ -672,14 +692,12 @@ namespace CairnMap
             {
                 return nullptr;
             }
-            auto it = m_texture_cache.find(icon);
-            if (it != m_texture_cache.end() && it->second)
+            auto it = m_tex_index.find(icon);
+            if (it != m_tex_index.end())
             {
                 return it->second;
             }
-            auto* tex = UObjectGlobals::StaticFindObject<UObject*>(nullptr, kAnyPackage, icon);
-            m_texture_cache[icon] = tex;
-            return tex;
+            return nullptr;
         }
 
         auto place_dots() -> void
@@ -799,13 +817,15 @@ namespace CairnMap
                 return;
             }
             m_icon_diag_done = true;
+            rebuild_texture_index();
+            Output::send<LogLevel::Default>(STR("[CairnDiag] {} Texture2D resident\n"), m_tex_index_size);
             for (const auto& layer : Data::kLayers)
             {
                 if (!layer.icon)
                 {
                     continue;
                 }
-                auto* tex = UObjectGlobals::StaticFindObject<UObject*>(nullptr, kAnyPackage, layer.icon);
+                auto* tex = layer_texture(layer.icon);
                 Output::send<LogLevel::Default>(STR("[CairnDiag] {}: tex={}\n"), layer.key,
                                                 tex ? STR("FOUND") : STR("MISSING"));
             }
@@ -814,7 +834,7 @@ namespace CairnMap
             {
                 if (d.icon && d.widget)
                 {
-                    auto* tex = UObjectGlobals::StaticFindObject<UObject*>(nullptr, kAnyPackage, d.icon);
+                    auto* tex = layer_texture(d.icon);
                     if (tex)
                     {
                         Engine::ParamsSetBrushFromTexture brush{tex, false};
@@ -833,7 +853,10 @@ namespace CairnMap
                 return;
             }
             icon_diagnostic();
-            std::erase_if(m_texture_cache, [](const auto& kv) { return kv.second == nullptr; });
+            if (m_tex_index.empty())
+            {
+                rebuild_texture_index();
+            }
             size_t painted = 0, scanned = 0;
             const size_t n = m_dots.size();
             while (scanned < n && painted < budget)
@@ -937,6 +960,7 @@ namespace CairnMap
                 m_applied_zoom = 1.0;
                 m_icon_scan = 0;
                 m_icon_diag_done = false;
+                m_tex_index.clear();
                 m_calibration.reset();
                 m_placed = false;
                 m_collapsed = true;
