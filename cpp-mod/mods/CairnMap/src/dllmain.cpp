@@ -573,9 +573,11 @@ namespace CairnMap
         UObject* m_layer_canvas = nullptr;                 // our own CanvasPanel
         UObject* m_layer_slot = nullptr;                   // its canvas slot
         uint8_t m_mask_geom[64] = {};                      // last-seen mask LayoutData
-        // layer ids: 0..N-1 = Data::kLayers index; 1000 = effigies, 1001 = notes
+        // layer ids: 0..N-1 = Data::kLayers index; 1000 = effigies, 1001 = notes,
+        // 1002 = live eggs (no static positions; enumerated from loaded actors)
         static constexpr int kEffigyLayer = 1000;
         static constexpr int kNoteLayer = 1001;
+        static constexpr int kEggLayer = 1002;
         struct Dot
         {
             UObject* widget;
@@ -619,6 +621,7 @@ namespace CairnMap
             std::vector<LayerInfo> v;
             v.push_back({kEffigyLayer, L"Effigies", 0.35f, 1.0f, 0.20f});
             v.push_back({kNoteLayer, L"Notes", 0.20f, 0.88f, 1.0f});
+            v.push_back({kEggLayer, L"Eggs (nearby)", 1.0f, 0.82f, 0.15f});
             int i = 0;
             for (const auto& l : Data::kLayers)
             {
@@ -641,7 +644,6 @@ namespace CairnMap
         bool m_collapsed = true;
         int m_log_budget = 20;
         bool m_flag_probe_done = false;
-        bool m_loot_probe_done = false;
 
       public:
         Mod()
@@ -884,6 +886,38 @@ namespace CairnMap
             return m_emit_cursor++;
         }
 
+        // Enumerate PalEgg loot actors currently streamed in and place a dot per
+        // egg (projected from its world location). Returns the count placed.
+        auto place_live_eggs(UClass* image_class) -> size_t
+        {
+            if (!m_calibration)
+            {
+                return 0;
+            }
+            std::vector<UObject*> eggs;
+            UObjectGlobals::FindAllOf(STR("PalMapObjectPalEgg"), eggs);
+            size_t shown = 0;
+            for (auto* egg : eggs)
+            {
+                double ex = 0, ey = 0, ez = 0;
+                if (!egg || !Engine::actor_location(egg, ex, ey, ez) || (ex == 0 && ey == 0))
+                {
+                    continue;
+                }
+                const auto pos = m_calibration->transform.apply(ex, ey);
+                if (pos.x != pos.x || pos.x < -2000 || pos.x > 6000 || pos.y < -2000 || pos.y > 6000)
+                {
+                    continue;
+                }
+                if (emit_dot(image_class, pos.x, pos.y, {1.0f, 0.82f, 0.15f, 1.0f}, nullptr, 18.0, true,
+                             kEggLayer) != SIZE_MAX)
+                {
+                    ++shown;
+                }
+            }
+            return shown;
+        }
+
         size_t m_emit_cursor = 0;
         static constexpr bool g_icons_enabled = false;   // item icons unreachable from C++ (Lua object-space barrier); colored dots
 
@@ -1027,40 +1061,13 @@ namespace CairnMap
             Output::send<LogLevel::Default>(
                 STR("[CairnFlag] hidden effigies={}/{} notes={}/{}\n"), eff_hidden,
                 std::size(Data::kEffigies), note_hidden, std::size(Data::kNotes));
-            // one-shot loot probe: how many chest/egg loot actors are loaded near
-            // the player, can we read their world position, and where is the player?
-            // (No widget changes here; read-only, game thread. Informs the live
-            // nearby-masking design before we touch rendering.)
-            if (!m_loot_probe_done)
-            {
-                m_loot_probe_done = true;
-                std::vector<UObject*> boxes, eggs;
-                UObjectGlobals::FindAllOf(STR("PalMapObjectTreasureBox"), boxes);
-                UObjectGlobals::FindAllOf(STR("PalMapObjectPalEgg"), eggs);
-                double px = 0, py = 0, pz = 0;
-                bool have_player = false;
-                if (auto* pc = UObjectGlobals::FindFirstOf(STR("PalPlayerCharacter")))
-                {
-                    have_player = Engine::actor_location(pc, px, py, pz);
-                }
-                Output::send<LogLevel::Default>(
-                    STR("[CairnLoot] boxes={} eggs={} player=({},{},{}) have_player={}\n"),
-                    boxes.size(), eggs.size(), (int)px, (int)py, (int)pz, have_player);
-                int shown = 0;
-                for (auto* b : boxes)
-                {
-                    double bx = 0, by = 0, bz = 0;
-                    if (b && Engine::actor_location(b, bx, by, bz) && (bx != 0 || by != 0))
-                    {
-                        Output::send<LogLevel::Default>(STR("[CairnLoot] box[{}] world=({},{})\n"),
-                                                        shown, (int)bx, (int)by);
-                        if (++shown >= 3)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
+            // live eggs: no static positions (random lottery placement + respawn),
+            // so enumerate the PalEgg loot actors currently loaded around the player
+            // and place a dot at each. Only covers the streamed-in area near you; the
+            // set refreshes whenever the map is reopened from a new location.
+            const size_t egg_shown = place_live_eggs(image_class);
+            placed += egg_shown;
+            Output::send<LogLevel::Default>(STR("[CairnLoot] live eggs placed={}\n"), egg_shown);
             // collapse any leftover pooled dots beyond this pass
             for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
             {
