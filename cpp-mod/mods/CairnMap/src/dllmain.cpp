@@ -180,6 +180,77 @@ namespace CairnMap
     } // namespace Engine
 
 
+    // ----------------------------------------------------------- dot styling
+    // Round dots without any texture: FSlateBrush.DrawAs = RoundedBox with a
+    // fixed corner radius, written via reflection-resolved offsets.
+    namespace Style
+    {
+        struct Offsets
+        {
+            int32_t draw_as = -1, outline = -1, radii = -1, rounding = -1;
+            bool resolved = false;
+        };
+
+        inline auto resolve(Offsets& off) -> bool
+        {
+            if (off.resolved)
+            {
+                return true;
+            }
+            auto* brush_struct =
+                UObjectGlobals::StaticFindObject<UStruct*>(nullptr, nullptr, STR("/Script/SlateCore.SlateBrush"));
+            auto* outline_struct = UObjectGlobals::StaticFindObject<UStruct*>(
+                nullptr, nullptr, STR("/Script/SlateCore.SlateBrushOutlineSettings"));
+            if (!brush_struct || !outline_struct)
+            {
+                return false;
+            }
+            for (FProperty* prop : brush_struct->ForEachProperty())
+            {
+                if (prop->GetName() == STR("DrawAs"))
+                {
+                    off.draw_as = prop->GetOffset_Internal();
+                }
+                if (prop->GetName() == STR("OutlineSettings"))
+                {
+                    off.outline = prop->GetOffset_Internal();
+                }
+            }
+            for (FProperty* prop : outline_struct->ForEachProperty())
+            {
+                if (prop->GetName() == STR("CornerRadii"))
+                {
+                    off.radii = prop->GetOffset_Internal();
+                }
+                if (prop->GetName() == STR("RoundingType"))
+                {
+                    off.rounding = prop->GetOffset_Internal();
+                }
+            }
+            off.resolved = off.draw_as >= 0 && off.outline >= 0 && off.radii >= 0 && off.rounding >= 0;
+            return off.resolved;
+        }
+
+        inline auto make_round(UObject* image_widget) -> void
+        {
+            static Offsets off;
+            if (!resolve(off))
+            {
+                return;
+            }
+            auto* brush = image_widget->GetValuePtrByPropertyNameInChain<uint8_t>(STR("Brush"));
+            if (!brush)
+            {
+                return;
+            }
+            brush[off.draw_as] = 4;   // ESlateBrushDrawType::RoundedBox
+            uint8_t* outline = brush + off.outline;
+            outline[off.rounding] = 0;   // ESlateBrushRoundingType::FixedRadius
+            auto* radii = reinterpret_cast<double*>(outline + off.radii);
+            radii[0] = radii[1] = radii[2] = radii[3] = 6.0;
+        }
+    } // namespace Style
+
     // -------------------------------------------------- collected state (P1.5)
     // Truth source: PalPlayerRecordData's <X>ObtainForInstanceFlag arrays;
     // keys are the actors' LevelObjectInstanceId as 32-hex FName strings
@@ -524,6 +595,7 @@ namespace CairnMap
                         {
                             continue;
                         }
+                        Style::make_round(dot);
                         m_dots.push_back(dot);
                     }
                     ++dot_index;
@@ -579,6 +651,7 @@ namespace CairnMap
                         {
                             continue;
                         }
+                        Style::make_round(dot);
                         m_dots.push_back(dot);
                     }
                     ++dot_index;
