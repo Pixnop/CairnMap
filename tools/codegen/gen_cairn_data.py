@@ -92,7 +92,7 @@ def main():
     for key, fname, (r, g, b, a), on, icon in LAYERS:
         pts = load_lotus(scratch) if fname is None else load_points(fname)
         emit(key, pts)
-        icon_lit = f'L"{ICON.format(icon)}"' if icon else "nullptr"
+        icon_lit = f'L"{icon}"' if icon else "nullptr"
         layer_rows.append(
             f'    {{L"{key}", {r}, {g}, {b}, {a}, k{key}, {len(pts)}, {"true" if on else "false"}, {icon_lit}}},')
         print(f"{key:12s} {len(pts):5d} points")
@@ -104,7 +104,7 @@ def main():
         out.append(f"inline constexpr GuidPoint k{name}[] = {{{body}}};")
     emit_guid("Effigies", guids["Relic"])
     emit_guid("Notes", guids["Note"])
-    out.append(f'inline constexpr const wchar_t* kEffigyIcon = L"{ICON.format(EFFIGY_ICON)}";')
+    out.append(f'inline constexpr const wchar_t* kEffigyIcon = L"{EFFIGY_ICON}";')
     print(f"effigies {len(guids['Relic'])}, notes {len(guids['Note'])}")
     out.append("")
     out.append("inline constexpr Layer kLayers[] = {")

@@ -676,7 +676,7 @@ namespace CairnMap
             {
                 return it->second;
             }
-            auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, icon);
+            auto* tex = UObjectGlobals::StaticFindObject(nullptr, UObjectGlobals::ANY_PACKAGE, icon);
             m_texture_cache[icon] = tex;
             return tex;
         }
@@ -804,7 +804,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, layer.icon);
+                auto* tex = UObjectGlobals::StaticFindObject(nullptr, UObjectGlobals::ANY_PACKAGE, layer.icon);
                 Output::send<LogLevel::Default>(STR("[CairnDiag] {}: tex={}\n"), layer.key,
                                                 tex ? STR("FOUND") : STR("MISSING"));
             }
@@ -813,7 +813,7 @@ namespace CairnMap
             {
                 if (d.icon && d.widget)
                 {
-                    auto* tex = UObjectGlobals::StaticFindObject(nullptr, nullptr, d.icon);
+                    auto* tex = UObjectGlobals::StaticFindObject(nullptr, UObjectGlobals::ANY_PACKAGE, d.icon);
                     if (tex)
                     {
                         Engine::ParamsSetBrushFromTexture brush{tex, false};
