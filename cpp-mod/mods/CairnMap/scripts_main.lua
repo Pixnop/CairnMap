@@ -27,9 +27,9 @@ local function pass()
             end
             if _CairnTextures[t] and _CairnTextures[t]:IsValid() then held = held + 1 end
         end
-        ExecuteWithDelay(3000, pass)   -- permanent: reload any that got collected
-        if held == #TEX then
-            -- resident this pass
+        print(string.format("[CairnMap.lua] icon textures resident: %d/%d\n", held, #TEX))
+        if held < #TEX then
+            ExecuteWithDelay(3000, pass)   -- keep trying until all resident
         end
     end)
 end

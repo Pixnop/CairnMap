@@ -951,15 +951,26 @@ namespace CairnMap
         // diff (only SetVisibility, never re-parent).
         auto apply_layer_visibility() -> void
         {
+            std::unordered_map<int, int> shown, total;
             for (const auto& d : m_dots)
             {
                 if (!d.slot)
                 {
                     continue;
                 }
+                total[d.layer_id]++;
                 const bool show = is_layer_on(d.layer_id) && !d.base_hidden;
+                if (show)
+                {
+                    shown[d.layer_id]++;
+                }
                 Engine::ParamsSetVisibility vis{show ? Engine::Vis_HitTestInvisible : Engine::Vis_Collapsed};
                 Engine::call(d.widget, L"SetVisibility", vis);
+            }
+            for (auto& [lid, tot] : total)
+            {
+                Output::send<LogLevel::Default>(STR("[CairnVis] layer {} : {}/{} shown (on={})\n"), lid,
+                                                shown[lid], tot, is_layer_on(lid) ? 1 : 0);
             }
         }
 
