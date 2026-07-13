@@ -609,23 +609,55 @@ namespace CairnMap
             return it == m_layer_on.end() ? true : it->second;
         }
 
-        // layer_id -> display label / accent color
-        struct LayerInfo
+        // A panel entry: the title banner, a category header, or a toggle row.
+        struct PanelItem
         {
-            int id;
-            const wchar_t* label;
-            float r, g, b;
-        };
-        auto panel_layers() -> std::vector<LayerInfo>
-        {
-            std::vector<LayerInfo> v;
-            v.push_back({kEffigyLayer, L"Effigies", 0.35f, 1.0f, 0.20f});
-            v.push_back({kNoteLayer, L"Notes", 0.20f, 0.88f, 1.0f});
-            v.push_back({kEggLayer, L"Eggs (nearby)", 1.0f, 0.82f, 0.15f});
-            int i = 0;
-            for (const auto& l : Data::kLayers)
+            enum Kind
             {
-                v.push_back({i++, l.key, l.r / 255.0f, l.g / 255.0f, l.b / 255.0f});
+                Title,
+                Header,
+                Row
+            } kind;
+            const wchar_t* label;
+            int id;            // layer id (Row only)
+            float r, g, b;     // accent (Row only)
+        };
+
+        // Look up a kLayers entry's accent colour by array index.
+        auto layer_row(int idx) -> PanelItem
+        {
+            const auto& l = Data::kLayers[idx];
+            return {PanelItem::Row, l.key, idx, l.r / 255.0f, l.g / 255.0f, l.b / 255.0f};
+        }
+
+        // Grouped, ordered panel model: title, then category headers with their
+        // toggle rows. Row order within a category is curated for readability.
+        auto panel_items() -> std::vector<PanelItem>
+        {
+            std::vector<PanelItem> v;
+            v.push_back({PanelItem::Title, L"CairnMap", 0, 0, 0, 0});
+
+            v.push_back({PanelItem::Header, L"COLLECTABLES", 0, 0, 0, 0});
+            v.push_back({PanelItem::Row, L"Effigies", kEffigyLayer, 0.35f, 1.0f, 0.20f});
+            v.push_back({PanelItem::Row, L"Notes", kNoteLayer, 0.20f, 0.88f, 1.0f});
+            v.push_back({PanelItem::Row, L"Eggs (nearby)", kEggLayer, 1.0f, 0.82f, 0.15f});
+
+            v.push_back({PanelItem::Header, L"ORES", 0, 0, 0, 0});
+            for (int idx : {0, 1, 2, 3, 4, 6, 7, 8, 9})   // Coal..Hexolite, Sky/Tree/Magma/NightStone
+            {
+                v.push_back(layer_row(idx));
+            }
+
+            v.push_back({PanelItem::Header, L"RESOURCES", 0, 0, 0, 0});
+            for (int idx : {5, 10, 11, 15})   // Oil, DogCoin, Lotus, FruitTree
+            {
+                v.push_back(layer_row(idx));
+            }
+
+            v.push_back({PanelItem::Header, L"POINTS OF INTEREST", 0, 0, 0, 0});
+            for (int idx : {12, 14, 13})   // Chest, Outpost, Junk
+            {
+                v.push_back(layer_row(idx));
             }
             return v;
         }
@@ -1314,11 +1346,26 @@ namespace CairnMap
                 m_panel_canvas = nullptr;
                 return;
             }
-            // top-left, fixed size
-            const auto rows = panel_layers();
-            const double row_h = 20.0;
-            const double width = 175.0;
-            const double height = row_h * static_cast<double>(rows.size()) + 10.0;
+            // top-left, size derived from the categorized item list
+            const auto items = panel_items();
+            auto item_h = [](const PanelItem& it) -> double {
+                switch (it.kind)
+                {
+                case PanelItem::Title:
+                    return 28.0;
+                case PanelItem::Header:
+                    return 22.0;   // includes top gap before the header
+                default:
+                    return 19.0;
+                }
+            };
+            const double width = 190.0;
+            double content_h = 6.0;   // top padding
+            for (const auto& it : items)
+            {
+                content_h += item_h(it);
+            }
+            const double height = content_h + 8.0;   // bottom padding
             {
                 Engine::ParamsSetAnchors anch{0, 0, 0, 0};
                 Engine::call(add.ReturnValue, L"SetAnchors", anch);
@@ -1360,43 +1407,76 @@ namespace CairnMap
                     add_to_panel(bg, 0, 0, width, height);
                 }
             }
-            // rows
+            // a thin label helper (title / category header), no checkbox
+            auto add_label = [&](const wchar_t* text, double x, double y, double w_, int font,
+                                 float r, float g, float b, float a) {
+                FStaticConstructObjectParameters tp{txt_class, m_panel_canvas};
+                UObject* txt = UObjectGlobals::StaticConstructObject(tp);
+                if (!txt)
+                {
+                    return;
+                }
+                Engine::ParamsSetText st{FText(text)};
+                Engine::call(txt, L"SetText", st);
+                Style::set_font_size(txt, font);
+                Engine::ParamsSetColorAndOpacity tc{{r, g, b, a}};
+                Engine::call(txt, L"SetColorAndOpacity", tc);
+                Engine::ParamsSetVisibility v{Engine::Vis_HitTestInvisible};
+                Engine::call(txt, L"SetVisibility", v);
+                add_to_panel(txt, x, y, w_, 16);
+            };
+            // a 1px separator line
+            auto add_rule = [&](double x, double y, double w_) {
+                FStaticConstructObjectParameters params{image_class, m_panel_canvas};
+                UObject* line = UObjectGlobals::StaticConstructObject(params);
+                if (!line)
+                {
+                    return;
+                }
+                Style::make_round(line);
+                Engine::ParamsSetColorAndOpacity c{{1.0f, 1.0f, 1.0f, 0.12f}};
+                Engine::call(line, L"SetColorAndOpacity", c);
+                Engine::ParamsSetVisibility v{Engine::Vis_HitTestInvisible};
+                Engine::call(line, L"SetVisibility", v);
+                add_to_panel(line, x, y, w_, 1.0);
+            };
+
             m_panel_rows.clear();
             double y = 6.0;
-            for (const auto& li : rows)
+            for (const auto& it : items)
             {
+                if (it.kind == PanelItem::Title)
+                {
+                    add_label(it.label, 12, y + 4, width - 20, 15, 0.96f, 0.97f, 1.0f, 1.0f);
+                    add_rule(10, y + 25, width - 20);
+                    y += item_h(it);
+                    continue;
+                }
+                if (it.kind == PanelItem::Header)
+                {
+                    add_label(it.label, 10, y + 8, width - 16, 9, 0.55f, 0.60f, 0.72f, 1.0f);
+                    y += item_h(it);
+                    continue;
+                }
+                // toggle row: checkbox + accent label
                 FStaticConstructObjectParameters cbp{cb_class, m_panel_canvas};
                 UObject* cb = UObjectGlobals::StaticConstructObject(cbp);
                 if (cb)
                 {
-                    Style::make_checkbox(cb, li.r, li.g, li.b);
+                    Style::make_checkbox(cb, it.r, it.g, it.b);
                     Engine::ParamsSetVisibility v{Engine::Vis_Visible};
                     Engine::call(cb, L"SetVisibility", v);
-                    add_to_panel(cb, 6, y + 2, 14, 14);
-                    // set checked state directly (SetIsChecked via ProcessEvent
-                    // proved unreliable on the styled checkbox) + via function
+                    add_to_panel(cb, 12, y + 2, 14, 14);
                     if (auto* st = cb->GetValuePtrByPropertyNameInChain<uint8_t>(STR("CheckedState")))
                     {
-                        *st = is_layer_on(li.id) ? 1 : 0;   // ECheckBoxState::Checked
+                        *st = is_layer_on(it.id) ? 1 : 0;   // ECheckBoxState::Checked
                     }
-                    Engine::ParamsSetIsChecked chk{is_layer_on(li.id)};
+                    Engine::ParamsSetIsChecked chk{is_layer_on(it.id)};
                     Engine::call(cb, L"SetIsChecked", chk);
-                    m_panel_rows.push_back({cb, li.id, is_layer_on(li.id)});
+                    m_panel_rows.push_back({cb, it.id, is_layer_on(it.id)});
                 }
-                FStaticConstructObjectParameters tp{txt_class, m_panel_canvas};
-                UObject* txt = UObjectGlobals::StaticConstructObject(tp);
-                if (txt)
-                {
-                    Engine::ParamsSetText st{FText(li.label)};
-                    Engine::call(txt, L"SetText", st);
-                    Style::set_font_size(txt, 11);
-                    Engine::ParamsSetColorAndOpacity tc{{li.r, li.g, li.b, 1.0f}};
-                    Engine::call(txt, L"SetColorAndOpacity", tc);
-                    Engine::ParamsSetVisibility v{Engine::Vis_HitTestInvisible};
-                    Engine::call(txt, L"SetVisibility", v);
-                    add_to_panel(txt, 26, y + 2, 160, 16);
-                }
-                y += row_h;
+                add_label(it.label, 32, y + 2, width - 40, 11, it.r, it.g, it.b, 1.0f);
+                y += item_h(it);
             }
             m_panel_root_name = root->GetFullName();
             Output::send<LogLevel::Default>(STR("[CairnMap] panel built ({} rows)\n"), m_panel_rows.size());
