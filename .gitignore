@@ -159,3 +159,7 @@ Saved/
 !docs/**
 !tools/**
 !cpp-mod/**
+tools/cairnmap-ui/Build/
+tools/cairnmap-ui/Saved/
+tools/cairnmap-ui/Content/
+tools/cairnmap-ui/DerivedDataCache/

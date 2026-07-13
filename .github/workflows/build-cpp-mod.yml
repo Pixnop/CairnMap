@@ -1,5 +1,4 @@
 name: build-cpp-mod
-# (build: any push touching cpp-mod/** or this file triggers the run)
 
 on:
   push:
@@ -9,9 +8,11 @@ on:
   workflow_dispatch:
 
 env:
-  # Must match the UE4SS build shipped to the game (ABI compatibility).
+  # Headers source: Okaetsu's tree at the exact commit of the shipped UE4SS.
   UE4SS_REPO: Okaetsu/RE-UE4SS
   UE4SS_SHA: c2ac246447a8bcd92541070cb474044e7a2bbbe6
+  # Import library is generated from the exact shipped DLL (perfect ABI):
+  ZDEV_URL: https://github.com/Okaetsu/RE-UE4SS/releases/download/experimental-palworld/UE4SS-Palworld_zDev.zip
 
 jobs:
   build:
@@ -19,30 +20,57 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Clone RE-UE4SS (pinned)
+      - name: Fetch UE4SS headers (public submodules only)
         shell: bash
         run: |
           git config --global url."https://github.com/".insteadOf "git@github.com:"
-          git clone https://github.com/${UE4SS_REPO}.git cpp-mod/RE-UE4SS
-          git -C cpp-mod/RE-UE4SS checkout ${UE4SS_SHA}
-          git -C cpp-mod/RE-UE4SS submodule update --init --recursive
+          git clone --no-recurse-submodules https://github.com/${UE4SS_REPO}.git ue4ss-src
+          cd ue4ss-src
+          git checkout ${UE4SS_SHA}
+          # everything except the private UEPseudo (deps/first/Unreal)
+          mapfile -t mods < <(git config --file .gitmodules --get-regexp path | awk '{print $2}' | grep -v '^deps/first/Unreal$')
+          git submodule update --init --depth 1 "${mods[@]}" || true
 
-      - name: Configure
+      - name: Fetch shipped UE4SS.dll
         shell: bash
         run: |
-          cmake -S cpp-mod -B cpp-mod/build \
-            -DCMAKE_BUILD_TYPE=Game__Shipping__Win64
+          curl -sL -o zdev.zip "$ZDEV_URL"
+          unzip -o -q zdev.zip -d zdev
+          find zdev -name UE4SS.dll
 
-      - name: Build mod
-        shell: bash
-        run: cmake --build cpp-mod/build --target CairnMap --config Game__Shipping__Win64
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Generate import library from the DLL
+        shell: pwsh
+        run: |
+          $dll = (Get-ChildItem -Recurse zdev -Filter UE4SS.dll | Select-Object -First 1).FullName
+          dumpbin /exports $dll > exports.txt
+          python .github/workflows/make_def.py exports.txt UE4SS.def
+          lib /def:UE4SS.def /machine:x64 /out:UE4SS.lib
+          Get-Item UE4SS.lib
+
+      - name: Compile mod DLL
+        shell: pwsh
+        run: |
+          $inc = @("/Iue4ss-src/UE4SS/include")
+          Get-ChildItem ue4ss-src/deps/first -Directory | ForEach-Object {
+            if (Test-Path "$($_.FullName)/include") { $inc += "/I$($_.FullName)/include" }
+            else { $inc += "/I$($_.FullName)" }
+          }
+          Get-ChildItem ue4ss-src/deps/third -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+            if (Test-Path "$($_.FullName)/include") { $inc += "/I$($_.FullName)/include" }
+          }
+          mkdir out
+          cl /nologo /LD /std:c++latest /EHsc /MD /DNDEBUG `
+             $inc cpp-mod/mods/CairnMap/src/dllmain.cpp `
+             /Feout/main.dll /link UE4SS.lib
+          Get-Item out/main.dll
 
       - name: Collect artifact
         shell: bash
         run: |
           mkdir -p dist/CairnMap/dlls
-          find cpp-mod/build -name "CairnMap.dll" -exec cp {} dist/CairnMap/dlls/main.dll \;
-          ls -la dist/CairnMap/dlls/
+          cp out/main.dll dist/CairnMap/dlls/main.dll
 
       - uses: actions/upload-artifact@v4
         with:
