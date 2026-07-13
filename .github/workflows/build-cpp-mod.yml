@@ -74,7 +74,7 @@ jobs:
           $inc += "/Ithird/ImGuiColorTextEdit"
           $inc += "/Ithird/HorseMod/RE-UE4SS/deps/first/Unreal/include"
           mkdir out
-          cl /nologo /LD /std:c++latest /EHsc /MD /utf-8 /DNDEBUG /DFMT_HEADER_ONLY=1 `
+          cl /nologo /LD /std:c++latest /EHsc /MD /utf-8 /DNDEBUG /DFMT_HEADER_ONLY=1 /DUE_BUILD_SHIPPING=1 `
              $inc cpp-mod/mods/CairnMap/src/dllmain.cpp `
              /Feout/main.dll /link UE4SS.lib
           Get-Item out/main.dll
