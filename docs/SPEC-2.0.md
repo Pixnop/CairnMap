@@ -1,4 +1,6 @@
-# MapCollectables 2.0 — Specification
+# Cairn — Specification
+
+*(formerly "MapCollectables 2.0": the code-first rewrite of Map Collectables Helper)*
 
 Code-first rewrite of Map Collectables Helper for Palworld 1.0+. Replaces the
 original cooked pak entirely. All logic lives in a **UE4SS C++ mod**
@@ -7,7 +9,7 @@ construction). The architecture below is language-agnostic — module names map
 to C++ classes. The pure core compiles natively on Linux for unit tests; the
 Windows DLL (MSVC ABI, against Okaetsu/RE-UE4SS @ c2ac246 = the shipped UE4SS
 v3.0.1) is built by GitHub Actions (`.github/workflows/build-cpp-mod.yml`) —
-no local Windows toolchain. Install: `Mods/MapCollectables2/dlls/main.dll` +
+no local Windows toolchain. Install: `Mods/Cairn/dlls/main.dll` +
 mods.txt entry. Blueprint stays reduced to **one static UI asset** with zero
 graph logic, built by an **editor Python script** (no manual Blueprint
 editing, ever). Lua remnants (the 1.x runtime fix) are reference material.
@@ -22,7 +24,7 @@ them.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ UE4SS C++ mod: Mods/MapCollectables2/dlls/main.dll           │
+│ UE4SS C++ mod: Mods/Cairn/dlls/main.dll           │
 │                                                              │
 │  data.lua        static locations (codegen from pak dumps)   │
 │  detect.lua      live actor scanning (relics, chests, eggs…) │
@@ -33,9 +35,9 @@ them.
 └───────────────┬──────────────────────────────────────────────┘
                 │ LoadAsset + WidgetBlueprintLibrary.Create
 ┌───────────────▼──────────────────────────────────────────────┐
-│ Content pak: MC2UI_P.pak  (mounted from Pal/Content/Paks/)   │
-│   /Game/MC2/W_Panel      widget: rows, checkboxes, counters  │
-│   /Game/MC2/T_Dot        one white round dot texture         │
+│ Content pak: CairnUI_P.pak  (mounted from Pal/Content/Paks/)   │
+│   /Game/Cairn/W_CairnPanel      widget: rows, checkboxes, counters  │
+│   /Game/Cairn/T_Dot        one white round dot texture         │
 │   NO graph logic, NO game-class references                   │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -51,7 +53,7 @@ widgets; copying styles struct-by-struct via UE4SS is unreliable (proven
 
 ### Why the UI pak needs no Palworld kit
 
-`W_Panel` uses only engine UMG classes (VerticalBox, CheckBox, TextBlock,
+`W_CairnPanel` uses only engine UMG classes (VerticalBox, CheckBox, TextBlock,
 Image) and our own textures. It references **zero** game classes, so it is
 built in a **minimal dedicated UE 5.1.1 project** (no Wwise, no kit, opens in
 seconds, cooks in minutes) and mounted as a plain content pak. Only the
@@ -128,9 +130,9 @@ full 2-D affine for safety). Calibration:
 
 ### 2.4 render.lua — icon layer
 
-- **Own container**: create ONE `CanvasPanel` (`MC2Layer`) and add it to
+- **Own container**: create ONE `CanvasPanel` (`CairnLayer`) and add it to
   `Canvas_MapBody` (sibling of the game's `Canvas_ForIcon_Mask`), z-order
-  just above it. All our icons are children of MC2Layer only.
+  just above it. All our icons are children of CairnLayer only.
   ⚠ Never parent icons into the game's own `Canvas_ForIcon_Mask`: the game
   rebuilds/iterates its children each map open; thousands of foreign widgets
   there crashed the second open (proven). One foreign sibling in
@@ -138,7 +140,7 @@ full 2-D affine for safety). Calibration:
 - **Widget pool**: icons are `UImage` (`T_Dot` texture from our pak, tinted
   per layer via `SetColorAndOpacity`, slot size 13×13, alignment 0.5/0.5).
   Pool them: on map close, `SetVisibility(Collapsed)`; on reuse, reposition +
-  tint. Pooled widgets stay parented to MC2Layer (keeps them referenced —
+  tint. Pooled widgets stay parented to CairnLayer (keeps them referenced —
   no GC churn, no per-open construction cost).
 - When the map body instance changes (new `GetFullName()`), drop the pool and
   rebuild.
@@ -146,7 +148,7 @@ full 2-D affine for safety). Calibration:
 
 ### 2.5 panel.lua — UI
 
-- On first map open: `LoadAsset("/Game/MC2/W_Panel.W_Panel")`,
+- On first map open: `LoadAsset("/Game/Cairn/W_CairnPanel.W_CairnPanel")`,
   `WidgetBlueprintLibrary.Create(world, class, playerController)`,
   `AddToViewport` (or anchor into the map screen), position top-left,
   draggable optional (v2).
@@ -179,7 +181,7 @@ full 2-D affine for safety). Calibration:
 ### 2.7 state.lua
 
 Toggles + panel position persisted to
-`Mods/MapCollectables2/state.lua` (plain `return {...}`; written on change,
+`Mods/Cairn/state.lua` (plain `return {...}`; written on change,
 loaded at boot). CWD of the game process is `Pal/Binaries/Win64`, so the
 relative path is `../../../Mods/NativeMods/UE4SS/Mods/...` under the Workshop
 UE4SS layout — probe a path list.
@@ -194,15 +196,15 @@ unzipped anywhere (no install).
 Repo layout:
 
 ```
-tools/mc2-ui/
-  MC2UI.uproject          minimal project (engine 5.1, no plugins)
-  build_panel.py          editor Python: creates W_Panel WidgetBlueprint
+tools/cairn-ui/
+  CairnUI.uproject          minimal project (engine 5.1, no plugins)
+  build_panel.py          editor Python: creates W_CairnPanel WidgetBlueprint
                           (rows from the same layer table as the Lua),
                           imports T_Dot.png, saves assets
   build.sh                headless pipeline:
-                          UnrealEditor-Cmd MC2UI.uproject -run=pythonscript …
+                          UnrealEditor-Cmd CairnUI.uproject -run=pythonscript …
                           → Cook (-targetplatform=Windows, content-only)
-                          → UnrealPak → MC2UI_P.pak
+                          → UnrealPak → CairnUI_P.pak
 ```
 
 Notes:
@@ -214,7 +216,7 @@ Notes:
 - Cook for `Windows` target from the Linux editor (content-only cook needs no
   Windows toolchain).
 - Mount: any `*_P.pak` in `Pal/Content/Paks/~mods/` auto-mounts; assets are
-  then reachable at `/Game/MC2/...`. (LogicMods/BPModLoader is NOT needed —
+  then reachable at `/Game/Cairn/...`. (LogicMods/BPModLoader is NOT needed —
   there is no ModActor; Lua drives everything.)
 - Iteration: `build.sh` end-to-end target < 5 min.
 
@@ -222,13 +224,13 @@ Notes:
 
 ## 4. Migration & phases
 
-1. **P0 — skeleton**: repo `mods/MapCollectables2/` Lua tree, data codegen,
+1. **P0 — skeleton**: repo `mods/Cairn/` Lua tree, data codegen,
    projection + static layers rendered in own canvas, no UI (toggles via
    state file). The 1.x fix stays installed until P2; both must not run
    simultaneously (icon duplication) — P0 ships with 1.x disabled in mods.txt.
 2. **P1 — live layers**: effigies/notes with live collected-state, chests,
    eggs, dungeons, counters in log.
-3. **P2 — UI pak**: build W_Panel, wire panel.lua, remove the 1.x fix and the
+3. **P2 — UI pak**: build W_CairnPanel, wire panel.lua, remove the 1.x fix and the
    original pak; state migration (keep state.lua schema compatible).
 4. **P3 — polish**: per-layer colors config, cave-entrance grouping for
    underground layers, zoom-level decluttering, Nexus/Workshop packaging.

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(MapCollectables2Mods)
+project(CairnMods)
 
 # RE-UE4SS is cloned by CI (or a developer) next to this file, pinned to the
 # exact commit of the UE4SS build shipped to the game (ABI must match):

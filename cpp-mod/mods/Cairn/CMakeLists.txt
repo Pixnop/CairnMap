@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(TARGET MapCollectables2)
+set(TARGET Cairn)
 project(${TARGET})
 
 add_library(${TARGET} SHARED
