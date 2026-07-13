@@ -633,7 +633,7 @@ namespace CairnMap
                 m_dots.push_back({dot, nullptr, nullptr, false, base_size});
             }
             Dot& entry = m_dots[m_emit_cursor];
-            entry.icon = g_icons_enabled ? icon : nullptr;   // icons: separate measured pass
+            entry.icon = g_icons_enabled ? icon : nullptr;
             entry.base_size = base_size;
 
             Engine::ParamsAddChildToCanvas add{dot, nullptr};
@@ -642,17 +642,10 @@ namespace CairnMap
                 return SIZE_MAX;
             }
             entry.slot = add.ReturnValue;
-            if (entry.icon && !entry.icon_applied)
-            {
-                if (auto* tex = layer_texture(entry.icon))
-                {
-                    Engine::ParamsSetBrushFromTexture brush{tex, false};
-                    Engine::call(dot, L"SetBrushFromTexture", brush);
-                    entry.icon_applied = true;
-                }
-            }
-            const Engine::FLinearColor_ white{1.0f, 1.0f, 1.0f, 1.0f};
-            Engine::ParamsSetColorAndOpacity col{entry.icon_applied ? white : color};
+            const Engine::FLinearColor_ col_val = entry.icon_applied
+                                                     ? Engine::FLinearColor_{1.0f, 1.0f, 1.0f, 1.0f}
+                                                     : color;
+            Engine::ParamsSetColorAndOpacity col{col_val};
             Engine::call(dot, L"SetColorAndOpacity", col);
             Engine::ParamsSetVisibility vis{visible ? Engine::Vis_HitTestInvisible : Engine::Vis_Collapsed};
             Engine::call(dot, L"SetVisibility", vis);
@@ -660,7 +653,7 @@ namespace CairnMap
             Engine::call(entry.slot, L"SetAutoSize", aut);
             Engine::ParamsSetAlignment align{{0.5, 0.5}};
             Engine::call(entry.slot, L"SetAlignment", align);
-            const double sz = std::clamp(entry.base_size / std::sqrt(m_applied_zoom), 9.0, 26.0);
+            const double sz = std::clamp(entry.base_size / std::sqrt(m_applied_zoom), 6.0, 26.0);
             Engine::ParamsSetSize size{{sz, sz}};
             Engine::call(entry.slot, L"SetSize", size);
             Engine::ParamsSetPosition setpos{{px, py}};
@@ -669,7 +662,7 @@ namespace CairnMap
         }
 
         size_t m_emit_cursor = 0;
-        static constexpr bool g_icons_enabled = false;   // fast colored-dot baseline
+        static constexpr bool g_icons_enabled = true;    // icons painted in background batches
         std::unordered_map<const wchar_t*, UObject*> m_texture_cache;
 
         auto layer_texture(const wchar_t* icon) -> UObject*
@@ -790,22 +783,27 @@ namespace CairnMap
                     is_collected ? Engine::Vis_Collapsed : Engine::Vis_HitTestInvisible};
                 Engine::call(m_dots[gd.dot_index].widget, L"SetVisibility", vis);
             }
-            apply_missing_icons();
             Output::send<LogLevel::Default>(STR("[CairnMap] collected refresh: {} hidden\n"), hidden);
         }
 
         // retry lazy icon textures (game loads them as the player encounters items)
-        auto apply_missing_icons() -> void
+        // Paint at most `budget` pending icon textures per call (non-blocking).
+        // Runs across ticks so placement stays instant and icons pop in smoothly.
+        size_t m_icon_scan = 0;
+        auto paint_icons_batch(size_t budget) -> void
         {
-            if (!g_icons_enabled)
+            if (!g_icons_enabled || m_dots.empty())
             {
                 return;
             }
-            // drop negative cache entries: the game may have loaded them since
             std::erase_if(m_texture_cache, [](const auto& kv) { return kv.second == nullptr; });
-            size_t applied = 0;
-            for (auto& d : m_dots)
+            size_t painted = 0, scanned = 0;
+            const size_t n = m_dots.size();
+            while (scanned < n && painted < budget)
             {
+                Dot& d = m_dots[m_icon_scan % n];
+                ++m_icon_scan;
+                ++scanned;
                 if (!d.icon || d.icon_applied || !d.widget)
                 {
                     continue;
@@ -820,11 +818,7 @@ namespace CairnMap
                 Engine::ParamsSetColorAndOpacity col{{1.0f, 1.0f, 1.0f, 1.0f}};
                 Engine::call(d.widget, L"SetColorAndOpacity", col);
                 d.icon_applied = true;
-                ++applied;
-            }
-            if (applied > 0)
-            {
-                Output::send<LogLevel::Default>(STR("[CairnMap] {} icons applied\n"), applied);
+                ++painted;
             }
         }
 
@@ -870,7 +864,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                const double sz = std::clamp(d.base_size / std::sqrt(zoom), 9.0, 26.0);
+                const double sz = std::clamp(d.base_size / std::sqrt(zoom), 6.0, 26.0);
                 Engine::ParamsSetSize size{{sz, sz}};
                 Engine::call(d.slot, L"SetSize", size);
             }
@@ -904,6 +898,7 @@ namespace CairnMap
                 m_guid_dots.clear();
                 m_emit_cursor = 0;
                 m_applied_zoom = 1.0;
+                m_icon_scan = 0;
                 m_calibration.reset();
                 m_placed = false;
                 m_collapsed = true;
@@ -946,7 +941,8 @@ namespace CairnMap
             sync_layer_geometry(mask);   // follow zoom / layout changes
             if (m_placed && !m_collapsed)
             {
-                sync_dot_scale(mask);    // keep dots readable across zoom levels
+                sync_dot_scale(mask);        // keep dots readable across zoom levels
+                paint_icons_batch(400);      // stream icon textures in, non-blocking
             }
             if (!m_placed)
             {
