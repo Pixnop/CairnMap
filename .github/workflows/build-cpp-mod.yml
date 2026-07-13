@@ -22,6 +22,7 @@ jobs:
       - name: Clone RE-UE4SS (pinned)
         shell: bash
         run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
           git clone https://github.com/${UE4SS_REPO}.git cpp-mod/RE-UE4SS
           git -C cpp-mod/RE-UE4SS checkout ${UE4SS_SHA}
           git -C cpp-mod/RE-UE4SS submodule update --init --recursive
