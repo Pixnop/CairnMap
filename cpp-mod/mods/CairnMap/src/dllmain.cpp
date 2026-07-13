@@ -1093,14 +1093,46 @@ namespace CairnMap
             }
         }
 
-        // Build the interface panel once per map instance, in the screen-fixed
-        // root canvas (not the panning map canvas). Rows: [checkbox][dot][label].
-        auto build_panel(UObject* root) -> void
+        // Find a full-screen canvas to host the panel (the map body root is
+        // inset by the decorative frame; WBP_Map_Base's root spans the screen).
+        auto screen_canvas(UObject* fallback) -> UObject*
         {
-            if (m_panel_canvas || !root)
+            std::vector<UObject*> bases;
+            UObjectGlobals::FindAllOf(STR("WBP_Map_Base_C"), bases);
+            for (auto* base : bases)
+            {
+                if (!base)
+                {
+                    continue;
+                }
+                Engine::ParamsIsVisible vis{};
+                if (!Engine::call(base, L"IsVisible", vis) || !vis.ReturnValue)
+                {
+                    continue;
+                }
+                auto** tree = base->GetValuePtrByPropertyNameInChain<UObject*>(STR("WidgetTree"));
+                if (!tree || !*tree)
+                {
+                    continue;
+                }
+                auto** r = (*tree)->GetValuePtrByPropertyNameInChain<UObject*>(STR("RootWidget"));
+                if (r && *r && Engine::class_name(*r) == L"CanvasPanel")
+                {
+                    return *r;
+                }
+            }
+            return fallback;
+        }
+
+        // Build the interface panel once per map instance, in a screen-fixed
+        // canvas (not the panning map canvas). Rows: [checkbox][dot][label].
+        auto build_panel(UObject* root_in) -> void
+        {
+            if (m_panel_canvas || !root_in)
             {
                 return;
             }
+            UObject* root = screen_canvas(root_in);
             auto* canvas_class =
                 UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/UMG.CanvasPanel"));
             auto* image_class =
@@ -1138,10 +1170,12 @@ namespace CairnMap
                 Engine::call(add.ReturnValue, L"SetAnchors", anch);
                 Engine::ParamsSetAlignment align{{0.0, 0.0}};
                 Engine::call(add.ReturnValue, L"SetAlignment", align);
-                Engine::ParamsSetOffsets offs{24.0f, 90.0f, static_cast<float>(width),
+                Engine::ParamsSetOffsets offs{12.0f, 12.0f, static_cast<float>(width),
                                               static_cast<float>(height)};
                 Engine::call(add.ReturnValue, L"SetOffsets", offs);
             }
+            Output::send<LogLevel::Default>(STR("[CairnMap] panel parent: {}\n"),
+                                            (root == root_in) ? STR("map-body-root") : STR("map-base-screen"));
             // background
             auto add_to_panel = [&](UObject* w, double x, double y, double w_, double h_) -> UObject* {
                 Engine::ParamsAddChildToCanvas a{w, nullptr};
