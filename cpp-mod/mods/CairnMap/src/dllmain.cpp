@@ -614,6 +614,7 @@ namespace CairnMap
         bool m_placed = false;
         bool m_collapsed = true;
         int m_log_budget = 20;
+        bool m_flag_probe_done = false;
 
       public:
         Mod()
@@ -865,7 +866,6 @@ namespace CairnMap
         // Build a short-name -> loaded-texture index from all resident Texture2D
         // objects (FindObject-by-path is unreliable here; the preloader keeps the
         // textures resident, so enumeration is the robust way to reach them).
-        bool m_tex_dumped = false;
         auto rebuild_texture_index() -> void
         {
             std::vector<UObject*> texs;
@@ -876,14 +876,8 @@ namespace CairnMap
                 if (t)
                 {
                     m_tex_index[t->GetName()] = t;
-                    if (!m_tex_dumped && t->GetName().find(L"Coal") != std::wstring::npos)
-                    {
-                        Output::send<LogLevel::Default>(STR("[CairnTex] name='{}' full='{}'\n"),
-                                                        t->GetName(), t->GetFullName());
-                    }
                 }
             }
-            m_tex_dumped = true;
             m_tex_index_size = texs.size();
         }
 
@@ -939,10 +933,34 @@ namespace CairnMap
             // effigies & notes, filtered by the live collected set
             std::unordered_set<std::wstring> collected;
             const bool have_flags = Collected::gather(collected);
+            // one-shot diagnostic: reveals the obtain-flag key format vs our GUIDs
+            if (!m_flag_probe_done)
+            {
+                m_flag_probe_done = true;
+                std::wstring samples;
+                int n = 0;
+                for (const auto& k : collected)
+                {
+                    samples += k;
+                    samples += L' ';
+                    if (++n >= 4)
+                    {
+                        break;
+                    }
+                }
+                Output::send<LogLevel::Default>(
+                    STR("[CairnFlag] gathered {} obtained keys; samples: {}\n"), collected.size(),
+                    samples);
+                Output::send<LogLevel::Default>(
+                    STR("[CairnFlag] our eff[0]={} note[0]={}\n"),
+                    Collected::guid_key(Data::kEffigies[0].guid),
+                    Collected::guid_key(Data::kNotes[0].guid));
+            }
             size_t hidden = 0;
             auto place_guid_layer = [&](const Data::GuidPoint* pts, size_t count,
                                         const Engine::FLinearColor_& color, const wchar_t* icon,
-                                        double base_size, int layer_id) {
+                                        double base_size, int layer_id) -> size_t {
+                size_t layer_hidden = 0;
                 for (size_t i = 0; i < count; ++i)
                 {
                     const bool is_collected =
@@ -950,6 +968,7 @@ namespace CairnMap
                     if (is_collected)
                     {
                         ++hidden;
+                        ++layer_hidden;
                     }
                     const auto pos = m_calibration->transform.apply(pts[i].x, pts[i].y);
                     if (pos.x < -2000 || pos.x > 6000 || pos.y < -2000 || pos.y > 6000)
@@ -964,11 +983,17 @@ namespace CairnMap
                         ++placed;
                     }
                 }
+                return layer_hidden;
             };
-            place_guid_layer(Data::kEffigies, std::size(Data::kEffigies), {0.35f, 1.0f, 0.20f, 1.0f},
-                             Data::kEffigyIcon, 20.0, kEffigyLayer);
-            place_guid_layer(Data::kNotes, std::size(Data::kNotes), {0.20f, 0.88f, 1.0f, 1.0f},
-                             Data::kNoteIcon, 20.0, kNoteLayer);
+            const size_t eff_hidden =
+                place_guid_layer(Data::kEffigies, std::size(Data::kEffigies), {0.35f, 1.0f, 0.20f, 1.0f},
+                                 Data::kEffigyIcon, 20.0, kEffigyLayer);
+            const size_t note_hidden =
+                place_guid_layer(Data::kNotes, std::size(Data::kNotes), {0.20f, 0.88f, 1.0f, 1.0f},
+                                 Data::kNoteIcon, 20.0, kNoteLayer);
+            Output::send<LogLevel::Default>(
+                STR("[CairnFlag] hidden effigies={}/{} notes={}/{}\n"), eff_hidden,
+                std::size(Data::kEffigies), note_hidden, std::size(Data::kNotes));
             // collapse any leftover pooled dots beyond this pass
             for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
             {
@@ -1303,18 +1328,9 @@ namespace CairnMap
             Output::send<LogLevel::Default>(STR("[CairnMap] panel built ({} rows)\n"), m_panel_rows.size());
         }
 
-        int m_cb_probe = 0;
         // Poll checkbox states; on change, update toggle + layer visibility.
         auto poll_panel() -> void
         {
-            if (m_cb_probe < 8 && !m_panel_rows.empty() && m_panel_rows[0].checkbox)
-            {
-                ++m_cb_probe;
-                Engine::ParamsIsChecked p{};
-                Engine::call(m_panel_rows[0].checkbox, L"IsChecked", p);
-                Output::send<LogLevel::Default>(STR("[CairnCB] tick {} checkbox0 checked={}\n"), m_cb_probe,
-                                                p.ReturnValue ? 1 : 0);
-            }
             bool changed = false;
             for (auto& row : m_panel_rows)
             {
@@ -1389,7 +1405,6 @@ namespace CairnMap
                 m_panel_canvas = nullptr;   // died with the tree
                 m_panel_rows.clear();
                 m_panel_first_poll = true;
-                m_cb_probe = 0;
             }
 
             if (!m_calibration)
