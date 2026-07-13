@@ -35,6 +35,8 @@ jobs:
         shell: bash
         run: |
           git clone --depth 1 --branch 11.2.0 https://github.com/fmtlib/fmt.git third/fmt
+          git clone --depth 1 --branch v1.92.1 https://github.com/ocornut/imgui.git third/imgui
+          git clone --depth 1 --branch v1.2.0 https://github.com/UE4SS-RE/ImGuiColorTextEdit.git third/ImGuiColorTextEdit
 
       - name: Fetch shipped UE4SS.dll
         shell: bash
@@ -66,8 +68,10 @@ jobs:
             if (Test-Path "$($_.FullName)/include") { $inc += "/I$($_.FullName)/include" }
           }
           $inc += "/Ithird/fmt/include"
+          $inc += "/Ithird/imgui"
+          $inc += "/Ithird/ImGuiColorTextEdit"
           mkdir out
-          cl /nologo /LD /std:c++latest /EHsc /MD /DNDEBUG /DFMT_HEADER_ONLY=1 `
+          cl /nologo /LD /std:c++latest /EHsc /MD /utf-8 /DNDEBUG /DFMT_HEADER_ONLY=1 `
              $inc cpp-mod/mods/CairnMap/src/dllmain.cpp `
              /Feout/main.dll /link UE4SS.lib
           Get-Item out/main.dll
