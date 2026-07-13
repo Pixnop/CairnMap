@@ -14,11 +14,11 @@ echo "== 1/3 assets (python) =="
     -unattended -nopause -nosplash -nullrhi -stdout
 
 echo "== 2/3 cook (Windows target) =="
-"$EDITOR_CMD" "$PROJECT" -run=cook -targetplatform=Windows \
+"$EDITOR_CMD" "$PROJECT" -run=cook -targetplatform=${COOK_TARGET:-Linux} \
     -unattended -nopause -nosplash -nullrhi -stdout
 
 echo "== 3/3 pak =="
-COOKED="$PWD/Saved/Cooked/Windows/CairnMapUI/Content"
+COOKED="$PWD/Saved/Cooked/${COOK_TARGET:-Linux}/CairnMapUI/Content"
 STAGE="$PWD/Saved/pakstage"
 rm -rf "$STAGE" && mkdir -p "$STAGE"
 RESP="$PWD/Saved/pak_response.txt"
