@@ -7,7 +7,7 @@
 #include <Unreal/UObjectGlobals.hpp>
 #include <Unreal/UObject.hpp>
 
-namespace Cairn
+namespace CairnMap
 {
     using namespace RC;
     using namespace Unreal;
@@ -18,10 +18,10 @@ namespace Cairn
         Mod()
         {
             ModVersion = STR("2.0.0-p0");
-            ModName = STR("Cairn");
+            ModName = STR("CairnMap");
             ModAuthors = STR("Pixnop");
-            ModDescription = STR("Cairn: map collectables for Palworld 1.0+");
-            Output::send<LogLevel::Default>(STR("[Cairn] loaded (P0 skeleton)\n"));
+            ModDescription = STR("CairnMap: map collectables for Palworld 1.0+");
+            Output::send<LogLevel::Default>(STR("[CairnMap] loaded (P0 skeleton)\n"));
         }
 
         ~Mod() override = default;
@@ -32,7 +32,7 @@ namespace Cairn
             // thread. UE4SS C++ mods get on_update() on the game thread —
             // the watcher lives there (no LoopAsync-style off-thread races,
             // which crashed the Lua prototype until wrapped).
-            Output::send<LogLevel::Default>(STR("[Cairn] Unreal initialized\n"));
+            Output::send<LogLevel::Default>(STR("[CairnMap] Unreal initialized\n"));
         }
 
         auto on_update() -> void override
@@ -41,14 +41,14 @@ namespace Cairn
             // (SPEC §2.6): debounced map detection -> repair pipeline.
         }
     };
-} // namespace Cairn
+} // namespace CairnMap
 
 #define MOD_EXPORT __declspec(dllexport)
 extern "C"
 {
     MOD_EXPORT RC::CppUserModBase* start_mod()
     {
-        return new Cairn::Mod();
+        return new CairnMap::Mod();
     }
     MOD_EXPORT void uninstall_mod(RC::CppUserModBase* mod)
     {

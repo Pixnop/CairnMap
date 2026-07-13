@@ -1,1 +1,1 @@
-add_subdirectory(Cairn)
+add_subdirectory(CairnMap)
