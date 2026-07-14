@@ -354,7 +354,7 @@ namespace CairnMap
             // white border for contrast against the map (Elio/TrueGuardian32 feedback)
             if (off.outline_width >= 0)
             {
-                *reinterpret_cast<float*>(outline + off.outline_width) = 1.5f;
+                *reinterpret_cast<float*>(outline + off.outline_width) = 0.0f;
             }
             if (off.outline_color >= 0)
             {
@@ -503,7 +503,7 @@ namespace CairnMap
             // white border so dots stay legible against the map background
             if (off.outline_width >= 0)
             {
-                *reinterpret_cast<float*>(outline + off.outline_width) = 1.5f;
+                *reinterpret_cast<float*>(outline + off.outline_width) = 0.0f;
             }
             if (off.outline_color >= 0)
             {
