@@ -1918,28 +1918,15 @@ namespace CairnMap
             UObject* mask = nullptr;
             if (!find_map(root, map_body_canvas, mask))
             {
-                // map closed: fully detach + drop our overlay so nothing lingers as a
-                // ghost on reopen (the map body is hidden, not destroyed, so our
-                // widgets are still valid here). Everything is rebuilt fresh on reopen.
-                if (m_layer_canvas || m_panel_canvas)
+                // map closed: only hide our overlay, KEEP all widgets so they are
+                // reused (re-parented) on reopen. Recreating them each cycle is what
+                // leaked thousands of widgets and corrupted the heap.
+                if (m_layer_canvas && !m_collapsed)
                 {
-                    Engine::remove_from_parent(m_inv_box ? m_inv_box : m_layer_canvas);
-                    Engine::remove_from_parent(m_panel_canvas);
-                    m_layer_canvas = nullptr;
-                    m_inv_box = nullptr;
-                    m_layer_slot = nullptr;
-                    m_dots.clear();
-                    m_guid_dots.clear();
-                    m_emit_cursor = 0;
-                    m_layer_icon.clear();
-                    m_applied_zoom = 1.0;
-                    m_calibration.reset();
-                    m_placed = false;
+                    Engine::ParamsSetVisibility vis{Engine::Vis_Collapsed};
+                    Engine::call(m_layer_canvas, L"SetVisibility", vis);
+                    Engine::call(m_panel_canvas, L"SetVisibility", vis);
                     m_collapsed = true;
-                    m_panel_canvas = nullptr;
-                    m_panel_rows.clear();
-                    m_panel_first_poll = true;
-                    m_canvas_full_name.clear();   // force fresh detection on reopen
                 }
                 return;
             }
@@ -1952,27 +1939,48 @@ namespace CairnMap
                 // close tick was missed (fast open/close), the old canvas would
                 // otherwise linger as a rendered ghost and its widgets accumulate
                 // across cycles (root cause of the heap corruption).
-                Engine::remove_from_parent(m_inv_box ? m_inv_box : m_layer_canvas);
-                Engine::remove_from_parent(m_panel_canvas);
                 m_canvas_full_name = full_name;
-                m_layer_canvas = nullptr;
-                m_inv_box = nullptr;
-                m_layer_icon.clear();
-                m_layer_slot = nullptr;
-                m_dots.clear();
-                m_guid_dots.clear();
-                m_emit_cursor = 0;
-                m_applied_zoom = 1.0;
-                m_icon_scan = 0;
-                m_tex_index.clear();
-                m_icons_ready = false;
-                m_icon_rebuilds = 0;
-                m_calibration.reset();
-                m_placed = false;
-                m_collapsed = true;
-                m_panel_canvas = nullptr;   // died with the tree
+                // Reuse our layer canvas + all ~7.5k dots by RE-PARENTING them to the
+                // new map body, instead of recreating them every cycle (recreating
+                // leaks thousands of orphaned widgets per open -> heap corruption).
+                // Icons/textures are kept too (still valid), so no reload churn.
+                bool reparented = false;
+                if (m_layer_canvas)
+                {
+                    UObject* w = m_inv_box ? m_inv_box : m_layer_canvas;
+                    Engine::remove_from_parent(w);
+                    Engine::ParamsAddChildToCanvas add{w, nullptr};
+                    if (Engine::call(map_body_canvas, L"AddChildToCanvas", add) && add.ReturnValue)
+                    {
+                        m_layer_slot = add.ReturnValue;
+                        Engine::ParamsSetZOrder z{100};
+                        Engine::call(m_layer_slot, L"SetZOrder", z);
+                        std::fill(std::begin(m_mask_geom), std::end(m_mask_geom), 0);
+                        Engine::ParamsSetVisibility vis{Engine::Vis_SelfHitTestInvisible};
+                        Engine::call(m_layer_canvas, L"SetVisibility", vis);   // un-hide reused canvas
+                        reparented = true;
+                    }
+                }
+                if (!reparented)
+                {
+                    // first open, or re-parent failed: build fresh
+                    m_layer_canvas = nullptr;
+                    m_inv_box = nullptr;
+                    m_layer_slot = nullptr;
+                    m_dots.clear();
+                    m_guid_dots.clear();
+                    m_emit_cursor = 0;
+                    m_layer_icon.clear();
+                }
+                // panel is small (~20 widgets): detach + rebuild
+                Engine::remove_from_parent(m_panel_canvas);
+                m_panel_canvas = nullptr;
                 m_panel_rows.clear();
                 m_panel_first_poll = true;
+                m_applied_zoom = 1.0;
+                m_calibration.reset();   // recalibrate + reposition reused dots
+                m_placed = false;
+                m_collapsed = false;
             }
 
             if (!m_calibration)
