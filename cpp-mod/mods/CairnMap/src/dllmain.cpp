@@ -838,8 +838,6 @@ namespace CairnMap
         bool m_placed = false;
         bool m_collapsed = true;
         int m_log_budget = 20;
-        bool m_flag_probe_done = false;
-        bool m_icon_probe_done = false;
 
       public:
         Mod()
@@ -1144,13 +1142,6 @@ namespace CairnMap
                 std::wstring name = full.substr(full.find_last_of(L'/') + 1);
                 m_layer_icon[li.id] = Engine::load_game_texture(full.c_str(), name.c_str());
             }
-            size_t ok = 0, tot = 0;
-            for (const auto& [id, tex] : m_layer_icon)
-            {
-                ++tot;
-                ok += tex ? 1 : 0;
-            }
-            Output::send<LogLevel::Default>(STR("[CairnIcon] textures loaded {}/{}\n"), ok, tot);
         }
 
         auto layer_texture_for(int layer_id) -> UObject*
@@ -1333,41 +1324,6 @@ namespace CairnMap
             // effigies & notes, filtered by the live collected set
             std::unordered_set<std::wstring> collected;
             const bool have_flags = Collected::gather(collected);
-            // one-shot diagnostic: reveals the obtain-flag key format vs our GUIDs
-            if (!m_flag_probe_done)
-            {
-                m_flag_probe_done = true;
-                std::wstring samples;
-                int n = 0;
-                for (const auto& k : collected)
-                {
-                    samples += k;
-                    samples += L' ';
-                    if (++n >= 4)
-                    {
-                        break;
-                    }
-                }
-                Output::send<LogLevel::Default>(
-                    STR("[CairnFlag] gathered {} obtained keys; samples: {}\n"), collected.size(),
-                    samples);
-                Output::send<LogLevel::Default>(
-                    STR("[CairnFlag] our eff[0]={} note[0]={}\n"),
-                    Collected::guid_key(Data::kEffigies[0].guid), std::wstring(Data::kNotes[0].row));
-            }
-            // one-shot probe: can we load a game icon from the player's own install
-            // via LoadAsset_Blocking (approach B, nothing bundled)? Validates the
-            // TSoftObjectPtr layout before wiring icons to every dot.
-            if (!m_icon_probe_done)
-            {
-                m_icon_probe_done = true;
-                UObject* tex = Engine::load_game_texture(
-                    STR("/Game/Others/InventoryItemIcon/Texture/T_icon_item_BossDefeatReward_Anubis"),
-                    STR("T_icon_item_BossDefeatReward_Anubis"));
-                Output::send<LogLevel::Default>(STR("[CairnIcon] LoadAsset_Blocking -> {} (class {})\n"),
-                                                tex ? tex->GetName() : std::wstring(L"NULL"),
-                                                tex ? Engine::class_name(tex) : std::wstring(L"-"));
-            }
             size_t hidden = 0;
             // Generic collectable placement: key_fn(i) yields the obtained-set key
             // (instance GUID for effigies, NoteRowName for notes).
@@ -1400,26 +1356,19 @@ namespace CairnMap
                 }
                 return layer_hidden;
             };
-            const size_t eff_hidden = place_collectables(
+            place_collectables(
                 std::size(Data::kEffigies),
                 [](size_t i) { return std::pair<int, int>{Data::kEffigies[i].x, Data::kEffigies[i].y}; },
                 [](size_t i) { return Collected::guid_key(Data::kEffigies[i].guid); },
                 {0.35f, 1.0f, 0.20f, 1.0f}, Data::kEffigyIcon, 20.0, kEffigyLayer);
-            const size_t note_hidden = place_collectables(
+            place_collectables(
                 std::size(Data::kNotes),
                 [](size_t i) { return std::pair<int, int>{Data::kNotes[i].x, Data::kNotes[i].y}; },
                 [](size_t i) { return std::wstring(Data::kNotes[i].row); },
                 {0.20f, 0.88f, 1.0f, 1.0f}, Data::kNoteIcon, 20.0, kNoteLayer);
-            Output::send<LogLevel::Default>(
-                STR("[CairnFlag] hidden effigies={}/{} notes={}/{}\n"), eff_hidden,
-                std::size(Data::kEffigies), note_hidden, std::size(Data::kNotes));
             // live eggs: no static positions (random lottery placement + respawn),
-            // so enumerate the PalEgg loot actors currently loaded around the player
-            // and place a dot at each. Only covers the streamed-in area near you; the
-            // set refreshes whenever the map is reopened from a new location.
-            const size_t egg_shown = place_live_eggs(image_class);
-            placed += egg_shown;
-            Output::send<LogLevel::Default>(STR("[CairnLoot] live eggs placed={}\n"), egg_shown);
+            // so enumerate the loaded PalEgg actors around the player and place a dot.
+            placed += place_live_eggs(image_class);
             // collapse any leftover pooled dots beyond this pass
             for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
             {
@@ -1464,15 +1413,11 @@ namespace CairnMap
             {
                 return;
             }
-            size_t hidden = 0;
             for (const auto& gd : m_guid_dots)
             {
-                const bool is_collected = collected.contains(gd.key);
-                hidden += is_collected ? 1 : 0;
-                m_dots[gd.dot_index].base_hidden = is_collected;
+                m_dots[gd.dot_index].base_hidden = collected.contains(gd.key);
             }
             apply_layer_visibility();
-            Output::send<LogLevel::Default>(STR("[CairnMap] collected refresh: {} hidden\n"), hidden);
         }
 
         // retry lazy icon textures (game loads them as the player encounters items)
@@ -1659,10 +1604,8 @@ namespace CairnMap
                 {
                     Engine::ParamsSetVisibility pv{Engine::Vis_Visible};
                     Engine::call(m_panel_canvas, L"SetVisibility", pv);   // reuse: just un-hide
-                    Output::send<LogLevel::Default>(STR("[CairnLife] panel reused (still valid)\n"));
                     return;
                 }
-                Output::send<LogLevel::Default>(STR("[CairnLife] panel was destroyed -> rebuilding\n"));
                 m_panel_canvas = nullptr;
                 m_panel_rows.clear();
                 m_panel_first_poll = true;
