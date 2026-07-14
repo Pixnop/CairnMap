@@ -27,6 +27,7 @@
 #include <Unreal/CoreUObject/UObject/UnrealType.hpp>
 
 #include "cairn_data.hpp"
+#include "cairn_icons.hpp"
 #include "cairn_project.hpp"
 
 namespace CairnMap
@@ -126,6 +127,50 @@ namespace CairnMap
         {
             FVector_ ReturnValue{};
         };
+        struct ParamsSetContent
+        {
+            UObject* Content{};
+        };
+        struct ParamsSetCanCache
+        {
+            bool CanCache{};
+        };
+        // UKismetSystemLibrary::LoadAsset_Blocking(TSoftObjectPtr<UObject>) -> UObject*
+        // Loads a texture asset from the player's OWN installed game (nothing is
+        // bundled/redistributed). TSoftObjectPtr = FWeakObjectPtr + tag + FSoftObjectPath.
+        struct ParamsLoadAssetBlocking
+        {
+            int32_t weak_index{};
+            int32_t weak_serial{};
+            int32_t tag_at_last_test{};
+            int32_t _pad0{};
+            FName package_name{};   // FSoftObjectPath.AssetPath.PackageName
+            FName asset_name{};     // FSoftObjectPath.AssetPath.AssetName
+            void* subpath_data{};   // FString SubPathString (empty)
+            int32_t subpath_num{};
+            int32_t subpath_max{};
+            UObject* ReturnValue{};
+        };
+
+        // Load a texture object from an asset path already present in the player's
+        // game files. Returns nullptr if the path is absent or loading fails.
+        inline auto load_game_texture(const wchar_t* package_path, const wchar_t* asset_name) -> UObject*
+        {
+            auto* lib =
+                UObjectGlobals::StaticFindObject(nullptr, nullptr, STR("/Script/Engine.Default__KismetSystemLibrary"));
+            if (!lib)
+            {
+                return nullptr;
+            }
+            ParamsLoadAssetBlocking p{};
+            p.package_name = FName(package_path, FNAME_Add);
+            p.asset_name = FName(asset_name, FNAME_Add);
+            if (!call(lib, L"LoadAsset_Blocking", p))
+            {
+                return nullptr;
+            }
+            return p.ReturnValue;
+        }
 
         enum : uint8_t
         {
@@ -241,6 +286,7 @@ namespace CairnMap
         struct Offsets
         {
             int32_t draw_as = -1, outline = -1, radii = -1, rounding = -1, tint = -1;
+            int32_t outline_color = -1, outline_width = -1;
             bool resolved = false;
         };
 
@@ -283,6 +329,14 @@ namespace CairnMap
                 {
                     off.rounding = prop->GetOffset_Internal();
                 }
+                if (prop->GetName() == STR("Color"))
+                {
+                    off.outline_color = prop->GetOffset_Internal();
+                }
+                if (prop->GetName() == STR("Width"))
+                {
+                    off.outline_width = prop->GetOffset_Internal();
+                }
             }
             off.resolved = off.draw_as >= 0 && off.outline >= 0 && off.radii >= 0 && off.rounding >= 0;
             return off.resolved;
@@ -297,6 +351,19 @@ namespace CairnMap
             outline[off.rounding] = 0;   // FixedRadius
             auto* radii = reinterpret_cast<double*>(outline + off.radii);
             radii[0] = radii[1] = radii[2] = radii[3] = radius;
+            // white border for contrast against the map (Elio/TrueGuardian32 feedback)
+            if (off.outline_width >= 0)
+            {
+                *reinterpret_cast<float*>(outline + off.outline_width) = 1.5f;
+            }
+            if (off.outline_color >= 0)
+            {
+                auto* oc = reinterpret_cast<float*>(outline + off.outline_color);
+                oc[0] = 1.0f;
+                oc[1] = 1.0f;
+                oc[2] = 1.0f;
+                oc[3] = 0.9f;
+            }
             if (off.tint >= 0)
             {
                 // FSlateColor: FLinearColor SpecifiedColor leads the struct
@@ -433,6 +500,19 @@ namespace CairnMap
             outline[off.rounding] = 0;   // ESlateBrushRoundingType::FixedRadius
             auto* radii = reinterpret_cast<double*>(outline + off.radii);
             radii[0] = radii[1] = radii[2] = radii[3] = 6.0;
+            // white border so dots stay legible against the map background
+            if (off.outline_width >= 0)
+            {
+                *reinterpret_cast<float*>(outline + off.outline_width) = 1.5f;
+            }
+            if (off.outline_color >= 0)
+            {
+                auto* oc = reinterpret_cast<float*>(outline + off.outline_color);
+                oc[0] = 1.0f;
+                oc[1] = 1.0f;
+                oc[2] = 1.0f;
+                oc[3] = 0.9f;
+            }
         }
     } // namespace Style
 
@@ -571,6 +651,7 @@ namespace CairnMap
         // per-map-body state (SPEC 2.4): pool keyed by the live canvas
         std::wstring m_canvas_full_name;
         UObject* m_layer_canvas = nullptr;                 // our own CanvasPanel
+        UObject* m_inv_box = nullptr;                       // InvalidationBox wrapping it
         UObject* m_layer_slot = nullptr;                   // its canvas slot
         uint8_t m_mask_geom[64] = {};                      // last-seen mask LayoutData
         // layer ids: 0..N-1 = Data::kLayers index; 1000 = effigies, 1001 = notes,
@@ -676,6 +757,7 @@ namespace CairnMap
         bool m_collapsed = true;
         int m_log_budget = 20;
         bool m_flag_probe_done = false;
+        bool m_icon_probe_done = false;
 
       public:
         Mod()
@@ -817,14 +899,38 @@ namespace CairnMap
                 log_once(L"layer canvas construction failed");
                 return false;
             }
+            // Wrap our canvas in an InvalidationBox so Slate caches its ~7k dot
+            // widgets: panning the map then only re-transforms the cached layer
+            // instead of re-laying-out every dot per frame (fixes the pan freeze
+            // reported by users). Defensive: fall back to a direct attach if the
+            // box can't be created, so behaviour never regresses.
+            UObject* attach = m_layer_canvas;
+            if (auto* inv_class = UObjectGlobals::StaticFindObject<UClass*>(
+                    nullptr, nullptr, STR("/Script/UMG.InvalidationBox")))
+            {
+                FStaticConstructObjectParameters ip{inv_class, map_body_canvas};
+                if (UObject* box = UObjectGlobals::StaticConstructObject(ip))
+                {
+                    Engine::ParamsSetContent sc{m_layer_canvas};
+                    Engine::ParamsSetCanCache cc{true};
+                    if (Engine::call(box, L"SetContent", sc))
+                    {
+                        Engine::call(box, L"SetCanCache", cc);
+                        m_inv_box = box;
+                        attach = box;
+                        Output::send<LogLevel::Default>(STR("[CairnMap] invalidation box active\n"));
+                    }
+                }
+            }
             // ⚠ SPEC 2.4: our icons live ONLY in our own canvas; the game's
             // Canvas_ForIcon_Mask children are rebuilt/iterated every open and
             // foreign widgets in there crash the second open (proven).
-            Engine::ParamsAddChildToCanvas add{m_layer_canvas, nullptr};
+            Engine::ParamsAddChildToCanvas add{attach, nullptr};
             if (!Engine::call(map_body_canvas, L"AddChildToCanvas", add) || !add.ReturnValue)
             {
                 log_once(L"AddChildToCanvas(map body) failed");
                 m_layer_canvas = nullptr;
+                m_inv_box = nullptr;
                 return false;
             }
             m_layer_slot = add.ReturnValue;
@@ -910,7 +1016,7 @@ namespace CairnMap
             Engine::call(entry.slot, L"SetAutoSize", aut);
             Engine::ParamsSetAlignment align{{0.5, 0.5}};
             Engine::call(entry.slot, L"SetAlignment", align);
-            const double sz = std::clamp(entry.base_size / m_applied_zoom, 4.0, 40.0);
+            const double sz = std::clamp(entry.base_size / m_applied_zoom, 6.0, 40.0);
             Engine::ParamsSetSize size{{sz, sz}};
             Engine::call(entry.slot, L"SetSize", size);
             Engine::ParamsSetPosition setpos{{px, py}};
@@ -1047,6 +1153,19 @@ namespace CairnMap
                 Output::send<LogLevel::Default>(
                     STR("[CairnFlag] our eff[0]={} note[0]={}\n"),
                     Collected::guid_key(Data::kEffigies[0].guid), std::wstring(Data::kNotes[0].row));
+            }
+            // one-shot probe: can we load a game icon from the player's own install
+            // via LoadAsset_Blocking (approach B, nothing bundled)? Validates the
+            // TSoftObjectPtr layout before wiring icons to every dot.
+            if (!m_icon_probe_done)
+            {
+                m_icon_probe_done = true;
+                UObject* tex = Engine::load_game_texture(
+                    STR("/Game/Others/InventoryItemIcon/Texture/T_icon_item_BossDefeatReward_Anubis"),
+                    STR("T_icon_item_BossDefeatReward_Anubis"));
+                Output::send<LogLevel::Default>(STR("[CairnIcon] LoadAsset_Blocking -> {} (class {})\n"),
+                                                tex ? tex->GetName() : std::wstring(L"NULL"),
+                                                tex ? Engine::class_name(tex) : std::wstring(L"-"));
             }
             size_t hidden = 0;
             // Generic collectable placement: key_fn(i) yields the obtained-set key
@@ -1273,7 +1392,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                const double sz = std::clamp(d.base_size / zoom, 4.0, 40.0);
+                const double sz = std::clamp(d.base_size / zoom, 6.0, 40.0);
                 Engine::ParamsSetSize size{{sz, sz}};
                 Engine::call(d.slot, L"SetSize", size);
             }
@@ -1544,6 +1663,7 @@ namespace CairnMap
                 // new map body instance: old widgets died with the previous tree
                 m_canvas_full_name = full_name;
                 m_layer_canvas = nullptr;
+                m_inv_box = nullptr;
                 m_layer_slot = nullptr;
                 m_dots.clear();
                 m_guid_dots.clear();
