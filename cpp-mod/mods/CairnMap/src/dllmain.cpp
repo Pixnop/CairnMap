@@ -978,8 +978,11 @@ namespace CairnMap
             // reported by users). Defensive: fall back to a direct attach if the
             // box can't be created, so behaviour never regresses.
             UObject* attach = m_layer_canvas;
-            if (auto* inv_class = UObjectGlobals::StaticFindObject<UClass*>(
-                    nullptr, nullptr, STR("/Script/UMG.InvalidationBox")))
+            auto* inv_class = g_use_invalidation_box
+                                  ? UObjectGlobals::StaticFindObject<UClass*>(
+                                        nullptr, nullptr, STR("/Script/UMG.InvalidationBox"))
+                                  : nullptr;
+            if (inv_class)
             {
                 FStaticConstructObjectParameters ip{inv_class, map_body_canvas};
                 if (UObject* box = UObjectGlobals::StaticConstructObject(ip))
@@ -1098,10 +1101,12 @@ namespace CairnMap
         }
 
         static constexpr bool g_load_game_icons = true;    // real game icons (kept)
-        // Isolation switch for the finishing touches (collected counters + toggle
-        // persistence) added right before the crashes appeared. Off = revert to the
-        // legend-icons build the user confirmed stable, to locate the corruption.
-        static constexpr bool g_finishing_touches = false;
+        static constexpr bool g_finishing_touches = true;  // counters + persistence (kept)
+        // Isolation switch: the InvalidationBox (pan-freeze fix) caches render data
+        // for ~7.5k child dots; tearing it down on map close is the prime suspect for
+        // the heap corruption. Off = attach our canvas directly (pan freeze returns),
+        // to confirm whether the box is the corruptor.
+        static constexpr bool g_use_invalidation_box = false;
 
         // Load each layer's icon once from the player's install, cached.
         auto ensure_layer_icons() -> void
