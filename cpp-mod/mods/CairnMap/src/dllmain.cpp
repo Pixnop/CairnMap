@@ -141,15 +141,6 @@ namespace CairnMap
         struct ParamsNone
         {
         };
-        // Detach a widget from its parent (UWidget::RemoveFromParent, no args).
-        inline auto remove_from_parent(UObject* w) -> void
-        {
-            if (w)
-            {
-                ParamsNone p{};
-                call(w, L"RemoveFromParent", p);
-            }
-        }
         // UKismetSystemLibrary::LoadAsset_Blocking(TSoftObjectPtr<UObject>) -> UObject*
         // Loads a texture asset from the player's OWN installed game (nothing is
         // bundled/redistributed). TSoftObjectPtr = FWeakObjectPtr + tag + FSoftObjectPath.
@@ -221,6 +212,16 @@ namespace CairnMap
             y = p.ReturnValue.Y;
             z = p.ReturnValue.Z;
             return true;
+        }
+
+        // Detach a widget from its parent (UWidget::RemoveFromParent, no args).
+        inline auto remove_from_parent(UObject* w) -> void
+        {
+            if (w)
+            {
+                ParamsNone p{};
+                call(w, L"RemoveFromParent", p);
+            }
         }
 
         // Load a texture object from an asset path already present in the player's
