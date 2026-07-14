@@ -152,26 +152,6 @@ namespace CairnMap
             UObject* ReturnValue{};
         };
 
-        // Load a texture object from an asset path already present in the player's
-        // game files. Returns nullptr if the path is absent or loading fails.
-        inline auto load_game_texture(const wchar_t* package_path, const wchar_t* asset_name) -> UObject*
-        {
-            auto* lib =
-                UObjectGlobals::StaticFindObject(nullptr, nullptr, STR("/Script/Engine.Default__KismetSystemLibrary"));
-            if (!lib)
-            {
-                return nullptr;
-            }
-            ParamsLoadAssetBlocking p{};
-            p.package_name = FName(package_path, FNAME_Add);
-            p.asset_name = FName(asset_name, FNAME_Add);
-            if (!call(lib, L"LoadAsset_Blocking", p))
-            {
-                return nullptr;
-            }
-            return p.ReturnValue;
-        }
-
         enum : uint8_t
         {
             Vis_Visible = 0,
@@ -226,6 +206,26 @@ namespace CairnMap
             y = p.ReturnValue.Y;
             z = p.ReturnValue.Z;
             return true;
+        }
+
+        // Load a texture object from an asset path already present in the player's
+        // game files (nothing bundled). Returns nullptr if absent or load fails.
+        inline auto load_game_texture(const wchar_t* package_path, const wchar_t* asset_name) -> UObject*
+        {
+            auto* lib = UObjectGlobals::StaticFindObject(nullptr, nullptr,
+                                                         STR("/Script/Engine.Default__KismetSystemLibrary"));
+            if (!lib)
+            {
+                return nullptr;
+            }
+            ParamsLoadAssetBlocking p{};
+            p.package_name = FName(package_path, FNAME_Add);
+            p.asset_name = FName(asset_name, FNAME_Add);
+            if (!call(lib, L"LoadAsset_Blocking", p))
+            {
+                return nullptr;
+            }
+            return p.ReturnValue;
         }
 
         inline auto class_name(UObject* w) -> std::wstring
