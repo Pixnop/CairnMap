@@ -6,7 +6,10 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <optional>
@@ -676,6 +679,7 @@ namespace CairnMap
         static constexpr int kEffigyLayer = 1000;
         static constexpr int kNoteLayer = 1001;
         static constexpr int kEggLayer = 1002;
+        static constexpr int kMasterLayer = -1;   // "show all" master toggle
         struct Dot
         {
             UObject* widget;
@@ -688,6 +692,46 @@ namespace CairnMap
         };
         std::vector<Dot> m_dots;                           // pooled dot widgets
         std::unordered_map<int, bool> m_layer_on;          // toggle state per layer id
+
+        // Persist toggle choices between sessions (LOCALAPPDATA\CairnMap\toggles.cfg).
+        static auto config_path() -> std::filesystem::path
+        {
+            const char* base = std::getenv("LOCALAPPDATA");
+            std::filesystem::path dir =
+                base ? std::filesystem::path(base) / "CairnMap" : std::filesystem::path("CairnMap");
+            return dir / "toggles.cfg";
+        }
+        auto save_toggles() -> void
+        {
+            try
+            {
+                auto p = config_path();
+                std::filesystem::create_directories(p.parent_path());
+                std::ofstream f(p, std::ios::trunc);
+                for (const auto& [id, on] : m_layer_on)
+                {
+                    f << id << ' ' << (on ? 1 : 0) << '\n';
+                }
+            }
+            catch (...)
+            {
+            }
+        }
+        auto load_toggles() -> void
+        {
+            try
+            {
+                std::ifstream f(config_path());
+                int id = 0, on = 0;
+                while (f >> id >> on)
+                {
+                    m_layer_on[id] = (on != 0);
+                }
+            }
+            catch (...)
+            {
+            }
+        }
 
         // interface panel (P2): screen-fixed rows with native checkboxes
         UObject* m_panel_canvas = nullptr;
@@ -734,6 +778,7 @@ namespace CairnMap
         {
             std::vector<PanelItem> v;
             v.push_back({PanelItem::Title, L"CairnMap", 0, 0, 0, 0});
+            v.push_back({PanelItem::Row, L"Show all", kMasterLayer, 0.85f, 0.88f, 0.95f});
 
             v.push_back({PanelItem::Header, L"COLLECTABLES", 0, 0, 0, 0});
             v.push_back({PanelItem::Row, L"Effigies", kEffigyLayer, 0.35f, 1.0f, 0.20f});
@@ -783,6 +828,7 @@ namespace CairnMap
             ModName = STR("CairnMap");
             ModAuthors = STR("Pixnop");
             ModDescription = STR("CairnMap: map collectables for Palworld 1.0+");
+            load_toggles();   // restore per-layer on/off from last session
             Output::send<LogLevel::Default>(STR("[CairnMap] loaded (P1)\n"));
         }
 
@@ -1690,6 +1736,23 @@ namespace CairnMap
             };
 
             ensure_layer_icons();   // legend uses the same loaded game textures
+
+            // collected counters for effigies / notes (X / total)
+            std::unordered_set<std::wstring> coll;
+            const bool have_coll = Collected::gather(coll);
+            size_t eff_got = 0, note_got = 0;
+            if (have_coll)
+            {
+                for (const auto& e : Data::kEffigies)
+                {
+                    eff_got += coll.count(Collected::guid_key(e.guid)) ? 1 : 0;
+                }
+                for (const auto& n : Data::kNotes)
+                {
+                    note_got += coll.count(std::wstring(n.row)) ? 1 : 0;
+                }
+            }
+
             m_panel_rows.clear();
             double y = 6.0;
             for (const auto& it : items)
@@ -1726,20 +1789,83 @@ namespace CairnMap
                     m_panel_rows.push_back({cb, it.id, is_layer_on(it.id)});
                 }
                 add_icon(layer_texture_for(it.id), 30, y + 1, 16);
-                add_label(it.label, 50, y + 2, width - 58, 11, 0.90f, 0.92f, 0.98f, 1.0f);
+                std::wstring lbl = it.label;
+                if (have_coll && it.id == kEffigyLayer)
+                {
+                    lbl += L"  " + std::to_wstring(eff_got) + L"/" +
+                           std::to_wstring(std::size(Data::kEffigies));
+                }
+                else if (have_coll && it.id == kNoteLayer)
+                {
+                    lbl += L"  " + std::to_wstring(note_got) + L"/" +
+                           std::to_wstring(std::size(Data::kNotes));
+                }
+                add_label(lbl.c_str(), 50, y + 2, width - 58, 11, 0.90f, 0.92f, 0.98f, 1.0f);
                 y += item_h(it);
             }
             m_panel_root_name = root->GetFullName();
             Output::send<LogLevel::Default>(STR("[CairnMap] panel built ({} rows)\n"), m_panel_rows.size());
         }
 
-        // Poll checkbox states; on change, update toggle + layer visibility.
+        // Force a checkbox to a given checked state (visual + property).
+        auto set_checkbox(UObject* cb, bool on) -> void
+        {
+            if (!cb)
+            {
+                return;
+            }
+            if (auto* st = cb->GetValuePtrByPropertyNameInChain<uint8_t>(STR("CheckedState")))
+            {
+                *st = on ? 1 : 0;
+            }
+            Engine::ParamsSetIsChecked chk{on};
+            Engine::call(cb, L"SetIsChecked", chk);
+        }
+
+        // Poll checkbox states; on change, update toggle + layer visibility + save.
         auto poll_panel() -> void
         {
+            // master toggle: cascade its state to every layer when it flips
+            for (auto& row : m_panel_rows)
+            {
+                if (row.layer_id != kMasterLayer || !row.checkbox)
+                {
+                    continue;
+                }
+                Engine::ParamsIsChecked p{};
+                if (!Engine::call(row.checkbox, L"IsChecked", p))
+                {
+                    break;
+                }
+                if (m_panel_first_poll)
+                {
+                    row.last_checked = p.ReturnValue;
+                    break;
+                }
+                if (p.ReturnValue != row.last_checked)
+                {
+                    row.last_checked = p.ReturnValue;
+                    const bool state = p.ReturnValue;
+                    for (auto& r2 : m_panel_rows)
+                    {
+                        if (r2.layer_id == kMasterLayer)
+                        {
+                            continue;
+                        }
+                        m_layer_on[r2.layer_id] = state;
+                        r2.last_checked = state;
+                        set_checkbox(r2.checkbox, state);
+                    }
+                    apply_layer_visibility();
+                    save_toggles();
+                }
+                break;
+            }
+            // per-layer toggles
             bool changed = false;
             for (auto& row : m_panel_rows)
             {
-                if (!row.checkbox)
+                if (row.layer_id == kMasterLayer || !row.checkbox)
                 {
                     continue;
                 }
@@ -1750,7 +1876,6 @@ namespace CairnMap
                 }
                 if (m_panel_first_poll)
                 {
-                    // adopt reality without hiding anything; keep default-on
                     row.last_checked = p.ReturnValue;
                     continue;
                 }
@@ -1768,6 +1893,7 @@ namespace CairnMap
             if (changed)
             {
                 apply_layer_visibility();
+                save_toggles();
             }
         }
 
