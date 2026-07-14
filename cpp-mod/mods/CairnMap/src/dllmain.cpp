@@ -835,7 +835,10 @@ namespace CairnMap
             ModName = STR("CairnMap");
             ModAuthors = STR("Pixnop");
             ModDescription = STR("CairnMap: map collectables for Palworld 1.0+");
-            load_toggles();   // restore per-layer on/off from last session
+            if (g_finishing_touches)
+            {
+                load_toggles();   // restore per-layer on/off from last session
+            }
             Output::send<LogLevel::Default>(STR("[CairnMap] loaded (P1)\n"));
         }
 
@@ -1094,9 +1097,11 @@ namespace CairnMap
             }
         }
 
-        // Isolation switch: when false, no runtime icon loading / SetBrushFromTexture
-        // happens (dots stay coloured). Used to confirm the heap-corruption source.
-        static constexpr bool g_load_game_icons = false;
+        static constexpr bool g_load_game_icons = true;    // real game icons (kept)
+        // Isolation switch for the finishing touches (collected counters + toggle
+        // persistence) added right before the crashes appeared. Off = revert to the
+        // legend-icons build the user confirmed stable, to locate the corruption.
+        static constexpr bool g_finishing_touches = false;
 
         // Load each layer's icon once from the player's install, cached.
         auto ensure_layer_icons() -> void
@@ -1754,7 +1759,7 @@ namespace CairnMap
 
             // collected counters for effigies / notes (X / total)
             std::unordered_set<std::wstring> coll;
-            const bool have_coll = Collected::gather(coll);
+            const bool have_coll = g_finishing_touches && Collected::gather(coll);
             size_t eff_got = 0, note_got = 0;
             if (have_coll)
             {
@@ -1871,7 +1876,10 @@ namespace CairnMap
             if (changed)
             {
                 apply_layer_visibility();
-                save_toggles();
+                if (g_finishing_touches)
+                {
+                    save_toggles();
+                }
             }
         }
 
