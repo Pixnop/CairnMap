@@ -1248,6 +1248,7 @@ namespace CairnMap
         }
 
         size_t m_emit_cursor = 0;
+        size_t m_egg_dot_start = 0;   // pool index where live-egg dots begin (for reopen re-scan)
         static constexpr bool g_icons_enabled = false;   // item icons unreachable from C++ (Lua object-space barrier); colored dots
 
         std::unordered_map<std::wstring, UObject*> m_tex_index;
@@ -1368,6 +1369,9 @@ namespace CairnMap
                 {0.20f, 0.88f, 1.0f, 1.0f}, Data::kNoteIcon, 20.0, kNoteLayer);
             // live eggs: no static positions (random lottery placement + respawn),
             // so enumerate the loaded PalEgg actors around the player and place a dot.
+            // Placed LAST so their pool slots form a contiguous tail we can re-scan on
+            // reopen (place_dots does not re-run when the map body is reused).
+            m_egg_dot_start = m_emit_cursor;
             placed += place_live_eggs(image_class);
             // collapse any leftover pooled dots beyond this pass
             for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
@@ -1418,6 +1422,32 @@ namespace CairnMap
                 m_dots[gd.dot_index].base_hidden = collected.contains(gd.key);
             }
             apply_layer_visibility();
+        }
+
+        // Eggs are collected / respawn / stream in as the player moves, but the close
+        // path only collapses (keeps widgets) so a same-instance reopen never re-runs
+        // place_dots. Re-scan just the egg tail of the pool. Egg count is small (nearby
+        // only), so the re-parent churn the 5k static dots must avoid is safe here.
+        auto refresh_live_eggs() -> void
+        {
+            if (!m_placed || !m_layer_canvas || !m_calibration)
+            {
+                return;
+            }
+            auto* image_class =
+                UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/UMG.Image"));
+            if (!image_class)
+            {
+                return;
+            }
+            m_emit_cursor = m_egg_dot_start;
+            place_live_eggs(image_class);
+            // collapse egg dots left over from a previous, larger scan
+            for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
+            {
+                Engine::ParamsSetVisibility vis{Engine::Vis_Collapsed};
+                Engine::call(m_dots[i].widget, L"SetVisibility", vis);
+            }
         }
 
         // retry lazy icon textures (game loads them as the player encounters items)
@@ -1921,6 +1951,7 @@ namespace CairnMap
                 m_dots.clear();
                 m_guid_dots.clear();
                 m_emit_cursor = 0;
+                m_egg_dot_start = 0;
                 m_layer_icon.clear();
                 m_applied_zoom = 1.0;
                 m_calibration.reset();
@@ -1983,6 +2014,7 @@ namespace CairnMap
                 Engine::call(m_layer_canvas, L"SetVisibility", vis);
                 m_collapsed = false;
                 refresh_collected();   // visibility-only diff, no re-parenting
+                refresh_live_eggs();   // re-scan eggs (collected / respawned / streamed in)
                 // panel visibility is handled by build_panel (validates first)
             }
 
