@@ -6,7 +6,10 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <optional>
@@ -27,6 +30,7 @@
 #include <Unreal/CoreUObject/UObject/UnrealType.hpp>
 
 #include "cairn_data.hpp"
+#include "cairn_icons.hpp"
 #include "cairn_project.hpp"
 
 namespace CairnMap
@@ -126,6 +130,33 @@ namespace CairnMap
         {
             FVector_ ReturnValue{};
         };
+        struct ParamsSetContent
+        {
+            UObject* Content{};
+        };
+        struct ParamsSetCanCache
+        {
+            bool CanCache{};
+        };
+        struct ParamsNone
+        {
+        };
+        // UKismetSystemLibrary::LoadAsset_Blocking(TSoftObjectPtr<UObject>) -> UObject*
+        // Loads a texture asset from the player's OWN installed game (nothing is
+        // bundled/redistributed). TSoftObjectPtr = FWeakObjectPtr + tag + FSoftObjectPath.
+        struct ParamsLoadAssetBlocking
+        {
+            int32_t weak_index{};
+            int32_t weak_serial{};
+            int32_t tag_at_last_test{};
+            int32_t _pad0{};
+            FName package_name{};   // FSoftObjectPath.AssetPath.PackageName
+            FName asset_name{};     // FSoftObjectPath.AssetPath.AssetName
+            void* subpath_data{};   // FString SubPathString (empty)
+            int32_t subpath_num{};
+            int32_t subpath_max{};
+            UObject* ReturnValue{};
+        };
 
         enum : uint8_t
         {
@@ -181,6 +212,36 @@ namespace CairnMap
             y = p.ReturnValue.Y;
             z = p.ReturnValue.Z;
             return true;
+        }
+
+        // Detach a widget from its parent (UWidget::RemoveFromParent, no args).
+        inline auto remove_from_parent(UObject* w) -> void
+        {
+            if (w)
+            {
+                ParamsNone p{};
+                call(w, L"RemoveFromParent", p);
+            }
+        }
+
+        // Load a texture object from an asset path already present in the player's
+        // game files (nothing bundled). Returns nullptr if absent or load fails.
+        inline auto load_game_texture(const wchar_t* package_path, const wchar_t* asset_name) -> UObject*
+        {
+            auto* lib = UObjectGlobals::StaticFindObject(nullptr, nullptr,
+                                                         STR("/Script/Engine.Default__KismetSystemLibrary"));
+            if (!lib)
+            {
+                return nullptr;
+            }
+            ParamsLoadAssetBlocking p{};
+            p.package_name = FName(package_path, FNAME_Add);
+            p.asset_name = FName(asset_name, FNAME_Add);
+            if (!call(lib, L"LoadAsset_Blocking", p))
+            {
+                return nullptr;
+            }
+            return p.ReturnValue;
         }
 
         inline auto class_name(UObject* w) -> std::wstring
@@ -241,6 +302,7 @@ namespace CairnMap
         struct Offsets
         {
             int32_t draw_as = -1, outline = -1, radii = -1, rounding = -1, tint = -1;
+            int32_t outline_color = -1, outline_width = -1;
             bool resolved = false;
         };
 
@@ -283,6 +345,14 @@ namespace CairnMap
                 {
                     off.rounding = prop->GetOffset_Internal();
                 }
+                if (prop->GetName() == STR("Color"))
+                {
+                    off.outline_color = prop->GetOffset_Internal();
+                }
+                if (prop->GetName() == STR("Width"))
+                {
+                    off.outline_width = prop->GetOffset_Internal();
+                }
             }
             off.resolved = off.draw_as >= 0 && off.outline >= 0 && off.radii >= 0 && off.rounding >= 0;
             return off.resolved;
@@ -297,6 +367,19 @@ namespace CairnMap
             outline[off.rounding] = 0;   // FixedRadius
             auto* radii = reinterpret_cast<double*>(outline + off.radii);
             radii[0] = radii[1] = radii[2] = radii[3] = radius;
+            // white border for contrast against the map (Elio/TrueGuardian32 feedback)
+            if (off.outline_width >= 0)
+            {
+                *reinterpret_cast<float*>(outline + off.outline_width) = 0.0f;
+            }
+            if (off.outline_color >= 0)
+            {
+                auto* oc = reinterpret_cast<float*>(outline + off.outline_color);
+                oc[0] = 1.0f;
+                oc[1] = 1.0f;
+                oc[2] = 1.0f;
+                oc[3] = 0.9f;
+            }
             if (off.tint >= 0)
             {
                 // FSlateColor: FLinearColor SpecifiedColor leads the struct
@@ -433,6 +516,35 @@ namespace CairnMap
             outline[off.rounding] = 0;   // ESlateBrushRoundingType::FixedRadius
             auto* radii = reinterpret_cast<double*>(outline + off.radii);
             radii[0] = radii[1] = radii[2] = radii[3] = 6.0;
+            // white border so dots stay legible against the map background
+            if (off.outline_width >= 0)
+            {
+                *reinterpret_cast<float*>(outline + off.outline_width) = 0.0f;
+            }
+            if (off.outline_color >= 0)
+            {
+                auto* oc = reinterpret_cast<float*>(outline + off.outline_color);
+                oc[0] = 1.0f;
+                oc[1] = 1.0f;
+                oc[2] = 1.0f;
+                oc[3] = 0.9f;
+            }
+        }
+
+        // Switch a dot's brush back to plain Image draw so an assigned texture is
+        // drawn as a full rectangle (SetBrushFromTexture leaves DrawAs untouched, so
+        // the RoundedBox rounding from make_round would otherwise clip the icon).
+        inline auto draw_as_image(UObject* image_widget) -> void
+        {
+            static Offsets off;
+            if (!resolve(off))
+            {
+                return;
+            }
+            if (auto* brush = image_widget->GetValuePtrByPropertyNameInChain<uint8_t>(STR("Brush")))
+            {
+                brush[off.draw_as] = 3;   // ESlateBrushDrawType::Image
+            }
         }
     } // namespace Style
 
@@ -571,6 +683,8 @@ namespace CairnMap
         // per-map-body state (SPEC 2.4): pool keyed by the live canvas
         std::wstring m_canvas_full_name;
         UObject* m_layer_canvas = nullptr;                 // our own CanvasPanel
+        UObject* m_inv_box = nullptr;                       // InvalidationBox wrapping it
+        std::unordered_map<int, UObject*> m_layer_icon;    // layer_id -> loaded game texture
         UObject* m_layer_slot = nullptr;                   // its canvas slot
         uint8_t m_mask_geom[64] = {};                      // last-seen mask LayoutData
         // layer ids: 0..N-1 = Data::kLayers index; 1000 = effigies, 1001 = notes,
@@ -578,6 +692,7 @@ namespace CairnMap
         static constexpr int kEffigyLayer = 1000;
         static constexpr int kNoteLayer = 1001;
         static constexpr int kEggLayer = 1002;
+        static constexpr int kMasterLayer = -1;   // "show all" master toggle
         struct Dot
         {
             UObject* widget;
@@ -590,6 +705,54 @@ namespace CairnMap
         };
         std::vector<Dot> m_dots;                           // pooled dot widgets
         std::unordered_map<int, bool> m_layer_on;          // toggle state per layer id
+
+        // Persist toggle choices between sessions (LOCALAPPDATA\CairnMap\toggles.cfg).
+        static auto config_path() -> std::filesystem::path
+        {
+            const char* base = std::getenv("LOCALAPPDATA");
+            std::filesystem::path dir =
+                base ? std::filesystem::path(base) / "CairnMap" : std::filesystem::path("CairnMap");
+            return dir / "toggles.cfg";
+        }
+        auto save_toggles() -> void
+        {
+            const char* base = std::getenv("LOCALAPPDATA");
+            if (!base || !*base)
+            {
+                return;   // no writable location: skip silently
+            }
+            std::error_code ec;
+            std::filesystem::path dir = std::filesystem::path(base) / "CairnMap";
+            std::filesystem::create_directories(dir, ec);   // non-throwing overload
+            if (ec)
+            {
+                return;
+            }
+            std::ofstream f(dir / "toggles.cfg", std::ios::trunc);
+            if (!f)
+            {
+                return;
+            }
+            for (const auto& [id, on] : m_layer_on)
+            {
+                f << id << ' ' << (on ? 1 : 0) << '\n';
+            }
+        }
+        auto load_toggles() -> void
+        {
+            try
+            {
+                std::ifstream f(config_path());
+                int id = 0, on = 0;
+                while (f >> id >> on)
+                {
+                    m_layer_on[id] = (on != 0);
+                }
+            }
+            catch (...)
+            {
+            }
+        }
 
         // interface panel (P2): screen-fixed rows with native checkboxes
         UObject* m_panel_canvas = nullptr;
@@ -675,7 +838,6 @@ namespace CairnMap
         bool m_placed = false;
         bool m_collapsed = true;
         int m_log_budget = 20;
-        bool m_flag_probe_done = false;
 
       public:
         Mod()
@@ -684,6 +846,10 @@ namespace CairnMap
             ModName = STR("CairnMap");
             ModAuthors = STR("Pixnop");
             ModDescription = STR("CairnMap: map collectables for Palworld 1.0+");
+            if (g_finishing_touches)
+            {
+                load_toggles();   // restore per-layer on/off from last session
+            }
             Output::send<LogLevel::Default>(STR("[CairnMap] loaded (P1)\n"));
         }
 
@@ -817,14 +983,41 @@ namespace CairnMap
                 log_once(L"layer canvas construction failed");
                 return false;
             }
+            // Wrap our canvas in an InvalidationBox so Slate caches its ~7k dot
+            // widgets: panning the map then only re-transforms the cached layer
+            // instead of re-laying-out every dot per frame (fixes the pan freeze
+            // reported by users). Defensive: fall back to a direct attach if the
+            // box can't be created, so behaviour never regresses.
+            UObject* attach = m_layer_canvas;
+            auto* inv_class = g_use_invalidation_box
+                                  ? UObjectGlobals::StaticFindObject<UClass*>(
+                                        nullptr, nullptr, STR("/Script/UMG.InvalidationBox"))
+                                  : nullptr;
+            if (inv_class)
+            {
+                FStaticConstructObjectParameters ip{inv_class, map_body_canvas};
+                if (UObject* box = UObjectGlobals::StaticConstructObject(ip))
+                {
+                    Engine::ParamsSetContent sc{m_layer_canvas};
+                    Engine::ParamsSetCanCache cc{true};
+                    if (Engine::call(box, L"SetContent", sc))
+                    {
+                        Engine::call(box, L"SetCanCache", cc);
+                        m_inv_box = box;
+                        attach = box;
+                        Output::send<LogLevel::Default>(STR("[CairnMap] invalidation box active\n"));
+                    }
+                }
+            }
             // ⚠ SPEC 2.4: our icons live ONLY in our own canvas; the game's
             // Canvas_ForIcon_Mask children are rebuilt/iterated every open and
             // foreign widgets in there crash the second open (proven).
-            Engine::ParamsAddChildToCanvas add{m_layer_canvas, nullptr};
+            Engine::ParamsAddChildToCanvas add{attach, nullptr};
             if (!Engine::call(map_body_canvas, L"AddChildToCanvas", add) || !add.ReturnValue)
             {
                 log_once(L"AddChildToCanvas(map body) failed");
                 m_layer_canvas = nullptr;
+                m_inv_box = nullptr;
                 return false;
             }
             m_layer_slot = add.ReturnValue;
@@ -867,6 +1060,96 @@ namespace CairnMap
             Engine::call(m_layer_slot, L"SetAlignment", align);
         }
 
+        // Full asset package path of a layer's icon, resolved at runtime from the
+        // player's own game files (approach B, nothing bundled). Item icons live
+        // under InventoryItemIcon; map/POI markers under the InGame compass set.
+        // nullptr = keep coloured dot (no clean icon exists).
+        static auto layer_icon_path(int layer_id) -> const wchar_t*
+        {
+            switch (layer_id)
+            {
+            case kEffigyLayer:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Relic");
+            case kNoteLayer:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Consume_TechnologyBook_G1");
+            case kEggLayer:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_PalEgg");
+            case 0:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Coal");
+            case 1:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_CopperOre");
+            case 2:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Quartz");
+            case 3:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Sulfur");
+            case 4:   // Hexolite -> crystal
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Pal_crystal_L");
+            case 5:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_CrudeOil");
+            case 6:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_SkyIslandOre");
+            case 7:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_WorldTreeOre");
+            case 8:   // Magma -> lava
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Lava_Ancient");
+            case 9:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_NightStone");
+            case 10:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Money");
+            case 11:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Food_Lotus_attack_01");
+            case 12:   // Chest -> treasure map marker
+                return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_Search_Treasure");
+            case 13:   // Junk -> junk marker
+                return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_Search_Junk");
+            case 14:   // Outpost -> enemy camp marker
+                return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_EnemyCamp");
+            case 15:
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Consume_AffectionFruit_01");
+            default:
+                return nullptr;   // Hexolite / Magma -> coloured dot
+            }
+        }
+
+        static constexpr bool g_load_game_icons = true;    // real game icons (kept)
+        static constexpr bool g_finishing_touches = true;  // counters + persistence (kept)
+        // Isolation switch: the InvalidationBox (pan-freeze fix) caches render data
+        // for ~7.5k child dots; tearing it down on map close is the prime suspect for
+        // the heap corruption. Off = attach our canvas directly (pan freeze returns),
+        // to confirm whether the box is the corruptor.
+        static constexpr bool g_use_invalidation_box = false;
+
+        // Load each layer's icon once from the player's install, cached.
+        auto ensure_layer_icons() -> void
+        {
+            if (!g_load_game_icons)
+            {
+                return;
+            }
+            for (const auto& li : panel_items())
+            {
+                if (li.kind != PanelItem::Row || m_layer_icon.count(li.id))
+                {
+                    continue;
+                }
+                const wchar_t* path = layer_icon_path(li.id);
+                if (!path)
+                {
+                    m_layer_icon[li.id] = nullptr;   // dot fallback, don't retry
+                    continue;
+                }
+                std::wstring full = path;
+                std::wstring name = full.substr(full.find_last_of(L'/') + 1);
+                m_layer_icon[li.id] = Engine::load_game_texture(full.c_str(), name.c_str());
+            }
+        }
+
+        auto layer_texture_for(int layer_id) -> UObject*
+        {
+            auto it = m_layer_icon.find(layer_id);
+            return it != m_layer_icon.end() ? it->second : nullptr;
+        }
+
         // one dot: pooled construction, canvas attach, styling. Returns index or SIZE_MAX.
         auto emit_dot(UClass* image_class, double px, double py, const Engine::FLinearColor_& color,
                       const wchar_t* icon, double base_size, bool visible, int layer_id) -> size_t
@@ -893,6 +1176,17 @@ namespace CairnMap
             entry.layer_id = layer_id;
             entry.base_hidden = !visible;
 
+            // Real game icon for this layer (loaded from the player's own install).
+            // When present, paint it as the brush and show it untinted; otherwise the
+            // RoundedBox stays and gets the category tint below.
+            if (UObject* tex = layer_texture_for(layer_id))
+            {
+                Engine::ParamsSetBrushFromTexture brush{tex, false};
+                Engine::call(dot, L"SetBrushFromTexture", brush);
+                Style::draw_as_image(dot);   // full rectangle, no RoundedBox clipping
+                entry.icon_applied = true;
+            }
+
             Engine::ParamsAddChildToCanvas add{dot, nullptr};
             if (!Engine::call(m_layer_canvas, L"AddChildToCanvas", add) || !add.ReturnValue)
             {
@@ -904,13 +1198,16 @@ namespace CairnMap
                                                      : color;
             Engine::ParamsSetColorAndOpacity col{col_val};
             Engine::call(dot, L"SetColorAndOpacity", col);
-            Engine::ParamsSetVisibility vis{visible ? Engine::Vis_HitTestInvisible : Engine::Vis_Collapsed};
+            // Emit already in the final combined state (layer toggle AND not-collected)
+            // so a disabled layer never flashes visible before the filter is applied.
+            const bool show_now = visible && is_layer_on(layer_id);
+            Engine::ParamsSetVisibility vis{show_now ? Engine::Vis_HitTestInvisible : Engine::Vis_Collapsed};
             Engine::call(dot, L"SetVisibility", vis);
             Engine::ParamsSetAutoSize aut{false};
             Engine::call(entry.slot, L"SetAutoSize", aut);
             Engine::ParamsSetAlignment align{{0.5, 0.5}};
             Engine::call(entry.slot, L"SetAlignment", align);
-            const double sz = std::clamp(entry.base_size / m_applied_zoom, 4.0, 40.0);
+            const double sz = std::clamp(entry.base_size / m_applied_zoom, 5.0, 40.0);
             Engine::ParamsSetSize size{{sz, sz}};
             Engine::call(entry.slot, L"SetSize", size);
             Engine::ParamsSetPosition setpos{{px, py}};
@@ -951,6 +1248,7 @@ namespace CairnMap
         }
 
         size_t m_emit_cursor = 0;
+        size_t m_egg_dot_start = 0;   // pool index where live-egg dots begin (for reopen re-scan)
         static constexpr bool g_icons_enabled = false;   // item icons unreachable from C++ (Lua object-space barrier); colored dots
 
         std::unordered_map<std::wstring, UObject*> m_tex_index;
@@ -996,6 +1294,7 @@ namespace CairnMap
             {
                 return;
             }
+            ensure_layer_icons();   // load real item icons from the player's install
             m_emit_cursor = 0;
             size_t placed = 0;
             const auto t0 = std::chrono::steady_clock::now();
@@ -1026,28 +1325,6 @@ namespace CairnMap
             // effigies & notes, filtered by the live collected set
             std::unordered_set<std::wstring> collected;
             const bool have_flags = Collected::gather(collected);
-            // one-shot diagnostic: reveals the obtain-flag key format vs our GUIDs
-            if (!m_flag_probe_done)
-            {
-                m_flag_probe_done = true;
-                std::wstring samples;
-                int n = 0;
-                for (const auto& k : collected)
-                {
-                    samples += k;
-                    samples += L' ';
-                    if (++n >= 4)
-                    {
-                        break;
-                    }
-                }
-                Output::send<LogLevel::Default>(
-                    STR("[CairnFlag] gathered {} obtained keys; samples: {}\n"), collected.size(),
-                    samples);
-                Output::send<LogLevel::Default>(
-                    STR("[CairnFlag] our eff[0]={} note[0]={}\n"),
-                    Collected::guid_key(Data::kEffigies[0].guid), std::wstring(Data::kNotes[0].row));
-            }
             size_t hidden = 0;
             // Generic collectable placement: key_fn(i) yields the obtained-set key
             // (instance GUID for effigies, NoteRowName for notes).
@@ -1080,26 +1357,22 @@ namespace CairnMap
                 }
                 return layer_hidden;
             };
-            const size_t eff_hidden = place_collectables(
+            place_collectables(
                 std::size(Data::kEffigies),
                 [](size_t i) { return std::pair<int, int>{Data::kEffigies[i].x, Data::kEffigies[i].y}; },
                 [](size_t i) { return Collected::guid_key(Data::kEffigies[i].guid); },
                 {0.35f, 1.0f, 0.20f, 1.0f}, Data::kEffigyIcon, 20.0, kEffigyLayer);
-            const size_t note_hidden = place_collectables(
+            place_collectables(
                 std::size(Data::kNotes),
                 [](size_t i) { return std::pair<int, int>{Data::kNotes[i].x, Data::kNotes[i].y}; },
                 [](size_t i) { return std::wstring(Data::kNotes[i].row); },
                 {0.20f, 0.88f, 1.0f, 1.0f}, Data::kNoteIcon, 20.0, kNoteLayer);
-            Output::send<LogLevel::Default>(
-                STR("[CairnFlag] hidden effigies={}/{} notes={}/{}\n"), eff_hidden,
-                std::size(Data::kEffigies), note_hidden, std::size(Data::kNotes));
             // live eggs: no static positions (random lottery placement + respawn),
-            // so enumerate the PalEgg loot actors currently loaded around the player
-            // and place a dot at each. Only covers the streamed-in area near you; the
-            // set refreshes whenever the map is reopened from a new location.
-            const size_t egg_shown = place_live_eggs(image_class);
-            placed += egg_shown;
-            Output::send<LogLevel::Default>(STR("[CairnLoot] live eggs placed={}\n"), egg_shown);
+            // so enumerate the loaded PalEgg actors around the player and place a dot.
+            // Placed LAST so their pool slots form a contiguous tail we can re-scan on
+            // reopen (place_dots does not re-run when the map body is reused).
+            m_egg_dot_start = m_emit_cursor;
+            placed += place_live_eggs(image_class);
             // collapse any leftover pooled dots beyond this pass
             for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
             {
@@ -1144,15 +1417,37 @@ namespace CairnMap
             {
                 return;
             }
-            size_t hidden = 0;
             for (const auto& gd : m_guid_dots)
             {
-                const bool is_collected = collected.contains(gd.key);
-                hidden += is_collected ? 1 : 0;
-                m_dots[gd.dot_index].base_hidden = is_collected;
+                m_dots[gd.dot_index].base_hidden = collected.contains(gd.key);
             }
             apply_layer_visibility();
-            Output::send<LogLevel::Default>(STR("[CairnMap] collected refresh: {} hidden\n"), hidden);
+        }
+
+        // Eggs are collected / respawn / stream in as the player moves, but the close
+        // path only collapses (keeps widgets) so a same-instance reopen never re-runs
+        // place_dots. Re-scan just the egg tail of the pool. Egg count is small (nearby
+        // only), so the re-parent churn the 5k static dots must avoid is safe here.
+        auto refresh_live_eggs() -> void
+        {
+            if (!m_placed || !m_layer_canvas || !m_calibration)
+            {
+                return;
+            }
+            auto* image_class =
+                UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/UMG.Image"));
+            if (!image_class)
+            {
+                return;
+            }
+            m_emit_cursor = m_egg_dot_start;
+            place_live_eggs(image_class);
+            // collapse egg dots left over from a previous, larger scan
+            for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
+            {
+                Engine::ParamsSetVisibility vis{Engine::Vis_Collapsed};
+                Engine::call(m_dots[i].widget, L"SetVisibility", vis);
+            }
         }
 
         // retry lazy icon textures (game loads them as the player encounters items)
@@ -1273,7 +1568,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                const double sz = std::clamp(d.base_size / zoom, 4.0, 40.0);
+                const double sz = std::clamp(d.base_size / zoom, 5.0, 40.0);
                 Engine::ParamsSetSize size{{sz, sz}};
                 Engine::call(d.slot, L"SetSize", size);
             }
@@ -1314,11 +1609,37 @@ namespace CairnMap
         // canvas (not the panning map canvas). Rows: [checkbox][dot][label].
         auto build_panel(UObject* root_in) -> void
         {
-            if (m_panel_canvas || !root_in)
+            if (!root_in)
             {
                 return;
             }
             UObject* root = screen_canvas(root_in);
+            // Reuse the existing panel ONLY if it is still a live child of the current
+            // screen root. Pointer comparison is safe even if the panel was destroyed
+            // (never dereference a possibly-dangling pointer). If it is gone, rebuild;
+            // if still there, reuse it (recreating it each cycle is what leaked).
+            if (m_panel_canvas)
+            {
+                bool still_child = false;
+                const int32_t rn = Engine::children_count(root);
+                for (int32_t i = 0; i < rn; ++i)
+                {
+                    if (Engine::child_at(root, i) == m_panel_canvas)
+                    {
+                        still_child = true;
+                        break;
+                    }
+                }
+                if (still_child)
+                {
+                    Engine::ParamsSetVisibility pv{Engine::Vis_Visible};
+                    Engine::call(m_panel_canvas, L"SetVisibility", pv);   // reuse: just un-hide
+                    return;
+                }
+                m_panel_canvas = nullptr;
+                m_panel_rows.clear();
+                m_panel_first_poll = true;
+            }
             auto* canvas_class =
                 UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/UMG.CanvasPanel"));
             auto* image_class =
@@ -1441,6 +1762,46 @@ namespace CairnMap
                 add_to_panel(line, x, y, w_, 1.0);
             };
 
+            // a small layer icon (loaded game texture) for the legend, left of label
+            auto add_icon = [&](UObject* tex, double x, double y, double sz) {
+                if (!tex)
+                {
+                    return;
+                }
+                FStaticConstructObjectParameters params{image_class, m_panel_canvas};
+                UObject* img = UObjectGlobals::StaticConstructObject(params);
+                if (!img)
+                {
+                    return;
+                }
+                Engine::ParamsSetBrushFromTexture brush{tex, false};
+                Engine::call(img, L"SetBrushFromTexture", brush);
+                Style::draw_as_image(img);
+                Engine::ParamsSetColorAndOpacity c{{1.0f, 1.0f, 1.0f, 1.0f}};
+                Engine::call(img, L"SetColorAndOpacity", c);
+                Engine::ParamsSetVisibility v{Engine::Vis_HitTestInvisible};
+                Engine::call(img, L"SetVisibility", v);
+                add_to_panel(img, x, y, sz, sz);
+            };
+
+            ensure_layer_icons();   // legend uses the same loaded game textures
+
+            // collected counters for effigies / notes (X / total)
+            std::unordered_set<std::wstring> coll;
+            const bool have_coll = g_finishing_touches && Collected::gather(coll);
+            size_t eff_got = 0, note_got = 0;
+            if (have_coll)
+            {
+                for (const auto& e : Data::kEffigies)
+                {
+                    eff_got += coll.count(Collected::guid_key(e.guid)) ? 1 : 0;
+                }
+                for (const auto& n : Data::kNotes)
+                {
+                    note_got += coll.count(std::wstring(n.row)) ? 1 : 0;
+                }
+            }
+
             m_panel_rows.clear();
             double y = 6.0;
             for (const auto& it : items)
@@ -1458,12 +1819,13 @@ namespace CairnMap
                     y += item_h(it);
                     continue;
                 }
-                // toggle row: checkbox + accent label
+                // toggle row: [checkbox][icon][label]. Neutral checkbox (the icon
+                // now identifies the layer), real game icon as the legend glyph.
                 FStaticConstructObjectParameters cbp{cb_class, m_panel_canvas};
                 UObject* cb = UObjectGlobals::StaticConstructObject(cbp);
                 if (cb)
                 {
-                    Style::make_checkbox(cb, it.r, it.g, it.b);
+                    Style::make_checkbox(cb, 0.82f, 0.86f, 0.95f);
                     Engine::ParamsSetVisibility v{Engine::Vis_Visible};
                     Engine::call(cb, L"SetVisibility", v);
                     add_to_panel(cb, 12, y + 2, 14, 14);
@@ -1475,14 +1837,41 @@ namespace CairnMap
                     Engine::call(cb, L"SetIsChecked", chk);
                     m_panel_rows.push_back({cb, it.id, is_layer_on(it.id)});
                 }
-                add_label(it.label, 32, y + 2, width - 40, 11, it.r, it.g, it.b, 1.0f);
+                add_icon(layer_texture_for(it.id), 30, y + 1, 16);
+                std::wstring lbl = it.label;
+                if (have_coll && it.id == kEffigyLayer)
+                {
+                    lbl += L"  " + std::to_wstring(eff_got) + L"/" +
+                           std::to_wstring(std::size(Data::kEffigies));
+                }
+                else if (have_coll && it.id == kNoteLayer)
+                {
+                    lbl += L"  " + std::to_wstring(note_got) + L"/" +
+                           std::to_wstring(std::size(Data::kNotes));
+                }
+                add_label(lbl.c_str(), 50, y + 2, width - 58, 11, 0.90f, 0.92f, 0.98f, 1.0f);
                 y += item_h(it);
             }
             m_panel_root_name = root->GetFullName();
             Output::send<LogLevel::Default>(STR("[CairnMap] panel built ({} rows)\n"), m_panel_rows.size());
         }
 
-        // Poll checkbox states; on change, update toggle + layer visibility.
+        // Force a checkbox to a given checked state (visual + property).
+        auto set_checkbox(UObject* cb, bool on) -> void
+        {
+            if (!cb)
+            {
+                return;
+            }
+            if (auto* st = cb->GetValuePtrByPropertyNameInChain<uint8_t>(STR("CheckedState")))
+            {
+                *st = on ? 1 : 0;
+            }
+            Engine::ParamsSetIsChecked chk{on};
+            Engine::call(cb, L"SetIsChecked", chk);
+        }
+
+        // Poll checkbox states; on change, update toggle + layer visibility + save.
         auto poll_panel() -> void
         {
             bool changed = false;
@@ -1499,7 +1888,6 @@ namespace CairnMap
                 }
                 if (m_panel_first_poll)
                 {
-                    // adopt reality without hiding anything; keep default-on
                     row.last_checked = p.ReturnValue;
                     continue;
                 }
@@ -1517,6 +1905,10 @@ namespace CairnMap
             if (changed)
             {
                 apply_layer_visibility();
+                if (g_finishing_touches)
+                {
+                    save_toggles();
+                }
             }
         }
 
@@ -1527,11 +1919,14 @@ namespace CairnMap
             UObject* mask = nullptr;
             if (!find_map(root, map_body_canvas, mask))
             {
-                // map closed: collapse our overlay once (widgets stay pooled)
+                // map closed: only hide our overlay, KEEP all widgets so they are
+                // reused (re-parented) on reopen. Recreating them each cycle is what
+                // leaked thousands of widgets and corrupted the heap.
                 if (m_layer_canvas && !m_collapsed)
                 {
                     Engine::ParamsSetVisibility vis{Engine::Vis_Collapsed};
                     Engine::call(m_layer_canvas, L"SetVisibility", vis);
+                    Engine::call(m_panel_canvas, L"SetVisibility", vis);
                     m_collapsed = true;
                 }
                 return;
@@ -1541,24 +1936,31 @@ namespace CairnMap
             const std::wstring full_name = mask->GetFullName();
             if (full_name != m_canvas_full_name)
             {
-                // new map body instance: old widgets died with the previous tree
+                // New map body instance. Detach our previous overlay first: if the
+                // close tick was missed (fast open/close), the old canvas would
+                // otherwise linger as a rendered ghost and its widgets accumulate
+                // across cycles (root cause of the heap corruption).
                 m_canvas_full_name = full_name;
+                // Layer canvas + dots live INSIDE the map body, which the game
+                // destroys on close -> reusing our pointers would dangle (access
+                // violation). Rebuild them fresh; since they were destroyed, this
+                // does NOT accumulate.
                 m_layer_canvas = nullptr;
+                m_inv_box = nullptr;
                 m_layer_slot = nullptr;
                 m_dots.clear();
                 m_guid_dots.clear();
                 m_emit_cursor = 0;
+                m_egg_dot_start = 0;
+                m_layer_icon.clear();
                 m_applied_zoom = 1.0;
-                m_icon_scan = 0;
-                m_tex_index.clear();
-                m_icons_ready = false;
-                m_icon_rebuilds = 0;
                 m_calibration.reset();
                 m_placed = false;
                 m_collapsed = true;
-                m_panel_canvas = nullptr;   // died with the tree
-                m_panel_rows.clear();
-                m_panel_first_poll = true;
+                // The panel lives on the PERSISTENT screen base, so recreating it
+                // each cycle is what leaked/corrupted the heap. We keep m_panel_canvas
+                // and let build_panel validate + reuse it (it must NOT be dereferenced
+                // here in case its base was destroyed and the pointer dangles).
             }
 
             if (!m_calibration)
@@ -1612,6 +2014,8 @@ namespace CairnMap
                 Engine::call(m_layer_canvas, L"SetVisibility", vis);
                 m_collapsed = false;
                 refresh_collected();   // visibility-only diff, no re-parenting
+                refresh_live_eggs();   // re-scan eggs (collected / respawned / streamed in)
+                // panel visibility is handled by build_panel (validates first)
             }
 
             // interface panel: build once, then poll toggles each tick
