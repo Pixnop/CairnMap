@@ -996,6 +996,10 @@ namespace CairnMap
                 return STR("T_itemicon_Material_Sulfur");
             case 5:
                 return STR("T_itemicon_Material_CrudeOil");
+            case 6:
+                return STR("T_itemicon_Material_SkyIslandOre");
+            case 7:
+                return STR("T_itemicon_Material_WorldTreeOre");
             case 9:
                 return STR("T_itemicon_Material_NightStone");
             case 10:
