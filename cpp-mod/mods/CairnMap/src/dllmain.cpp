@@ -703,18 +703,26 @@ namespace CairnMap
         }
         auto save_toggles() -> void
         {
-            try
+            const char* base = std::getenv("LOCALAPPDATA");
+            if (!base || !*base)
             {
-                auto p = config_path();
-                std::filesystem::create_directories(p.parent_path());
-                std::ofstream f(p, std::ios::trunc);
-                for (const auto& [id, on] : m_layer_on)
-                {
-                    f << id << ' ' << (on ? 1 : 0) << '\n';
-                }
+                return;   // no writable location: skip silently
             }
-            catch (...)
+            std::error_code ec;
+            std::filesystem::path dir = std::filesystem::path(base) / "CairnMap";
+            std::filesystem::create_directories(dir, ec);   // non-throwing overload
+            if (ec)
             {
+                return;
+            }
+            std::ofstream f(dir / "toggles.cfg", std::ios::trunc);
+            if (!f)
+            {
+                return;
+            }
+            for (const auto& [id, on] : m_layer_on)
+            {
+                f << id << ' ' << (on ? 1 : 0) << '\n';
             }
         }
         auto load_toggles() -> void
@@ -778,7 +786,6 @@ namespace CairnMap
         {
             std::vector<PanelItem> v;
             v.push_back({PanelItem::Title, L"CairnMap", 0, 0, 0, 0});
-            v.push_back({PanelItem::Row, L"Show all", kMasterLayer, 0.85f, 0.88f, 0.95f});
 
             v.push_back({PanelItem::Header, L"COLLECTABLES", 0, 0, 0, 0});
             v.push_back({PanelItem::Row, L"Effigies", kEffigyLayer, 0.35f, 1.0f, 0.20f});
@@ -1825,47 +1832,10 @@ namespace CairnMap
         // Poll checkbox states; on change, update toggle + layer visibility + save.
         auto poll_panel() -> void
         {
-            // master toggle: cascade its state to every layer when it flips
-            for (auto& row : m_panel_rows)
-            {
-                if (row.layer_id != kMasterLayer || !row.checkbox)
-                {
-                    continue;
-                }
-                Engine::ParamsIsChecked p{};
-                if (!Engine::call(row.checkbox, L"IsChecked", p))
-                {
-                    break;
-                }
-                if (m_panel_first_poll)
-                {
-                    row.last_checked = p.ReturnValue;
-                    break;
-                }
-                if (p.ReturnValue != row.last_checked)
-                {
-                    row.last_checked = p.ReturnValue;
-                    const bool state = p.ReturnValue;
-                    for (auto& r2 : m_panel_rows)
-                    {
-                        if (r2.layer_id == kMasterLayer)
-                        {
-                            continue;
-                        }
-                        m_layer_on[r2.layer_id] = state;
-                        r2.last_checked = state;
-                        set_checkbox(r2.checkbox, state);
-                    }
-                    apply_layer_visibility();
-                    save_toggles();
-                }
-                break;
-            }
-            // per-layer toggles
             bool changed = false;
             for (auto& row : m_panel_rows)
             {
-                if (row.layer_id == kMasterLayer || !row.checkbox)
+                if (!row.checkbox)
                 {
                     continue;
                 }
