@@ -1667,6 +1667,29 @@ namespace CairnMap
                 add_to_panel(line, x, y, w_, 1.0);
             };
 
+            // a small layer icon (loaded game texture) for the legend, left of label
+            auto add_icon = [&](UObject* tex, double x, double y, double sz) {
+                if (!tex)
+                {
+                    return;
+                }
+                FStaticConstructObjectParameters params{image_class, m_panel_canvas};
+                UObject* img = UObjectGlobals::StaticConstructObject(params);
+                if (!img)
+                {
+                    return;
+                }
+                Engine::ParamsSetBrushFromTexture brush{tex, false};
+                Engine::call(img, L"SetBrushFromTexture", brush);
+                Style::draw_as_image(img);
+                Engine::ParamsSetColorAndOpacity c{{1.0f, 1.0f, 1.0f, 1.0f}};
+                Engine::call(img, L"SetColorAndOpacity", c);
+                Engine::ParamsSetVisibility v{Engine::Vis_HitTestInvisible};
+                Engine::call(img, L"SetVisibility", v);
+                add_to_panel(img, x, y, sz, sz);
+            };
+
+            ensure_layer_icons();   // legend uses the same loaded game textures
             m_panel_rows.clear();
             double y = 6.0;
             for (const auto& it : items)
@@ -1684,12 +1707,13 @@ namespace CairnMap
                     y += item_h(it);
                     continue;
                 }
-                // toggle row: checkbox + accent label
+                // toggle row: [checkbox][icon][label]. Neutral checkbox (the icon
+                // now identifies the layer), real game icon as the legend glyph.
                 FStaticConstructObjectParameters cbp{cb_class, m_panel_canvas};
                 UObject* cb = UObjectGlobals::StaticConstructObject(cbp);
                 if (cb)
                 {
-                    Style::make_checkbox(cb, it.r, it.g, it.b);
+                    Style::make_checkbox(cb, 0.82f, 0.86f, 0.95f);
                     Engine::ParamsSetVisibility v{Engine::Vis_Visible};
                     Engine::call(cb, L"SetVisibility", v);
                     add_to_panel(cb, 12, y + 2, 14, 14);
@@ -1701,7 +1725,8 @@ namespace CairnMap
                     Engine::call(cb, L"SetIsChecked", chk);
                     m_panel_rows.push_back({cb, it.id, is_layer_on(it.id)});
                 }
-                add_label(it.label, 32, y + 2, width - 40, 11, it.r, it.g, it.b, 1.0f);
+                add_icon(layer_texture_for(it.id), 30, y + 1, 16);
+                add_label(it.label, 50, y + 2, width - 58, 11, 0.90f, 0.92f, 0.98f, 1.0f);
                 y += item_h(it);
             }
             m_panel_root_name = root->GetFullName();
