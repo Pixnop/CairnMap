@@ -1216,7 +1216,7 @@ namespace CairnMap
             Engine::call(entry.slot, L"SetAutoSize", aut);
             Engine::ParamsSetAlignment align{{0.5, 0.5}};
             Engine::call(entry.slot, L"SetAlignment", align);
-            const double sz = std::clamp(entry.base_size / m_applied_zoom, 4.0, 40.0);
+            const double sz = std::clamp(entry.base_size / m_applied_zoom, 8.0, 40.0);
             Engine::ParamsSetSize size{{sz, sz}};
             Engine::call(entry.slot, L"SetSize", size);
             Engine::ParamsSetPosition setpos{{px, py}};
@@ -1593,7 +1593,7 @@ namespace CairnMap
                 {
                     continue;
                 }
-                const double sz = std::clamp(d.base_size / zoom, 4.0, 40.0);
+                const double sz = std::clamp(d.base_size / zoom, 8.0, 40.0);
                 Engine::ParamsSetSize size{{sz, sz}};
                 Engine::call(d.slot, L"SetSize", size);
             }
@@ -1972,11 +1972,14 @@ namespace CairnMap
                     m_emit_cursor = 0;
                     m_layer_icon.clear();
                 }
-                // panel is small (~20 widgets): detach + rebuild
-                Engine::remove_from_parent(m_panel_canvas);
-                m_panel_canvas = nullptr;
-                m_panel_rows.clear();
-                m_panel_first_poll = true;
+                // panel: reuse it too (it lives on the stable screen base). Just
+                // un-hide it; build_panel skips while m_panel_canvas is kept, so its
+                // ~60 widgets are not recreated each cycle (was the residual leak).
+                if (m_panel_canvas)
+                {
+                    Engine::ParamsSetVisibility pv{Engine::Vis_Visible};
+                    Engine::call(m_panel_canvas, L"SetVisibility", pv);
+                }
                 m_applied_zoom = 1.0;
                 m_calibration.reset();   // recalibrate + reposition reused dots
                 m_placed = false;
@@ -2032,6 +2035,8 @@ namespace CairnMap
             {
                 Engine::ParamsSetVisibility vis{Engine::Vis_SelfHitTestInvisible};
                 Engine::call(m_layer_canvas, L"SetVisibility", vis);
+                Engine::ParamsSetVisibility pv{Engine::Vis_Visible};
+                Engine::call(m_panel_canvas, L"SetVisibility", pv);
                 m_collapsed = false;
                 refresh_collected();   // visibility-only diff, no re-parenting
             }
