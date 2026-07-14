@@ -1144,6 +1144,13 @@ namespace CairnMap
                 std::wstring name = full.substr(full.find_last_of(L'/') + 1);
                 m_layer_icon[li.id] = Engine::load_game_texture(full.c_str(), name.c_str());
             }
+            size_t ok = 0, tot = 0;
+            for (const auto& [id, tex] : m_layer_icon)
+            {
+                ++tot;
+                ok += tex ? 1 : 0;
+            }
+            Output::send<LogLevel::Default>(STR("[CairnIcon] textures loaded {}/{}\n"), ok, tot);
         }
 
         auto layer_texture_for(int layer_id) -> UObject*
@@ -1200,7 +1207,10 @@ namespace CairnMap
                                                      : color;
             Engine::ParamsSetColorAndOpacity col{col_val};
             Engine::call(dot, L"SetColorAndOpacity", col);
-            Engine::ParamsSetVisibility vis{visible ? Engine::Vis_HitTestInvisible : Engine::Vis_Collapsed};
+            // Emit already in the final combined state (layer toggle AND not-collected)
+            // so a disabled layer never flashes visible before the filter is applied.
+            const bool show_now = visible && is_layer_on(layer_id);
+            Engine::ParamsSetVisibility vis{show_now ? Engine::Vis_HitTestInvisible : Engine::Vis_Collapsed};
             Engine::call(dot, L"SetVisibility", vis);
             Engine::ParamsSetAutoSize aut{false};
             Engine::call(entry.slot, L"SetAutoSize", aut);
