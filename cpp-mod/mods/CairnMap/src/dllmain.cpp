@@ -138,6 +138,18 @@ namespace CairnMap
         {
             bool CanCache{};
         };
+        struct ParamsNone
+        {
+        };
+        // Detach a widget from its parent (UWidget::RemoveFromParent, no args).
+        inline auto remove_from_parent(UObject* w) -> void
+        {
+            if (w)
+            {
+                ParamsNone p{};
+                call(w, L"RemoveFromParent", p);
+            }
+        }
         // UKismetSystemLibrary::LoadAsset_Blocking(TSoftObjectPtr<UObject>) -> UObject*
         // Loads a texture asset from the player's OWN installed game (nothing is
         // bundled/redistributed). TSoftObjectPtr = FWeakObjectPtr + tag + FSoftObjectPath.
@@ -1895,12 +1907,28 @@ namespace CairnMap
             UObject* mask = nullptr;
             if (!find_map(root, map_body_canvas, mask))
             {
-                // map closed: collapse our overlay once (widgets stay pooled)
-                if (m_layer_canvas && !m_collapsed)
+                // map closed: fully detach + drop our overlay so nothing lingers as a
+                // ghost on reopen (the map body is hidden, not destroyed, so our
+                // widgets are still valid here). Everything is rebuilt fresh on reopen.
+                if (m_layer_canvas || m_panel_canvas)
                 {
-                    Engine::ParamsSetVisibility vis{Engine::Vis_Collapsed};
-                    Engine::call(m_layer_canvas, L"SetVisibility", vis);
+                    Engine::remove_from_parent(m_inv_box ? m_inv_box : m_layer_canvas);
+                    Engine::remove_from_parent(m_panel_canvas);
+                    m_layer_canvas = nullptr;
+                    m_inv_box = nullptr;
+                    m_layer_slot = nullptr;
+                    m_dots.clear();
+                    m_guid_dots.clear();
+                    m_emit_cursor = 0;
+                    m_layer_icon.clear();
+                    m_applied_zoom = 1.0;
+                    m_calibration.reset();
+                    m_placed = false;
                     m_collapsed = true;
+                    m_panel_canvas = nullptr;
+                    m_panel_rows.clear();
+                    m_panel_first_poll = true;
+                    m_canvas_full_name.clear();   // force fresh detection on reopen
                 }
                 return;
             }
