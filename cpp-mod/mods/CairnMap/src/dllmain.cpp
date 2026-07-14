@@ -1094,9 +1094,17 @@ namespace CairnMap
             }
         }
 
+        // Isolation switch: when false, no runtime icon loading / SetBrushFromTexture
+        // happens (dots stay coloured). Used to confirm the heap-corruption source.
+        static constexpr bool g_load_game_icons = false;
+
         // Load each layer's icon once from the player's install, cached.
         auto ensure_layer_icons() -> void
         {
+            if (!g_load_game_icons)
+            {
+                return;
+            }
             for (const auto& li : panel_items())
             {
                 if (li.kind != PanelItem::Row || m_layer_icon.count(li.id))
