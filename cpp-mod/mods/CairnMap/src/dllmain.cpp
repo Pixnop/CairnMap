@@ -652,6 +652,7 @@ namespace CairnMap
         std::wstring m_canvas_full_name;
         UObject* m_layer_canvas = nullptr;                 // our own CanvasPanel
         UObject* m_inv_box = nullptr;                       // InvalidationBox wrapping it
+        std::unordered_map<int, UObject*> m_layer_icon;    // layer_id -> loaded game texture
         UObject* m_layer_slot = nullptr;                   // its canvas slot
         uint8_t m_mask_geom[64] = {};                      // last-seen mask LayoutData
         // layer ids: 0..N-1 = Data::kLayers index; 1000 = effigies, 1001 = notes,
@@ -973,6 +974,68 @@ namespace CairnMap
             Engine::call(m_layer_slot, L"SetAlignment", align);
         }
 
+        // Item-icon asset name for a layer, resolved at runtime from the player's
+        // own game files (approach B, nothing bundled). nullptr = keep coloured dot.
+        static auto layer_icon_name(int layer_id) -> const wchar_t*
+        {
+            switch (layer_id)
+            {
+            case kEffigyLayer:
+                return STR("T_itemicon_Relic");
+            case kNoteLayer:
+                return STR("T_itemicon_Consume_TechnologyBook_G1");
+            case kEggLayer:
+                return STR("T_itemicon_Material_PalEgg");
+            case 0:
+                return STR("T_itemicon_Material_Coal");
+            case 1:
+                return STR("T_itemicon_Material_CopperOre");
+            case 2:
+                return STR("T_itemicon_Material_Quartz");
+            case 3:
+                return STR("T_itemicon_Material_Sulfur");
+            case 5:
+                return STR("T_itemicon_Material_CrudeOil");
+            case 9:
+                return STR("T_itemicon_Material_NightStone");
+            case 10:
+                return STR("T_itemicon_Material_Money");
+            case 11:
+                return STR("T_itemicon_Food_Lotus_attack_01");
+            case 15:
+                return STR("T_itemicon_Consume_AffectionFruit_01");
+            default:
+                return nullptr;   // Hexolite/SkyOre/TreeOre/Magma/Chest/Junk/Outpost -> dot
+            }
+        }
+
+        // Load each layer's item icon once from the player's install, cached.
+        auto ensure_layer_icons() -> void
+        {
+            static const wchar_t* kDir = STR("/Game/Others/InventoryItemIcon/Texture/");
+            for (const auto& li : panel_items())
+            {
+                if (li.kind != PanelItem::Row || m_layer_icon.count(li.id))
+                {
+                    continue;
+                }
+                const wchar_t* name = layer_icon_name(li.id);
+                if (!name)
+                {
+                    m_layer_icon[li.id] = nullptr;   // dot fallback, don't retry
+                    continue;
+                }
+                std::wstring pkg = std::wstring(kDir) + name;
+                m_layer_icon[li.id] = Engine::load_game_texture(pkg.c_str(), name);
+            }
+        }
+
+        auto layer_texture_for(int layer_id) -> UObject*
+        {
+            auto it = m_layer_icon.find(layer_id);
+            return it != m_layer_icon.end() ? it->second : nullptr;
+        }
+
         // one dot: pooled construction, canvas attach, styling. Returns index or SIZE_MAX.
         auto emit_dot(UClass* image_class, double px, double py, const Engine::FLinearColor_& color,
                       const wchar_t* icon, double base_size, bool visible, int layer_id) -> size_t
@@ -998,6 +1061,16 @@ namespace CairnMap
             entry.base_size = base_size;
             entry.layer_id = layer_id;
             entry.base_hidden = !visible;
+
+            // Real game icon for this layer (loaded from the player's own install).
+            // When present, paint it as the brush and show it untinted; otherwise the
+            // RoundedBox stays and gets the category tint below.
+            if (UObject* tex = layer_texture_for(layer_id))
+            {
+                Engine::ParamsSetBrushFromTexture brush{tex, false};
+                Engine::call(dot, L"SetBrushFromTexture", brush);
+                entry.icon_applied = true;
+            }
 
             Engine::ParamsAddChildToCanvas add{dot, nullptr};
             if (!Engine::call(m_layer_canvas, L"AddChildToCanvas", add) || !add.ReturnValue)
@@ -1102,6 +1175,7 @@ namespace CairnMap
             {
                 return;
             }
+            ensure_layer_icons();   // load real item icons from the player's install
             m_emit_cursor = 0;
             size_t placed = 0;
             const auto t0 = std::chrono::steady_clock::now();
@@ -1664,6 +1738,7 @@ namespace CairnMap
                 m_canvas_full_name = full_name;
                 m_layer_canvas = nullptr;
                 m_inv_box = nullptr;
+                m_layer_icon.clear();
                 m_layer_slot = nullptr;
                 m_dots.clear();
                 m_guid_dots.clear();
