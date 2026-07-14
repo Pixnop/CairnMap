@@ -974,63 +974,71 @@ namespace CairnMap
             Engine::call(m_layer_slot, L"SetAlignment", align);
         }
 
-        // Item-icon asset name for a layer, resolved at runtime from the player's
-        // own game files (approach B, nothing bundled). nullptr = keep coloured dot.
-        static auto layer_icon_name(int layer_id) -> const wchar_t*
+        // Full asset package path of a layer's icon, resolved at runtime from the
+        // player's own game files (approach B, nothing bundled). Item icons live
+        // under InventoryItemIcon; map/POI markers under the InGame compass set.
+        // nullptr = keep coloured dot (no clean icon exists).
+        static auto layer_icon_path(int layer_id) -> const wchar_t*
         {
             switch (layer_id)
             {
             case kEffigyLayer:
-                return STR("T_itemicon_Relic");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Relic");
             case kNoteLayer:
-                return STR("T_itemicon_Consume_TechnologyBook_G1");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Consume_TechnologyBook_G1");
             case kEggLayer:
-                return STR("T_itemicon_Material_PalEgg");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_PalEgg");
             case 0:
-                return STR("T_itemicon_Material_Coal");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Coal");
             case 1:
-                return STR("T_itemicon_Material_CopperOre");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_CopperOre");
             case 2:
-                return STR("T_itemicon_Material_Quartz");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Quartz");
             case 3:
-                return STR("T_itemicon_Material_Sulfur");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Sulfur");
             case 5:
-                return STR("T_itemicon_Material_CrudeOil");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_CrudeOil");
             case 6:
-                return STR("T_itemicon_Material_SkyIslandOre");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_SkyIslandOre");
             case 7:
-                return STR("T_itemicon_Material_WorldTreeOre");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_WorldTreeOre");
             case 9:
-                return STR("T_itemicon_Material_NightStone");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_NightStone");
             case 10:
-                return STR("T_itemicon_Material_Money");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Money");
             case 11:
-                return STR("T_itemicon_Food_Lotus_attack_01");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Food_Lotus_attack_01");
+            case 12:   // Chest -> treasure map marker
+                return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_Search_Treasure");
+            case 13:   // Junk -> junk marker
+                return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_Search_Junk");
+            case 14:   // Outpost -> enemy camp marker
+                return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_EnemyCamp");
             case 15:
-                return STR("T_itemicon_Consume_AffectionFruit_01");
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Consume_AffectionFruit_01");
             default:
-                return nullptr;   // Hexolite/SkyOre/TreeOre/Magma/Chest/Junk/Outpost -> dot
+                return nullptr;   // Hexolite / Magma -> coloured dot
             }
         }
 
-        // Load each layer's item icon once from the player's install, cached.
+        // Load each layer's icon once from the player's install, cached.
         auto ensure_layer_icons() -> void
         {
-            static const wchar_t* kDir = STR("/Game/Others/InventoryItemIcon/Texture/");
             for (const auto& li : panel_items())
             {
                 if (li.kind != PanelItem::Row || m_layer_icon.count(li.id))
                 {
                     continue;
                 }
-                const wchar_t* name = layer_icon_name(li.id);
-                if (!name)
+                const wchar_t* path = layer_icon_path(li.id);
+                if (!path)
                 {
                     m_layer_icon[li.id] = nullptr;   // dot fallback, don't retry
                     continue;
                 }
-                std::wstring pkg = std::wstring(kDir) + name;
-                m_layer_icon[li.id] = Engine::load_game_texture(pkg.c_str(), name);
+                std::wstring full = path;
+                std::wstring name = full.substr(full.find_last_of(L'/') + 1);
+                m_layer_icon[li.id] = Engine::load_game_texture(full.c_str(), name.c_str());
             }
         }
 
