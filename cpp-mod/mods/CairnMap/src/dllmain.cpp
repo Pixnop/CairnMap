@@ -1113,7 +1113,7 @@ namespace CairnMap
             }
         }
 
-        static constexpr bool g_load_game_icons = true;    // real game icons (kept)
+        static constexpr bool g_load_game_icons = false;   // ISOLATION TEST: icons off
         static constexpr bool g_finishing_touches = true;  // counters + persistence (kept)
         // Isolation switch: the InvalidationBox (pan-freeze fix) caches render data
         // for ~7.5k child dots; tearing it down on map close is the prime suspect for
