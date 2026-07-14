@@ -679,8 +679,6 @@ namespace CairnMap
         static constexpr int kEffigyLayer = 1000;
         static constexpr int kNoteLayer = 1001;
         static constexpr int kEggLayer = 1002;
-        static constexpr int kDungeonLayer = 1003;       // live: loaded dungeon entrances
-        static constexpr int kChestNearLayer = 1004;     // live: loaded treasure boxes
         static constexpr int kMasterLayer = -1;   // "show all" master toggle
         struct Dot
         {
@@ -811,8 +809,6 @@ namespace CairnMap
             {
                 v.push_back(layer_row(idx));
             }
-            v.push_back({PanelItem::Row, L"Dungeons (nearby)", kDungeonLayer, 0.72f, 0.45f, 1.0f});
-            v.push_back({PanelItem::Row, L"Chests (nearby)", kChestNearLayer, 1.0f, 0.84f, 0.30f});
             return v;
         }
         // A collectable dot whose visibility depends on the live obtained set.
@@ -1091,10 +1087,6 @@ namespace CairnMap
                 return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_Search_Junk");
             case 14:   // Outpost -> enemy camp marker
                 return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_EnemyCamp");
-            case kDungeonLayer:
-                return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_dungeon");
-            case kChestNearLayer:
-                return STR("/Game/Pal/Texture/UI/InGame/T_icon_compass_Search_Treasure");
             case 15:
                 return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Consume_AffectionFruit_01");
             default:
@@ -1191,33 +1183,31 @@ namespace CairnMap
             return m_emit_cursor++;
         }
 
-        // Enumerate actors of a class currently streamed in around the player and
-        // place a dot at each (projected from its world location). Used for the
-        // live nearby layers (eggs / treasure boxes / dungeon entrances) which have
-        // no static positions. Returns the count placed.
-        auto place_live_actors(UClass* image_class, const wchar_t* class_name, int layer_id,
-                               const Engine::FLinearColor_& color) -> size_t
+        // Enumerate PalEgg loot actors currently streamed in and place a dot per
+        // egg (projected from its world location). Returns the count placed.
+        auto place_live_eggs(UClass* image_class) -> size_t
         {
             if (!m_calibration)
             {
                 return 0;
             }
-            std::vector<UObject*> actors;
-            UObjectGlobals::FindAllOf(class_name, actors);
+            std::vector<UObject*> eggs;
+            UObjectGlobals::FindAllOf(STR("PalMapObjectPalEgg"), eggs);
             size_t shown = 0;
-            for (auto* a : actors)
+            for (auto* egg : eggs)
             {
-                double ax = 0, ay = 0, az = 0;
-                if (!a || !Engine::actor_location(a, ax, ay, az) || (ax == 0 && ay == 0))
+                double ex = 0, ey = 0, ez = 0;
+                if (!egg || !Engine::actor_location(egg, ex, ey, ez) || (ex == 0 && ey == 0))
                 {
                     continue;
                 }
-                const auto pos = m_calibration->transform.apply(ax, ay);
+                const auto pos = m_calibration->transform.apply(ex, ey);
                 if (pos.x != pos.x || pos.x < -2000 || pos.x > 6000 || pos.y < -2000 || pos.y > 6000)
                 {
                     continue;
                 }
-                if (emit_dot(image_class, pos.x, pos.y, color, nullptr, 18.0, true, layer_id) != SIZE_MAX)
+                if (emit_dot(image_class, pos.x, pos.y, {1.0f, 0.82f, 0.15f, 1.0f}, nullptr, 18.0, true,
+                             kEggLayer) != SIZE_MAX)
                 {
                     ++shown;
                 }
@@ -1382,19 +1372,13 @@ namespace CairnMap
             Output::send<LogLevel::Default>(
                 STR("[CairnFlag] hidden effigies={}/{} notes={}/{}\n"), eff_hidden,
                 std::size(Data::kEffigies), note_hidden, std::size(Data::kNotes));
-            // live nearby layers: no static positions, so enumerate the loaded
-            // actors around the player and place a dot at each. Only covers the
-            // streamed-in area; the set refreshes when the map is reopened elsewhere.
-            const size_t egg_shown = place_live_actors(image_class, STR("PalMapObjectPalEgg"), kEggLayer,
-                                                       {1.0f, 0.82f, 0.15f, 1.0f});
-            const size_t chest_shown = place_live_actors(image_class, STR("PalMapObjectTreasureBox"),
-                                                         kChestNearLayer, {1.0f, 0.84f, 0.30f, 1.0f});
-            const size_t dungeon_shown = place_live_actors(image_class, STR("PalDungeonEntrance"),
-                                                           kDungeonLayer, {0.72f, 0.45f, 1.0f, 1.0f});
-            placed += egg_shown + chest_shown + dungeon_shown;
-            Output::send<LogLevel::Default>(
-                STR("[CairnLoot] live eggs={} chests={} dungeons={}\n"), egg_shown, chest_shown,
-                dungeon_shown);
+            // live eggs: no static positions (random lottery placement + respawn),
+            // so enumerate the PalEgg loot actors currently loaded around the player
+            // and place a dot at each. Only covers the streamed-in area near you; the
+            // set refreshes whenever the map is reopened from a new location.
+            const size_t egg_shown = place_live_eggs(image_class);
+            placed += egg_shown;
+            Output::send<LogLevel::Default>(STR("[CairnLoot] live eggs placed={}\n"), egg_shown);
             // collapse any leftover pooled dots beyond this pass
             for (size_t i = m_emit_cursor; i < m_dots.size(); ++i)
             {
