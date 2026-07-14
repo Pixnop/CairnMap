@@ -1634,11 +1634,39 @@ namespace CairnMap
         // canvas (not the panning map canvas). Rows: [checkbox][dot][label].
         auto build_panel(UObject* root_in) -> void
         {
-            if (m_panel_canvas || !root_in)
+            if (!root_in)
             {
                 return;
             }
             UObject* root = screen_canvas(root_in);
+            // Reuse the existing panel ONLY if it is still a live child of the current
+            // screen root. Pointer comparison is safe even if the panel was destroyed
+            // (never dereference a possibly-dangling pointer). If it is gone, rebuild;
+            // if still there, reuse it (recreating it each cycle is what leaked).
+            if (m_panel_canvas)
+            {
+                bool still_child = false;
+                const int32_t rn = Engine::children_count(root);
+                for (int32_t i = 0; i < rn; ++i)
+                {
+                    if (Engine::child_at(root, i) == m_panel_canvas)
+                    {
+                        still_child = true;
+                        break;
+                    }
+                }
+                if (still_child)
+                {
+                    Engine::ParamsSetVisibility pv{Engine::Vis_Visible};
+                    Engine::call(m_panel_canvas, L"SetVisibility", pv);   // reuse: just un-hide
+                    Output::send<LogLevel::Default>(STR("[CairnLife] panel reused (still valid)\n"));
+                    return;
+                }
+                Output::send<LogLevel::Default>(STR("[CairnLife] panel was destroyed -> rebuilding\n"));
+                m_panel_canvas = nullptr;
+                m_panel_rows.clear();
+                m_panel_first_poll = true;
+            }
             auto* canvas_class =
                 UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/UMG.CanvasPanel"));
             auto* image_class =
@@ -1940,50 +1968,25 @@ namespace CairnMap
                 // otherwise linger as a rendered ghost and its widgets accumulate
                 // across cycles (root cause of the heap corruption).
                 m_canvas_full_name = full_name;
-                // Reuse our layer canvas + all ~7.5k dots by RE-PARENTING them to the
-                // new map body, instead of recreating them every cycle (recreating
-                // leaks thousands of orphaned widgets per open -> heap corruption).
-                // Icons/textures are kept too (still valid), so no reload churn.
-                bool reparented = false;
-                if (m_layer_canvas)
-                {
-                    UObject* w = m_inv_box ? m_inv_box : m_layer_canvas;
-                    Engine::remove_from_parent(w);
-                    Engine::ParamsAddChildToCanvas add{w, nullptr};
-                    if (Engine::call(map_body_canvas, L"AddChildToCanvas", add) && add.ReturnValue)
-                    {
-                        m_layer_slot = add.ReturnValue;
-                        Engine::ParamsSetZOrder z{100};
-                        Engine::call(m_layer_slot, L"SetZOrder", z);
-                        std::fill(std::begin(m_mask_geom), std::end(m_mask_geom), 0);
-                        Engine::ParamsSetVisibility vis{Engine::Vis_SelfHitTestInvisible};
-                        Engine::call(m_layer_canvas, L"SetVisibility", vis);   // un-hide reused canvas
-                        reparented = true;
-                    }
-                }
-                if (!reparented)
-                {
-                    // first open, or re-parent failed: build fresh
-                    m_layer_canvas = nullptr;
-                    m_inv_box = nullptr;
-                    m_layer_slot = nullptr;
-                    m_dots.clear();
-                    m_guid_dots.clear();
-                    m_emit_cursor = 0;
-                    m_layer_icon.clear();
-                }
-                // panel: reuse it too (it lives on the stable screen base). Just
-                // un-hide it; build_panel skips while m_panel_canvas is kept, so its
-                // ~60 widgets are not recreated each cycle (was the residual leak).
-                if (m_panel_canvas)
-                {
-                    Engine::ParamsSetVisibility pv{Engine::Vis_Visible};
-                    Engine::call(m_panel_canvas, L"SetVisibility", pv);
-                }
+                // Layer canvas + dots live INSIDE the map body, which the game
+                // destroys on close -> reusing our pointers would dangle (access
+                // violation). Rebuild them fresh; since they were destroyed, this
+                // does NOT accumulate.
+                m_layer_canvas = nullptr;
+                m_inv_box = nullptr;
+                m_layer_slot = nullptr;
+                m_dots.clear();
+                m_guid_dots.clear();
+                m_emit_cursor = 0;
+                m_layer_icon.clear();
                 m_applied_zoom = 1.0;
-                m_calibration.reset();   // recalibrate + reposition reused dots
+                m_calibration.reset();
                 m_placed = false;
-                m_collapsed = false;
+                m_collapsed = true;
+                // The panel lives on the PERSISTENT screen base, so recreating it
+                // each cycle is what leaked/corrupted the heap. We keep m_panel_canvas
+                // and let build_panel validate + reuse it (it must NOT be dereferenced
+                // here in case its base was destroyed and the pointer dangles).
             }
 
             if (!m_calibration)
@@ -2035,10 +2038,9 @@ namespace CairnMap
             {
                 Engine::ParamsSetVisibility vis{Engine::Vis_SelfHitTestInvisible};
                 Engine::call(m_layer_canvas, L"SetVisibility", vis);
-                Engine::ParamsSetVisibility pv{Engine::Vis_Visible};
-                Engine::call(m_panel_canvas, L"SetVisibility", pv);
                 m_collapsed = false;
                 refresh_collected();   // visibility-only diff, no re-parenting
+                // panel visibility is handled by build_panel (validates first)
             }
 
             // interface panel: build once, then poll toggles each tick
