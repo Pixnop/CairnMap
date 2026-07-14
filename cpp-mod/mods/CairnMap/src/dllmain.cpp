@@ -514,6 +514,22 @@ namespace CairnMap
                 oc[3] = 0.9f;
             }
         }
+
+        // Switch a dot's brush back to plain Image draw so an assigned texture is
+        // drawn as a full rectangle (SetBrushFromTexture leaves DrawAs untouched, so
+        // the RoundedBox rounding from make_round would otherwise clip the icon).
+        inline auto draw_as_image(UObject* image_widget) -> void
+        {
+            static Offsets off;
+            if (!resolve(off))
+            {
+                return;
+            }
+            if (auto* brush = image_widget->GetValuePtrByPropertyNameInChain<uint8_t>(STR("Brush")))
+            {
+                brush[off.draw_as] = 3;   // ESlateBrushDrawType::Image
+            }
+        }
     } // namespace Style
 
     // -------------------------------------------------- collected state (P1.5)
@@ -1081,6 +1097,7 @@ namespace CairnMap
             {
                 Engine::ParamsSetBrushFromTexture brush{tex, false};
                 Engine::call(dot, L"SetBrushFromTexture", brush);
+                Style::draw_as_image(dot);   // full rectangle, no RoundedBox clipping
                 entry.icon_applied = true;
             }
 
