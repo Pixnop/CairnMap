@@ -1012,12 +1012,16 @@ namespace CairnMap
                 return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Quartz");
             case 3:
                 return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Sulfur");
+            case 4:   // Hexolite -> crystal
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Pal_crystal_L");
             case 5:
                 return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_CrudeOil");
             case 6:
                 return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_SkyIslandOre");
             case 7:
                 return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_WorldTreeOre");
+            case 8:   // Magma -> lava
+                return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_Lava_Ancient");
             case 9:
                 return STR("/Game/Others/InventoryItemIcon/Texture/T_itemicon_Material_NightStone");
             case 10:
