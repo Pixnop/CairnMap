@@ -1113,7 +1113,7 @@ namespace CairnMap
             }
         }
 
-        static constexpr bool g_load_game_icons = false;   // ISOLATION TEST: icons off
+        static constexpr bool g_load_game_icons = true;    // real game icons (kept)
         static constexpr bool g_finishing_touches = true;  // counters + persistence (kept)
         // Isolation switch: the InvalidationBox (pan-freeze fix) caches render data
         // for ~7.5k child dots; tearing it down on map close is the prime suspect for
@@ -1938,7 +1938,12 @@ namespace CairnMap
             const std::wstring full_name = mask->GetFullName();
             if (full_name != m_canvas_full_name)
             {
-                // new map body instance: old widgets died with the previous tree
+                // New map body instance. Detach our previous overlay first: if the
+                // close tick was missed (fast open/close), the old canvas would
+                // otherwise linger as a rendered ghost and its widgets accumulate
+                // across cycles (root cause of the heap corruption).
+                Engine::remove_from_parent(m_inv_box ? m_inv_box : m_layer_canvas);
+                Engine::remove_from_parent(m_panel_canvas);
                 m_canvas_full_name = full_name;
                 m_layer_canvas = nullptr;
                 m_inv_box = nullptr;
